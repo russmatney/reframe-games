@@ -1,0 +1,12 @@
+.DS_Store
+.idea
+tmp/
+*.log
+target
+*-init.clj
+public/js/compiled
+public/css/screen.css
+out
+.nrepl-port
+.shadow-cljs/
+node_modules/

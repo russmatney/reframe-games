@@ -1,0 +1,82 @@
+#+TITLE:   Canvas/Game Toying
+#+DATE:    January 11, 2020
+
+* Canvas Toying
+A place to learn how to work with the canvas (or otherwise rendering a game) in
+clojure script.
+
+** from a google groups thread
+https://groups.google.com/forum/#!topic/clojurescript/XrJ-IooFEEA
+#+BEGIN_SRC clojurescript
+; HELPERS
+
+(defn mappify-time
+  "Takes a JavaScript date object, and makes it into a map."
+  [js-date] {:hours (.getHours js-date)
+             :minutes (.getMinutes js-date)
+             :seconds (.getSeconds js-date)})
+
+(defn int-to-2digit-str
+  "I need this three times, so I extract it."
+  [n]
+  (let [s (str n)]
+    (if (> (count s) 1) s (str "0" s))))
+
+; 1. THE CLOCK ATOM AND ITS UPDATE MECHANISM
+
+; one time to rule them all
+(defonce timer (atom nil))
+
+; one active point to update time
+(defonce time-updater (js/setInterval
+                       #(reset! timer (mappify-time (js/Date.))) 1000))
+
+; JUST A TEST
+
+(defn digital-clock
+  "A digital clock to look whether time is running."
+  [timer]
+  (let [time @timer ; dereferencing makes it re-render when the atom changes
+        f int-to-2digit-str
+        time-str (str (f (:hours time)) ":" (f (:minutes time)) ":" (f (:seconds time)))]
+    [:div.example-clock
+     {:style {:color "#f34"}}
+     time-str]))
+
+; two atoms to monitor our clock component
+(defonce clox-render-count (atom 0))
+(defonce clox-error (atom "None."))
+
+; THE PAINT METHOD
+
+(defn paint-seconds [canvas-id timer]
+  (let [canvas-element (.getElementById js/document canvas-id)]
+    (if canvas-element
+      (let [ctx (.getContext canvas-element "2d")]
+        (if ctx
+          (do
+            (set! (.-fillStyle ctx) "red")
+            (set! (.-textAlign ctx) "center")
+            (let [sec (:seconds @timer)
+                  hpi (/ Math/PI -2)
+                  phi (+ hpi (* (/ sec 60) Math/PI 2))]
+              (doto ctx
+                (.clearRect 0 0 200 200)
+                (.beginPath)
+                (.arc 100 100 60 hpi phi false)
+                (.arc 100 100 90 phi hpi true)
+                (.fill)
+                (.fillText (int sec) 100 105))))
+          (reset! clox-error (str "No context found for canvas with id=" canvas-id))))
+      (reset! clox-error (str "No canvas with id=" canvas-id " found.")))))
+
+; THE COMPONENT
+
+(defn clox
+  [timer]
+      (swap! clox-render-count inc)
+      @timer ; this does the dereferencing & triggers rendering
+      (js/setTimeout paint-seconds 100 "clox" timer)
+      [:div
+       [:canvas {:width 200 :height 200 :id :clox}]])
+#+END_SRC
