@@ -6,9 +6,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game constants
 
-(def grid-height 7)
-(def grid-width 5)
+(def grid-height 5)
+(def grid-width 3)
 
+(def new-piece-coord [0 1])
 
 (defn set-cell-labels [grid]
   (map-indexed
@@ -33,7 +34,7 @@
 (defn add-new-piece [db]
   (let [grid (-> db :game-state :grid)
         updated-grid
-        (update-in grid [0 2] ;; TODO un-hardcode this
+        (update-in grid new-piece-coord
           (fn [cell]
             (assoc cell :falling true)))
         updated-db
@@ -48,22 +49,30 @@
    (not (:occupied cell))
    (not (:falling cell))))
 
-(comment
-  (nth [[0 1 2]] 0))
+(defn can-move-down? [grid cell]
+  (let [cell-y (:y cell)
+        cell-x (:x cell)
+        next-y (+ 1 cell-y)]
+     (and
+       (> grid-height next-y)
+       (cell-empty? (get-cell grid cell-x next-y)))))
+
+(defn can-add-new? [grid]
+  (let [[y x] new-piece-coord
+        cell (get-cell grid x y)]
+    (or
+     (cell-empty? cell)
+     (can-move-down? grid cell))))
 
 (defn move-piece-down [db]
   (let [grid (-> db :game-state :grid)
         all-cells (flatten grid)
         falling-piece (first (filter :falling all-cells))
-        _ (println falling-piece)
         current-y (:y falling-piece)
         current-x (:x falling-piece)
-        next-y (+ 1 current-y)
-        can-move-down? (and
-                        (> grid-height next-y)
-                        (cell-empty? (get-cell grid current-x next-y)))]
+        next-y (+ 1 current-y)]
     (if
-      can-move-down?
+      (can-move-down? grid falling-piece)
       (let [updated-grid
             (update-in
              grid
@@ -90,16 +99,17 @@
                    (assoc :occupied true))))
             updated-db
             (assoc-in db [:game-state :grid] updated-grid)]
-        (println "can't move down")
         updated-db))))
 
 (defn step-falling [db]
   (let [grid (-> db :game-state :grid)
         all-cells (flatten grid)
-        falling-piece? (seq (filter :falling all-cells))]
-    (println falling-piece?)
+        falling-piece? (seq (filter :falling all-cells))
+        gameover? (not (can-add-new? grid))]
     (cond
-      ;; TODO lose condition if a new piece can't be added
+      ;; gameover? (assoc db :gameover true)
+      gameover? (assoc db :game-state initial-game-state)
+
       falling-piece?
       (move-piece-down db)
 
@@ -159,6 +169,12 @@
  (fn [db]
    (:game-state db)))
 
+(rf/reg-sub
+ ::gameover?
+ :<- [::tetris-db]
+ (fn [db]
+   (:gameover db)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Views
 
@@ -177,12 +193,14 @@
   ""])
 
 (defn stage []
-  (let [game-state @(rf/subscribe [::game-state])]
+  (let [game-state @(rf/subscribe [::game-state])
+        gameover? @(rf/subscribe [::gameover?])]
    [:div
-    (for [row (:grid game-state)]
-      ^{:key (str (random-uuid))}
-      [:div
-       {:style {:display "flex"}}
-       (for [cell-state row]
-        (cell cell-state))])]))
+    (if gameover? "GAMEOVER"
+     (for [row (:grid game-state)]
+       ^{:key (str (random-uuid))}
+       [:div
+        {:style {:display "flex"}}
+        (for [cell-state row]
+         (cell cell-state))]))]))
 
