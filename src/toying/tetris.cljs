@@ -32,15 +32,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game functions
 
-(defn add-new-piece [db]
-  (let [grid (-> db :game-state :grid)
-        updated-grid
-        (update-in grid new-piece-coord
-          (fn [cell]
-            (assoc cell :falling true)))
-        updated-db
-        (assoc-in db [:game-state :grid] updated-grid)]
-    updated-db))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell predicates and helpers
 
 (defn get-cell [grid x y]
   (-> grid (nth y) (nth x)))
@@ -76,15 +69,19 @@
      (cell-empty? cell)
      (can-move-down? grid cell))))
 
-(defn move-piece-down [db]
-  (let [grid (-> db :game-state :grid)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Move piece
+
+(defn move-piece [direction tetris-db]
+  (let [grid (-> tetris-db :game-state :grid)
         all-cells (flatten grid)
         falling-piece (first (filter :falling all-cells))
         current-y (:y falling-piece)
         current-x (:x falling-piece)
-        next-y (+ 1 current-y)]
-    (if
-      (can-move? :down grid falling-piece)
+        next-x (+ (case direction :left -1 :right 1 0) current-x)
+        next-y (if (= :down direction) (+ 1 current-y) current-y)]
+    (cond
+      (can-move? direction grid falling-piece)
       (let [updated-grid
             (update-in
              grid
@@ -94,13 +91,14 @@
             updated-grid
             (update-in
              updated-grid
-             [next-y current-x]
+             [next-y next-x]
              (fn [cell]
                 (assoc cell :falling true)))
             updated-db
-            (assoc-in db [:game-state :grid] updated-grid)]
+            (assoc-in tetris-db [:game-state :grid] updated-grid)]
         updated-db)
 
+      (= direction :down)
       (let [updated-grid
             (update-in
              grid
@@ -110,8 +108,24 @@
                    (dissoc :falling)
                    (assoc :occupied true))))
             updated-db
-            (assoc-in db [:game-state :grid] updated-grid)]
-        updated-db))))
+            (assoc-in tetris-db [:game-state :grid] updated-grid)]
+        updated-db)
+
+      true tetris-db)))
+
+
+(defn add-new-piece [db]
+  (let [grid (-> db :game-state :grid)
+        updated-grid
+        (update-in grid new-piece-coord
+          (fn [cell]
+            (assoc cell :falling true)))
+        updated-db
+        (assoc-in db [:game-state :grid] updated-grid)]
+    updated-db))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Game tick/steps functions
 
 (defn step-falling [db]
   (let [grid (-> db :game-state :grid)
@@ -123,7 +137,7 @@
       gameover? (assoc db :game-state initial-game-state)
 
       falling-piece?
-      (move-piece-down db)
+      (move-piece :down db)
 
       (not falling-piece?)
       (add-new-piece db)
@@ -136,34 +150,6 @@
       :falling (step-falling db)
       nil (step-falling db))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Move piece
-
-(defn move-piece [direction tetris-db]
-  (let [grid (-> tetris-db :game-state :grid)
-        all-cells (flatten grid)
-        falling-piece (first (filter :falling all-cells))
-        current-y (:y falling-piece)
-        current-x (:x falling-piece)
-        next-x (+ (case direction :left -1 :right 1) current-x)]
-    (if
-      (can-move? direction grid falling-piece)
-      (let [updated-grid
-            (update-in
-             grid
-             [current-y current-x]
-             (fn [cell]
-                (dissoc cell :falling)))
-            updated-grid
-            (update-in
-             updated-grid
-             [current-y next-x]
-             (fn [cell]
-                (assoc cell :falling true)))
-            updated-db
-            (assoc-in tetris-db [:game-state :grid] updated-grid)]
-        updated-db)
-      tetris-db)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DB
@@ -211,13 +197,23 @@
                  [{:keyCode 72}]] ;; h key
                 [[:right-pressed]
                  [{:keyCode 39}] ;;right arrow
-                 [{:keyCode 76}]]]}]) ;; l key
+                 [{:keyCode 76}]] ;; l key
+                [[:down-pressed]
+                 [{:keyCode 38}] ;; down arrow
+                 [{:keyCode 74}]]]}]) ;; j key
 
 (rf/reg-event-fx
  :left-pressed
  (fn [{:keys [db]} _ _]
    (let [tetris-db (::tetris db)
          updated-tetris-db (move-piece :left tetris-db)]
+    {:db (assoc db ::tetris updated-tetris-db)})))
+
+(rf/reg-event-fx
+ :down-pressed
+ (fn [{:keys [db]} _ _]
+   (let [tetris-db (::tetris db)
+         updated-tetris-db (move-piece :down tetris-db)]
     {:db (assoc db ::tetris updated-tetris-db)})))
 
 (rf/reg-event-fx
