@@ -71,12 +71,44 @@
      (cell-empty? cell)
      (can-move? :down grid cell))))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Move piece
+;; Updating cells
 
-(defn move-piece [tetris-db direction]
-  (let [grid (-> tetris-db :game-state :grid)
+(defn update-cell
+  "Applies the passed function to the cell at the specified coords."
+  [db x y f]
+  (let [grid (-> db :game-state :grid)
+        updated (update-in grid [y x] f)]
+     (assoc-in db [:game-state :grid] updated)))
+
+(defn mark-cell-occupied
+  "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.
+  Returns an updated tetris-db."
+  [db x y]
+  (update-cell db x y
+               #(-> %
+                  (assoc :occupied true)
+                  (dissoc :falling))))
+
+(defn mark-cell-falling
+  "Marks the passed cell (x, y) as falling.
+  Returns an updated tetris-db."
+  [db x y]
+  (update-cell db x y #(assoc % :falling true)))
+
+(defn unmark-cell-falling
+  "Removes :falling key from the passed cell (x, y).
+  Returns an updated tetris-db."
+  [db x y]
+  (update-cell db x y #(dissoc % :falling)))
+
+(defn move-piece
+  "Moves floating pieces in the direction passed.
+  If pieces try to move down but are blocked, they are locked in place (with an
+  :occupied flag).
+  "
+  [db direction]
+  (let [grid (-> db :game-state :grid)
         all-cells (flatten grid)
         falling-piece (first (filter :falling all-cells))
         current-y (:y falling-piece)
@@ -85,38 +117,16 @@
         next-y (if (= :down direction) (+ 1 current-y) current-y)]
     (cond
       (can-move? direction grid falling-piece)
-      (let [updated-grid
-            (update-in
-             grid
-             [current-y current-x]
-             (fn [cell]
-                (dissoc cell :falling)))
-            updated-grid
-            (update-in
-             updated-grid
-             [next-y next-x]
-             (fn [cell]
-                (assoc cell :falling true)))
-            updated-db
-            (assoc-in tetris-db [:game-state :grid] updated-grid)]
-        updated-db)
+      (-> db
+        (unmark-cell-falling current-x current-y)
+        (mark-cell-falling next-x next-y))
 
       ;; if we try to move down but we can't, lock the piece in place
       (= direction :down)
-      (let [updated-grid
-            (update-in
-             grid
-             [current-y current-x]
-             (fn [cell]
-               (-> cell
-                   (dissoc :falling)
-                   (assoc :occupied true))))
-            updated-db
-            (assoc-in tetris-db [:game-state :grid] updated-grid)]
-        updated-db)
+      (mark-cell-occupied db current-x current-y)
 
       ;; otherwise just return the db
-      true tetris-db)))
+      true db)))
 
 
 (defn add-new-piece [db]
