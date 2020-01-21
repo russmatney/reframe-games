@@ -8,6 +8,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game constants
 
+(def grid-phantom-rows 4)
 (def grid-height 4)
 (def grid-width 7)
 
@@ -16,6 +17,13 @@
 (def three-cell-shape [{:x 1 :y 0}
                        {:x 2 :y 0}
                        {:x 3 :y 0}])
+(def two-cell-shape [{:x 3 :y -1}
+                     {:x 3 :y 0}])
+
+(def allowed-shapes
+    [single-cell-shape
+     two-cell-shape
+     three-cell-shape])
 
 
 (defn reset-cell-labels [grid]
@@ -25,7 +33,7 @@
      (vec
       (map-indexed
        (fn [x cell]
-        (assoc cell :y y :x x))
+        (assoc cell :y (- y grid-phantom-rows) :x x))
        row)))
     grid)))
 
@@ -34,7 +42,7 @@
 
 (defn build-grid []
   (reset-cell-labels
-    (take grid-height (repeat (build-row)))))
+    (take (+ grid-height grid-phantom-rows) (repeat (build-row)))))
 
 (def initial-game-state
   {:grid (build-grid)
@@ -47,35 +55,41 @@
   "Applies the passed function to the cell at the specified coords."
   [db x y f]
   (let [grid (-> db :game-state :grid)
-        updated (update-in grid [y x] f)]
+        updated (update-in grid [(+ grid-phantom-rows y) x] f)]
      (assoc-in db [:game-state :grid] updated)))
 
 (defn mark-cell-occupied
   "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.
   Returns an updated db."
-  [db x y]
-  (update-cell db x y
+  ([db [x y]]
+   (mark-cell-occupied db x y))
+  ([db x y]
+   (update-cell db x y
                #(-> %
                   (assoc :occupied true)
-                  (dissoc :falling))))
+                  (dissoc :falling)))))
 
 (defn mark-cell-falling
   "Marks the passed cell (x, y) as falling.
   Returns an updated db."
-  [db x y]
-  (update-cell db x y #(assoc % :falling true)))
+  ([db [x y]]
+   (mark-cell-falling db x y))
+  ([db x y]
+   (update-cell db x y #(assoc % :falling true))))
 
 (defn unmark-cell-falling
   "Removes :falling key from the passed cell (x, y).
   Returns an updated db."
-  [db x y]
-  (update-cell db x y #(dissoc % :falling)))
+  ([db [x y]]
+   (unmark-cell-falling db x y))
+  ([db x y]
+   (update-cell db x y #(dissoc % :falling))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Predicates and their helpers
 
 (defn get-cell [grid x y]
-  (-> grid (nth y) (nth x)))
+  (-> grid (nth (+ y grid-phantom-rows)) (nth x)))
 
 (defn cell-occupied? [cell]
    (:occupied cell))
@@ -131,7 +145,7 @@
 (defn gameover?
   "Returns true if no new pieces can be added.
   Needs to know what the next piece is, doesn't it?
-  TODO generate list of pieces to be added, pull in off the db here
+  TODO generate list of pieces to be added, pull from the db here
   "
   [db]
   (let [grid (-> db :game-state :grid)]
@@ -163,11 +177,9 @@
       ;; all falling pieces can move
       (empty? (remove #(can-move? direction grid %) falling-cells))
       ;; move all falling pieces in direction
-      (let [db (reduce
-                (fn [db [x y]] (unmark-cell-falling db x y))
-                db coords-to-unmark)]
-        (reduce (fn [db [x y]] (mark-cell-falling db x y))
-                db next-coords))
+      (as-> db db
+        (reduce unmark-cell-falling db coords-to-unmark)
+        (reduce mark-cell-falling db next-coords))
 
       ;; if we try to move down but we can't, lock all falling pieces in place
       (and
@@ -186,9 +198,7 @@
       true db)))
 
 (defn select-new-piece []
-  (rand-nth
-    [single-cell-shape
-     three-cell-shape]))
+  (rand-nth allowed-shapes))
 
 (defn add-new-piece
   "Adds a new cell to the grid.
@@ -321,6 +331,12 @@
    (:game-state db)))
 
 (rf/reg-sub
+ ::grid-for-display
+ :<- [::game-state]
+ (fn [game-state]
+   (filter (fn [row] (<= 0 (:y (first row)))) (:grid game-state))))
+
+(rf/reg-sub
  ::gameover?
  :<- [::tetris-db]
  (fn [db]
@@ -344,11 +360,11 @@
   ""])
 
 (defn stage []
-  (let [game-state @(rf/subscribe [::game-state])
+  (let [grid @(rf/subscribe [::grid-for-display])
         gameover? @(rf/subscribe [::gameover?])]
    [:div
     (if gameover? "GAMEOVER"
-     (for [row (:grid game-state)]
+     (for [row grid]
        ^{:key (str (random-uuid))}
        [:div
         {:style {:display "flex"}}
