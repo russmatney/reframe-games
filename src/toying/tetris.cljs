@@ -10,7 +10,7 @@
 (def grid-height 4)
 (def grid-width 7)
 
-(def new-piece-coord [0 3])
+(def new-piece-coord {:x 3 :y 0})
 
 
 (defn reset-cell-labels [grid]
@@ -36,10 +36,38 @@
    :phase :falling})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Game functions
+;; Updating cells
+
+(defn update-cell
+  "Applies the passed function to the cell at the specified coords."
+  [db x y f]
+  (let [grid (-> db :game-state :grid)
+        updated (update-in grid [y x] f)]
+     (assoc-in db [:game-state :grid] updated)))
+
+(defn mark-cell-occupied
+  "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.
+  Returns an updated db."
+  [db x y]
+  (update-cell db x y
+               #(-> %
+                  (assoc :occupied true)
+                  (dissoc :falling))))
+
+(defn mark-cell-falling
+  "Marks the passed cell (x, y) as falling.
+  Returns an updated db."
+  [db x y]
+  (update-cell db x y #(assoc % :falling true)))
+
+(defn unmark-cell-falling
+  "Removes :falling key from the passed cell (x, y).
+  Returns an updated db."
+  [db x y]
+  (update-cell db x y #(dissoc % :falling)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cell predicates and helpers
+;; Predicates and their helpers
 
 (defn get-cell [grid x y]
   (-> grid (nth y) (nth x)))
@@ -65,79 +93,11 @@
       (cell-empty? (get-cell grid next-x next-y)))))
 
 (defn can-add-new? [grid]
-  (let [[y x] new-piece-coord
+  (let [{:keys [y x]} new-piece-coord
         cell (get-cell grid x y)]
     (or
      (cell-empty? cell)
      (can-move? :down grid cell))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Updating cells
-
-(defn update-cell
-  "Applies the passed function to the cell at the specified coords."
-  [db x y f]
-  (let [grid (-> db :game-state :grid)
-        updated (update-in grid [y x] f)]
-     (assoc-in db [:game-state :grid] updated)))
-
-(defn mark-cell-occupied
-  "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.
-  Returns an updated tetris-db."
-  [db x y]
-  (update-cell db x y
-               #(-> %
-                  (assoc :occupied true)
-                  (dissoc :falling))))
-
-(defn mark-cell-falling
-  "Marks the passed cell (x, y) as falling.
-  Returns an updated tetris-db."
-  [db x y]
-  (update-cell db x y #(assoc % :falling true)))
-
-(defn unmark-cell-falling
-  "Removes :falling key from the passed cell (x, y).
-  Returns an updated tetris-db."
-  [db x y]
-  (update-cell db x y #(dissoc % :falling)))
-
-(defn move-piece
-  "Moves floating pieces in the direction passed.
-  If pieces try to move down but are blocked, they are locked in place (with an
-  :occupied flag).
-  "
-  [db direction]
-  (let [grid (-> db :game-state :grid)
-        all-cells (flatten grid)
-        falling-piece (first (filter :falling all-cells))
-        current-y (:y falling-piece)
-        current-x (:x falling-piece)
-        next-x (+ (case direction :left -1 :right 1 0) current-x)
-        next-y (if (= :down direction) (+ 1 current-y) current-y)]
-    (cond
-      (can-move? direction grid falling-piece)
-      (-> db
-        (unmark-cell-falling current-x current-y)
-        (mark-cell-falling next-x next-y))
-
-      ;; if we try to move down but we can't, lock the piece in place
-      (= direction :down)
-      (mark-cell-occupied db current-x current-y)
-
-      ;; otherwise just return the db
-      true db)))
-
-
-(defn add-new-piece [db]
-  (let [grid (-> db :game-state :grid)
-        updated-grid
-        (update-in grid new-piece-coord
-          (fn [cell]
-            (assoc cell :falling true)))
-        updated-db
-        (assoc-in db [:game-state :grid] updated-grid)]
-    updated-db))
 
 (defn row-fully-occupied? [row]
    (= (count row)
@@ -158,12 +118,11 @@
         updated-grid (reset-cell-labels grid-with-new-rows)]
     (assoc-in db [:game-state :grid] updated-grid)))
 
-(defn falling-piece?
-  "Returns true if there is a falling piece anywhere in the grid."
+(defn any-falling?
+  "Returns true if there is a falling cell anywhere in the grid."
   [db]
   (let [grid (-> db :game-state :grid)
-        all-cells (flatten grid)
-        falling-piece? (seq (filter :falling all-cells))]
+        all-cells (flatten grid)]
    (seq (filter :falling all-cells))))
 
 (defn gameover?
@@ -171,6 +130,45 @@
   [db]
   (let [grid (-> db :game-state :grid)]
    (not (can-add-new? grid))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Updating the board
+
+(defn move-piece
+  "Moves a floating cell in the direction passed.
+  If pieces try to move down but are blocked, they are locked in place (with an
+  :occupied flag).
+  "
+  [db direction]
+  (let [grid (-> db :game-state :grid)
+        all-cells (flatten grid)
+        first-falling-cell (first (filter :falling all-cells))
+        current-y (:y first-falling-cell)
+        current-x (:x first-falling-cell)
+        next-x (+ (case direction :left -1 :right 1 0) current-x)
+        next-y (if (= :down direction) (+ 1 current-y) current-y)]
+    (cond
+      (can-move? direction grid first-falling-cell)
+      (-> db
+        (unmark-cell-falling current-x current-y)
+        (mark-cell-falling next-x next-y))
+
+      ;; if we try to move down but we can't, lock the piece in place
+      (= direction :down)
+      (mark-cell-occupied db current-x current-y)
+
+      ;; otherwise just return the db
+      true db)))
+
+(defn add-new-piece
+  "Adds a new cell to the grid.
+  Does not care if there is room to add it!
+  Depends on the `new-piece-coord`.
+  "
+  [db]
+  (let [{:keys [y x]} new-piece-coord]
+    (mark-cell-falling db x y)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions
@@ -186,11 +184,11 @@
     (clear-full-rows db)
 
     ;; a piece is falling, move it down
-    (falling-piece? db)
+    (any-falling? db)
     (move-piece db :down)
 
     ;; nothing is falling, add a new piece
-    (not (falling-piece? db))
+    (not (any-falling? db))
     (add-new-piece db)
 
     ;; do nothing
