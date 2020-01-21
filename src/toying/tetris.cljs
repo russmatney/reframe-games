@@ -12,6 +12,10 @@
 (def grid-width 7)
 
 (def new-piece-coord {:x 3 :y 0})
+(def single-cell-shape [new-piece-coord])
+(def three-cell-shape [{:x 1 :y 0}
+                       {:x 2 :y 0}
+                       {:x 3 :y 0}])
 
 
 (defn reset-cell-labels [grid]
@@ -95,7 +99,7 @@
   (let [{:keys [y x]} new-piece-coord
         entry-cell (get-cell grid x y)]
     (or
-     (cell-occupied? entry-cell)
+     (not (cell-occupied? entry-cell))
      (can-move? :down grid entry-cell))))
 
 (defn row-fully-occupied? [row]
@@ -125,7 +129,10 @@
    (seq (filter :falling all-cells))))
 
 (defn gameover?
-  "Returns true if no new pieces can be added."
+  "Returns true if no new pieces can be added.
+  Needs to know what the next piece is, doesn't it?
+  TODO generate list of pieces to be added, pull in off the db here
+  "
   [db]
   (let [grid (-> db :game-state :grid)]
    (not (can-add-new? grid))))
@@ -169,7 +176,7 @@
        ;; any falling cells?
        falling-cells
        ;; any falling cells that can't move down?
-       ;; i.e. (with occupied cells below them?)
+       ;; i.e. with occupied cells below them
        (seq (remove #(can-move? :down grid %) falling-cells)))
       ;; mark all cells
       (reduce (fn [db cell] (mark-cell-occupied db (:x cell) (:y cell)))
@@ -178,14 +185,23 @@
       ;; otherwise just return the db
       true db)))
 
+(defn select-new-piece []
+  (rand-nth
+    [single-cell-shape
+     three-cell-shape]))
+
 (defn add-new-piece
   "Adds a new cell to the grid.
   Does not care if there is room to add it!
   Depends on the `new-piece-coord`.
   "
   [db]
-  (let [{:keys [y x]} new-piece-coord]
-    (mark-cell-falling db x y)))
+  (let [new-piece-coords (select-new-piece)]
+    (reduce
+     (fn [db {:keys [x y]}]
+       (mark-cell-falling db x y))
+     db
+     new-piece-coords)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions
