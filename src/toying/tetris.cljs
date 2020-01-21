@@ -12,21 +12,27 @@
 
 (def new-piece-coord [0 1])
 
-(defn set-cell-labels [grid]
-  (map-indexed
-   (fn [y row]
-    (vec
-     (map-indexed
-      (fn [x cell]
-       (assoc cell :y y :x x))
-      row)))
-   grid))
+
+(defn reset-cell-labels [grid]
+  (vec
+   (map-indexed
+    (fn [y row]
+     (vec
+      (map-indexed
+       (fn [x cell]
+        (assoc cell :y y :x x))
+       row)))
+    grid)))
+
+(defn build-row []
+  (vec (take grid-width (repeat {}))))
+
+(defn build-grid []
+  (reset-cell-labels
+    (take grid-height (repeat (build-row)))))
 
 (def initial-game-state
-  {:grid
-   (vec
-    (set-cell-labels
-     (take grid-height (repeat (vec (take grid-width (repeat {})))))))
+  {:grid (build-grid)
    :phase :falling})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -124,6 +130,31 @@
         (assoc-in db [:game-state :grid] updated-grid)]
     updated-db))
 
+(defn row-fully-occupied? [row]
+   (= (count row)
+      (count (seq (filter :occupied row)))))
+
+(defn pieces-to-clear? [db]
+  (let [grid (-> db :game-state :grid)]
+    (seq (filter row-fully-occupied? grid))))
+
+(defn clear-full-rows [db]
+  (let [grid (-> db :game-state :grid)
+        cleared-grid (seq (remove row-fully-occupied? grid))
+        rows-to-add (- grid-height (count cleared-grid))
+        new-rows (take rows-to-add (repeat (build-row)))
+        grid-with-new-rows (concat new-rows cleared-grid)
+        updated-grid (reset-cell-labels grid-with-new-rows)]
+    (assoc-in db [:game-state :grid] updated-grid)))
+
+(comment
+  (reduce + 1 [1 2 3])
+
+  (reduce (fn [[n acc]]
+            [(concat n acc)])
+          [0 []]
+          [1 2 3]))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions
 
@@ -135,6 +166,9 @@
     (cond
       ;; gameover? (assoc db :gameover true)
       gameover? (assoc db :game-state initial-game-state)
+
+      (pieces-to-clear? db)
+      (clear-full-rows db)
 
       falling-piece?
       (move-piece :down db)
