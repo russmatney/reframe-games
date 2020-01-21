@@ -1,8 +1,9 @@
 (ns toying.tetris
- (:require
-  [re-frame.core :as rf]
-  [re-pressed.core :as rp]
-  [toying.events :as evts]))
+  (:require
+   [re-frame.core :as rf]
+   [re-pressed.core :as rp]
+   [toying.events :as evts]
+   [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game constants
@@ -72,10 +73,8 @@
 (defn get-cell [grid x y]
   (-> grid (nth y) (nth x)))
 
-(defn cell-empty? [cell]
-  (and
-   (not (:occupied cell))
-   (not (:falling cell))))
+(defn cell-occupied? [cell]
+   (:occupied cell))
 
 (defn can-move? [direction grid cell]
   (let [cell-y (:y cell)
@@ -90,14 +89,14 @@
            (or (= direction :right) (= direction :left))
            (> grid-width next-x)
            (>= next-x 0)))
-      (cell-empty? (get-cell grid next-x next-y)))))
+      (not (cell-occupied? (get-cell grid next-x next-y))))))
 
 (defn can-add-new? [grid]
   (let [{:keys [y x]} new-piece-coord
-        cell (get-cell grid x y)]
+        entry-cell (get-cell grid x y)]
     (or
-     (cell-empty? cell)
-     (can-move? :down grid cell))))
+     (cell-occupied? entry-cell)
+     (can-move? :down grid entry-cell))))
 
 (defn row-fully-occupied? [row]
    (= (count row)
@@ -143,20 +142,38 @@
   [db direction]
   (let [grid (-> db :game-state :grid)
         all-cells (flatten grid)
-        first-falling-cell (first (filter :falling all-cells))
-        current-y (:y first-falling-cell)
-        current-x (:x first-falling-cell)
-        next-x (+ (case direction :left -1 :right 1 0) current-x)
-        next-y (if (= :down direction) (+ 1 current-y) current-y)]
+        falling-cells (seq (filter :falling all-cells))
+        current-coords (set (map (fn [{:keys [x y]}] [x y]) falling-cells))
+        x-diff (case direction :left -1 :right 1 0)
+        y-diff (case direction :down 1 0)
+        next-coords (set
+                     (map (fn [[x y]]
+                           [(+ x x-diff)
+                            (+ y y-diff)])
+                          current-coords))
+        coords-to-unmark (set/difference current-coords next-coords)]
     (cond
-      (can-move? direction grid first-falling-cell)
-      (-> db
-        (unmark-cell-falling current-x current-y)
-        (mark-cell-falling next-x next-y))
+      ;; all falling pieces can move
+      (empty? (remove #(can-move? direction grid %) falling-cells))
+      ;; move all falling pieces in direction
+      (let [db (reduce
+                (fn [db [x y]] (unmark-cell-falling db x y))
+                db coords-to-unmark)]
+        (reduce (fn [db [x y]] (mark-cell-falling db x y))
+                db next-coords))
 
-      ;; if we try to move down but we can't, lock the piece in place
-      (= direction :down)
-      (mark-cell-occupied db current-x current-y)
+      ;; if we try to move down but we can't, lock all falling pieces in place
+      (and
+       ;; down-only
+       (= direction :down)
+       ;; any falling cells?
+       falling-cells
+       ;; any falling cells that can't move down?
+       ;; i.e. (with occupied cells below them?)
+       (seq (remove #(can-move? :down grid %) falling-cells)))
+      ;; mark all cells
+      (reduce (fn [db cell] (mark-cell-occupied db (:x cell) (:y cell)))
+              db falling-cells)
 
       ;; otherwise just return the db
       true db)))
