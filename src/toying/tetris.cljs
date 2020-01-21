@@ -75,7 +75,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move piece
 
-(defn move-piece [direction tetris-db]
+(defn move-piece [tetris-db direction]
   (let [grid (-> tetris-db :game-state :grid)
         all-cells (flatten grid)
         falling-piece (first (filter :falling all-cells))
@@ -101,6 +101,7 @@
             (assoc-in tetris-db [:game-state :grid] updated-grid)]
         updated-db)
 
+      ;; if we try to move down but we can't, lock the piece in place
       (= direction :down)
       (let [updated-grid
             (update-in
@@ -114,6 +115,7 @@
             (assoc-in tetris-db [:game-state :grid] updated-grid)]
         updated-db)
 
+      ;; otherwise just return the db
       true tetris-db)))
 
 
@@ -131,7 +133,9 @@
    (= (count row)
       (count (seq (filter :occupied row)))))
 
-(defn pieces-to-clear? [db]
+(defn rows-to-clear?
+  "Returns true if there are rows to be removed from the board."
+  [db]
   (let [grid (-> db :game-state :grid)]
     (seq (filter row-fully-occupied? grid))))
 
@@ -144,36 +148,43 @@
         updated-grid (reset-cell-labels grid-with-new-rows)]
     (assoc-in db [:game-state :grid] updated-grid)))
 
-(comment
-  (reduce + 1 [1 2 3])
+(defn falling-piece?
+  "Returns true if there is a falling piece anywhere in the grid."
+  [db]
+  (let [grid (-> db :game-state :grid)
+        all-cells (flatten grid)
+        falling-piece? (seq (filter :falling all-cells))]
+   (seq (filter :falling all-cells))))
 
-  (reduce (fn [[n acc]]
-            [(concat n acc)])
-          [0 []]
-          [1 2 3]))
+(defn gameover?
+  "Returns true if no new pieces can be added."
+  [db]
+  (let [grid (-> db :game-state :grid)]
+   (not (can-add-new? grid))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions
 
 (defn step-falling [db]
-  (let [grid (-> db :game-state :grid)
-        all-cells (flatten grid)
-        falling-piece? (seq (filter :falling all-cells))
-        gameover? (not (can-add-new? grid))]
-    (cond
-      ;; gameover? (assoc db :gameover true)
-      gameover? (assoc db :game-state initial-game-state)
+  (cond
+    ;; game is over, update db and return
+    ;;(gameover? db) (assoc db :gameover true) ;; or :phase :gameover?
+    (gameover? db) (assoc db :game-state initial-game-state)
 
-      (pieces-to-clear? db)
-      (clear-full-rows db)
+    ;; clear pieces, update db and return
+    (rows-to-clear? db) ;; animation?
+    (clear-full-rows db)
 
-      falling-piece?
-      (move-piece :down db)
+    ;; a piece is falling, move it down
+    (falling-piece? db)
+    (move-piece db :down)
 
-      (not falling-piece?)
-      (add-new-piece db)
+    ;; nothing is falling, add a new piece
+    (not (falling-piece? db))
+    (add-new-piece db)
 
-      true db)))
+    ;; do nothing
+    true db))
 
 (defn step [db]
   (let [phase (:game-phase db)]
@@ -237,21 +248,21 @@
  :left-pressed
  (fn [{:keys [db]} _ _]
    (let [tetris-db (::tetris db)
-         updated-tetris-db (move-piece :left tetris-db)]
-    {:db (assoc db ::tetris updated-tetris-db)})))
-
-(rf/reg-event-fx
- :down-pressed
- (fn [{:keys [db]} _ _]
-   (let [tetris-db (::tetris db)
-         updated-tetris-db (move-piece :down tetris-db)]
+         updated-tetris-db (move-piece tetris-db :left)]
     {:db (assoc db ::tetris updated-tetris-db)})))
 
 (rf/reg-event-fx
  :right-pressed
  (fn [{:keys [db]} _ _]
    (let [tetris-db (::tetris db)
-         updated-tetris-db (move-piece :right tetris-db)]
+         updated-tetris-db (move-piece tetris-db :right)]
+    {:db (assoc db ::tetris updated-tetris-db)})))
+
+(rf/reg-event-fx
+ :down-pressed
+ (fn [{:keys [db]} _ _]
+   (let [tetris-db (::tetris db)
+         updated-tetris-db (move-piece tetris-db :down)]
     {:db (assoc db ::tetris updated-tetris-db)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
