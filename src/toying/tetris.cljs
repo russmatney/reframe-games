@@ -7,10 +7,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game constants
 
-(def grid-height 5)
-(def grid-width 3)
+(def grid-height 4)
+(def grid-width 7)
 
-(def new-piece-coord [0 1])
+(def new-piece-coord [0 3])
 
 
 (defn reset-cell-labels [grid]
@@ -49,31 +49,28 @@
    (not (:occupied cell))
    (not (:falling cell))))
 
-(defn can-move-down? [grid cell]
+(defn can-move? [direction grid cell]
   (let [cell-y (:y cell)
         cell-x (:x cell)
-        next-y (+ 1 cell-y)]
+        next-x (+ (case direction :right 1 :left -1 0) cell-x)
+        next-y (+ (case direction :down 1 0) cell-y)]
      (and
-       (> grid-height next-y)
-       (cell-empty? (get-cell grid cell-x next-y)))))
-
-(defn can-move? [direction grid cell]
-  (case direction
-    :down (can-move-down? grid cell)
-    (let [cell-y (:y cell)
-          cell-x (:x cell)
-          next-x (+ (case direction :right 1 :left -1) cell-x)]
-       (and
-         (> grid-width next-x)
-         (>= next-x 0)
-         (cell-empty? (get-cell grid next-x cell-y))))))
+      (or (and
+           (= direction :down)
+           (> grid-height next-y))
+          (and
+           (or (= direction :right) (= direction :left))
+           (> grid-width next-x)
+           (>= next-x 0)))
+      (cell-empty? (get-cell grid next-x next-y)))))
 
 (defn can-add-new? [grid]
   (let [[y x] new-piece-coord
         cell (get-cell grid x y)]
     (or
      (cell-empty? cell)
-     (can-move-down? grid cell))))
+     (can-move? :down grid cell))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move piece
