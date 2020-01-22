@@ -2,6 +2,7 @@
   (:require
    [reagent.core :as reagent]
    [toying.views :as views]
+   [toying.events :as events]
    [re-frame.core :as rf]
    [re-pressed.core :as rp]))
 
@@ -22,4 +23,15 @@
   (mount-root)
 
   ;; set a listener for keydown events
-  (rf/dispatch-sync [::rp/add-keyboard-event-listener "keydown"]))
+  (rf/dispatch-sync [::rp/add-keyboard-event-listener "keydown"])
+
+  ;; initialize db
+  (rf/dispatch-sync [::events/init-db])
+
+  ;; start the game
+  (rf/dispatch-sync [::events/game-tick]))
+
+
+(comment
+  (rf/dispatch-sync [::events/pause-game])
+  (rf/dispatch-sync [::events/game-tick]))

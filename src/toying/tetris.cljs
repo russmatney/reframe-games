@@ -2,7 +2,6 @@
   (:require
    [re-frame.core :as rf]
    [re-pressed.core :as rp]
-   [toying.events :as evts]
    [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,14 +23,10 @@
                   {:x 3 :y -1}])
 
 (def allowed-shapes
-  [angle-shape])
-  ;; [two-cell-shape
-  ;;  three-cell-shape]])
-  ;; [single-cell-shape
-  ;;  two-cell-shape
-  ;;  angle-shape
-  ;;  three-cell-shape])
-
+  [single-cell-shape
+   two-cell-shape
+   angle-shape
+   three-cell-shape])
 
 (defn reset-cell-labels [grid]
   (vec
@@ -370,85 +365,12 @@
   {:game-state initial-game-state})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Events
-
-;; init
-(rf/reg-event-db
- ::init-db
- (fn [db]
-   (assoc db ::tetris initial-db)))
-
-;; this is not quite right, but meh for now
-(rf/dispatch-sync [::init-db])
-
-
-;; game-tick
-(rf/reg-event-fx
- ::game-tick
- (fn [{:keys [db]}]
-   (let [tetris-db (::tetris db)
-         updated-tetris-db (step tetris-db)]
-    {:db (assoc db ::tetris updated-tetris-db)
-     :timeout {:id ::tick
-               :event [::game-tick]
-               :time 1000}})))
-
-(rf/dispatch-sync [::game-tick])
-
-
-;; keypresses
-(rf/dispatch
- [::rp/set-keydown-rules
-  {;; takes a collection of events followed by key combos that can trigger the event
-   :event-keys [[[:enter-pressed]
-                 [{:keyCode 13}]] ;; enter key
-                [[:left-pressed]
-                 [{:keyCode 37}] ;; left arrow
-                 [{:keyCode 72}]] ;; h key
-                [[:right-pressed]
-                 [{:keyCode 39}] ;;right arrow
-                 [{:keyCode 76}]] ;; l key
-                [[:down-pressed]
-                 [{:keyCode 38}] ;; down arrow
-                 [{:keyCode 74}]] ;; j key
-                [[:space-pressed]
-                 [{:keyCode 32}]]]}]) ;; space bar
-
-(rf/reg-event-fx
- :left-pressed
- (fn [{:keys [db]} _ _]
-   (let [tetris-db (::tetris db)
-         updated-tetris-db (move-piece tetris-db :left)]
-    {:db (assoc db ::tetris updated-tetris-db)})))
-
-(rf/reg-event-fx
- :right-pressed
- (fn [{:keys [db]} _ _]
-   (let [tetris-db (::tetris db)
-         updated-tetris-db (move-piece tetris-db :right)]
-    {:db (assoc db ::tetris updated-tetris-db)})))
-
-(rf/reg-event-fx
- :down-pressed
- (fn [{:keys [db]} _ _]
-   (let [tetris-db (::tetris db)
-         updated-tetris-db (move-piece tetris-db :down)]
-    {:db (assoc db ::tetris updated-tetris-db)})))
-
-(rf/reg-event-fx
- :space-pressed
- (fn [{:keys [db]} _ _]
-   (let [tetris-db (::tetris db)
-         updated-tetris-db (rotate-piece tetris-db)]
-    {:db (assoc db ::tetris updated-tetris-db)})))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Subs
 
 (rf/reg-sub
  ::tetris-db
  (fn [db]
-   (::tetris db)))
+   (::db db)))
 
 (rf/reg-sub
  ::game-state
@@ -461,12 +383,6 @@
  :<- [::game-state]
  (fn [game-state]
    (filter (fn [row] (<= 0 (:y (first row)))) (:grid game-state))))
-
-(rf/reg-sub
- ::gameover?
- :<- [::tetris-db]
- (fn [db]
-   (:gameover db)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Views
@@ -489,14 +405,12 @@
      "")]))
 
 (defn stage []
-  (let [grid @(rf/subscribe [::grid-for-display])
-        gameover? @(rf/subscribe [::gameover?])]
+  (let [grid @(rf/subscribe [::grid-for-display])]
    [:div
-    (if gameover? "GAMEOVER"
      (for [row grid]
        ^{:key (str (random-uuid))}
        [:div
         {:style {:display "flex"}}
         (for [cell-state row]
-         (cell cell-state))]))]))
+         (cell cell-state))])]))
 
