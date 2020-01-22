@@ -15,15 +15,16 @@
 (def new-piece-coord {:x 3 :y 0})
 (def single-cell-shape [new-piece-coord])
 (def three-cell-shape [{:x 1 :y 0}
-                       {:x 2 :y 0}
+                       {:x 2 :y 0 :anchor true}
                        {:x 3 :y 0}])
-(def two-cell-shape [{:x 3 :y -1}
+(def two-cell-shape [{:x 3 :y -1 :anchor true}
                      {:x 3 :y 0}])
 
 (def allowed-shapes
-    [single-cell-shape
-     two-cell-shape
-     three-cell-shape])
+    [two-cell-shape])
+    ;; [single-cell-shape
+    ;;  two-cell-shape
+    ;;  three-cell-shape])
 
 
 (defn reset-cell-labels [grid]
@@ -53,17 +54,17 @@
 
 (defn update-cell
   "Applies the passed function to the cell at the specified coords."
-  [db x y f]
-  (let [grid (-> db :game-state :grid)
-        updated (update-in grid [(+ grid-phantom-rows y) x] f)]
-     (assoc-in db [:game-state :grid] updated)))
+  ([db cell f]
+   (update-cell db (:x cell) (:y cell) f))
+  ([db x y f]
+   (let [grid (-> db :game-state :grid)
+         updated (update-in grid [(+ grid-phantom-rows y) x] f)]
+      (assoc-in db [:game-state :grid] updated))))
 
 (defn mark-cell-occupied
   "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.
   Returns an updated db."
-  ([db [x y]]
-   (mark-cell-occupied db x y))
-  ([db x y]
+  ([db {:keys [x y]}]
    (update-cell db x y
                #(-> %
                   (assoc :occupied true)
@@ -72,49 +73,67 @@
 (defn mark-cell-falling
   "Marks the passed cell (x, y) as falling.
   Returns an updated db."
-  ([db [x y]]
-   (mark-cell-falling db x y))
-  ([db x y]
+  ([db {:keys [x y]}]
    (update-cell db x y #(assoc % :falling true))))
 
 (defn unmark-cell-falling
   "Removes :falling key from the passed cell (x, y).
   Returns an updated db."
-  ([db [x y]]
+  ([db {:keys [x y]}]
    (unmark-cell-falling db x y))
   ([db x y]
    (update-cell db x y #(dissoc % :falling))))
 
+(defn get-cell
+  ([grid {:keys [x y]}]
+   (get-cell grid x y))
+  ([grid x y]
+   (-> grid (nth (+ y grid-phantom-rows)) (nth x))))
+
+(defn copy-to-cell
+  "Copies props from passed `cell` to `target`."
+  ([db cell target]
+   (let [grid (-> db :game-state :grid)
+         props (as-> cell c
+                   (get-cell grid c)
+                   (dissoc c :x :y :falling))]
+     (update-cell db target #(merge props %)))))
+
+(defn clear-cell-props
+  "Removes non-coordinate flags from cells."
+  ([db cell]
+   (update-cell db cell #(dissoc % :falling :anchor))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Predicates and their helpers
-
-(defn get-cell [grid x y]
-  (-> grid (nth (+ y grid-phantom-rows)) (nth x)))
 
 (defn cell-occupied? [cell]
    (:occupied cell))
 
-(defn can-move? [direction grid cell]
-  (let [cell-y (:y cell)
-        cell-x (:x cell)
-        next-x (+ (case direction :right 1 :left -1 0) cell-x)
-        next-y (+ (case direction :down 1 0) cell-y)]
+(defn can-move?
+  "Returns true if the indicated cell is not occupied or beyond the edge of the
+  grid.
+
+  Supports a cell and direction, or a coordinate
+
+  "
+  ([grid cell]
+   (can-move? grid cell nil))
+  ([grid {:keys [x y]} direction]
+   (let [next-x (+ (case direction :right 1 :left -1 0) x)
+         next-y (+ (case direction :down 1 0) y)]
      (and
-      (or (and
-           (= direction :down)
-           (> grid-height next-y))
-          (and
-           (or (= direction :right) (= direction :left))
-           (> grid-width next-x)
-           (>= next-x 0)))
-      (not (cell-occupied? (get-cell grid next-x next-y))))))
+      (> grid-height next-y)
+      (> grid-width next-x)
+      (>= next-x 0)
+      (not (cell-occupied? (get-cell grid next-x next-y)))))))
 
 (defn can-add-new? [grid]
   (let [{:keys [y x]} new-piece-coord
         entry-cell (get-cell grid x y)]
     (or
      (not (cell-occupied? entry-cell))
-     (can-move? :down grid entry-cell))))
+     (can-move? grid entry-cell :down))))
 
 (defn row-fully-occupied? [row]
    (= (count row)
@@ -155,27 +174,37 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Updating the board
 
+(defn get-falling-cells [db]
+  (let [grid (-> db :game-state :grid)
+        all-cells (flatten grid)]
+    (seq (filter :falling all-cells))))
+
+;; TODO consider move-cell and cell/grid apis
+;; could simplify all this
 (defn move-piece
   "Moves a floating cell in the direction passed.
   If pieces try to move down but are blocked, they are locked in place (with an
   :occupied flag).
+
+  TODO use copy-to-cell to copy cell props from a to b, and clear-cell on b
   "
   [db direction]
   (let [grid (-> db :game-state :grid)
-        all-cells (flatten grid)
-        falling-cells (seq (filter :falling all-cells))
-        current-coords (set (map (fn [{:keys [x y]}] [x y]) falling-cells))
+        falling-cells (get-falling-cells db)
+        current-coords (set (map (fn [{:keys [x y]}]
+                                   {:x x :y y})
+                                 falling-cells))
         x-diff (case direction :left -1 :right 1 0)
         y-diff (case direction :down 1 0)
         next-coords (set
-                     (map (fn [[x y]]
-                           [(+ x x-diff)
-                            (+ y y-diff)])
+                     (map (fn [{:keys [x y]}]
+                           {:x (+ x x-diff)
+                            :y (+ y y-diff)})
                           current-coords))
         coords-to-unmark (set/difference current-coords next-coords)]
     (cond
       ;; all falling pieces can move
-      (empty? (remove #(can-move? direction grid %) falling-cells))
+      (empty? (seq (remove #(can-move? grid % direction) falling-cells)))
       ;; move all falling pieces in direction
       (as-> db db
         (reduce unmark-cell-falling db coords-to-unmark)
@@ -189,9 +218,9 @@
        falling-cells
        ;; any falling cells that can't move down?
        ;; i.e. with occupied cells below them
-       (seq (remove #(can-move? :down grid %) falling-cells)))
+       (seq (remove #(can-move? grid % :down) falling-cells)))
       ;; mark all cells
-      (reduce (fn [db cell] (mark-cell-occupied db (:x cell) (:y cell)))
+      (reduce (fn [db cell] (mark-cell-occupied db cell))
               db falling-cells)
 
       ;; otherwise just return the db
@@ -206,12 +235,66 @@
   Depends on the `new-piece-coord`.
   "
   [db]
-  (let [new-piece-coords (select-new-piece)]
-    (reduce
-     (fn [db {:keys [x y]}]
-       (mark-cell-falling db x y))
-     db
-     new-piece-coords)))
+  (let [new-cells (select-new-piece)]
+     (reduce
+        (fn [db {:keys [x y] :as cell}]
+          (-> db
+           (mark-cell-falling cell)
+           (copy-to-cell cell {:x x :y y})))
+        db
+        new-cells)))
+
+(defn rotate-coord [[x y]]
+  [y (* -1 x)])
+
+(defn calc-diff [anchor-cell cell]
+  {:x (- (:x anchor-cell) (:x cell))
+   :y (- (:y anchor-cell) (:y cell))})
+
+(defn apply-diff [anchor-cell cell]
+  {:x (+ (:x anchor-cell) (:x cell))
+   :y (+ (:y anchor-cell) (:y cell))})
+
+(defn rotate-piece
+  "Rotates a falling piece in-place.
+  This requires one falling cell to be an 'anchor'.
+  The anchor stays in place - the other cells calc an x/y delta between
+  themselves and the anchor.
+
+  Maybe this rule works:
+  x1 = y0
+  y1 = -x0
+  "
+  [db]
+  (let [grid (-> db :game-state :grid)
+        falling-cells (get-falling-cells db)
+        anchor-cell (seq (filter :anchor falling-cells))]
+
+    (cond
+      ;; no anchor-cell, do nothing
+      (not anchor-cell)
+      db
+
+     true
+     (let [to-rotate (seq (remove :anchor falling-cells))
+           diffs (map #(calc-diff anchor-cell %) to-rotate)
+           diffs-to-rotate (set (map (fn [c] [(:x c) (:y c)]) diffs))
+           rotated-diffs (set (map rotate-coord diffs-to-rotate))
+           diffs-to-unmark
+           (set/difference diffs-to-rotate rotated-diffs)
+           rotated-coords (map #(apply-diff anchor-cell %) rotated-diffs)
+           coords-to-unmark (map #(apply-diff diffs-to-unmark %) diffs-to-unmark)]
+       (print "rotating!")
+       (cond
+         (seq (remove #(can-move? grid %) rotated-coords))
+         db
+
+         true
+         (as-> db db
+           ;; TODO do a proper copy cell here
+           (reduce unmark-cell-falling db coords-to-unmark)
+           (reduce mark-cell-falling db rotated-coords)))))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions
@@ -293,7 +376,9 @@
                  [{:keyCode 76}]] ;; l key
                 [[:down-pressed]
                  [{:keyCode 38}] ;; down arrow
-                 [{:keyCode 74}]]]}]) ;; j key
+                 [{:keyCode 74}]] ;; j key
+                [[:space-pressed]
+                 [{:keyCode 32}]]]}]) ;; space bar
 
 (rf/reg-event-fx
  :left-pressed
@@ -314,6 +399,13 @@
  (fn [{:keys [db]} _ _]
    (let [tetris-db (::tetris db)
          updated-tetris-db (move-piece tetris-db :down)]
+    {:db (assoc db ::tetris updated-tetris-db)})))
+
+(rf/reg-event-fx
+ :space-pressed
+ (fn [{:keys [db]} _ _]
+   (let [tetris-db (::tetris db)
+         updated-tetris-db (rotate-piece tetris-db)]
     {:db (assoc db ::tetris updated-tetris-db)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
