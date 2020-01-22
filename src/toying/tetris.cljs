@@ -397,8 +397,6 @@
 
 
 ;; keypresses
-(rf/dispatch-sync [::rp/add-keyboard-event-listener "keydown"])
-
 (rf/dispatch
  [::rp/set-keydown-rules
   {;; takes a collection of events followed by key combos that can trigger the event
