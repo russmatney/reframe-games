@@ -9,7 +9,7 @@
 ;; Game constants
 
 (def grid-phantom-rows 4)
-(def grid-height 4)
+(def grid-height 6)
 (def grid-width 7)
 
 (def new-piece-coord {:x 3 :y 0})
@@ -19,12 +19,18 @@
                        {:x 3 :y 0}])
 (def two-cell-shape [{:x 3 :y -1 :anchor true}
                      {:x 3 :y 0}])
+(def angle-shape [{:x 2 :y 0}
+                  {:x 3 :y 0 :anchor true}
+                  {:x 3 :y -1}])
 
 (def allowed-shapes
-    [two-cell-shape])
-    ;; [single-cell-shape
-    ;;  two-cell-shape
-    ;;  three-cell-shape])
+  [angle-shape])
+  ;; [two-cell-shape
+  ;;  three-cell-shape]])
+  ;; [single-cell-shape
+  ;;  two-cell-shape
+  ;;  angle-shape
+  ;;  three-cell-shape])
 
 
 (defn reset-cell-labels [grid]
@@ -90,19 +96,29 @@
   ([grid x y]
    (-> grid (nth (+ y grid-phantom-rows)) (nth x))))
 
-(defn copy-to-cell
-  "Copies props from passed `cell` to `target`."
-  ([db cell target]
-   (let [grid (-> db :game-state :grid)
-         props (as-> cell c
-                   (get-cell grid c)
-                   (dissoc c :x :y :falling))]
-     (update-cell db target #(merge props %)))))
+(defn overwrite-cell
+  "Copies all props from `cell` to `target`.
+  Looks up the cell in passed using coords to get the latest props before
+  copying.
+  Merges any new properies included on the passed `cell`.
+  "
+  [db {:keys [cell target]}]
+  (let [grid (-> db :game-state :grid)
+        props (dissoc cell :x :y)]
+    (update-cell db target
+                 (fn [target]
+                   (merge
+                    props
+                    {:x (:x target)
+                     :y (:y target)})))))
 
 (defn clear-cell-props
   "Removes non-coordinate flags from cells."
-  ([db cell]
-   (update-cell db cell #(dissoc % :falling :anchor))))
+  [db cell]
+  (update-cell db cell
+               (fn [c]
+                 {:x (:x c)
+                  :y (:y c)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Predicates and their helpers
@@ -112,11 +128,7 @@
 
 (defn can-move?
   "Returns true if the indicated cell is not occupied or beyond the edge of the
-  grid.
-
-  Supports a cell and direction, or a coordinate
-
-  "
+  grid."
   ([grid cell]
    (can-move? grid cell nil))
   ([grid {:keys [x y]} direction]
@@ -179,36 +191,41 @@
         all-cells (flatten grid)]
     (seq (filter :falling all-cells))))
 
+(defn move-cell [{:keys [x y]} direction]
+  (let [x-diff (case direction :left -1 :right 1 0)
+        y-diff (case direction :down 1 0)]
+     {:x (+ x x-diff)
+      :y (+ y y-diff)}))
+
 ;; TODO consider move-cell and cell/grid apis
 ;; could simplify all this
 (defn move-piece
   "Moves a floating cell in the direction passed.
   If pieces try to move down but are blocked, they are locked in place (with an
   :occupied flag).
-
-  TODO use copy-to-cell to copy cell props from a to b, and clear-cell on b
   "
   [db direction]
   (let [grid (-> db :game-state :grid)
         falling-cells (get-falling-cells db)
-        current-coords (set (map (fn [{:keys [x y]}]
+        current-cells (set (map (fn [{:keys [x y]}]
                                    {:x x :y y})
-                                 falling-cells))
-        x-diff (case direction :left -1 :right 1 0)
-        y-diff (case direction :down 1 0)
-        next-coords (set
-                     (map (fn [{:keys [x y]}]
-                           {:x (+ x x-diff)
-                            :y (+ y y-diff)})
-                          current-coords))
-        coords-to-unmark (set/difference current-coords next-coords)]
+                                falling-cells))
+        next-cells (set (map #(move-cell % direction) current-cells))
+        cells-to-clear (set/difference current-cells next-cells)
+
+        currents-and-targets (map
+                              (fn [c] {:cell (get-cell grid c)
+                                       :target (move-cell c direction)})
+                              current-cells)]
     (cond
       ;; all falling pieces can move
       (empty? (seq (remove #(can-move? grid % direction) falling-cells)))
       ;; move all falling pieces in direction
       (as-> db db
-        (reduce unmark-cell-falling db coords-to-unmark)
-        (reduce mark-cell-falling db next-coords))
+        ;; copy cells that are 'moving'
+        (reduce overwrite-cell db currents-and-targets)
+        ;; clear cells that were left
+        (reduce clear-cell-props db cells-to-clear))
 
       ;; if we try to move down but we can't, lock all falling pieces in place
       (and
@@ -239,13 +256,21 @@
      (reduce
         (fn [db {:keys [x y] :as cell}]
           (-> db
-           (mark-cell-falling cell)
-           (copy-to-cell cell {:x x :y y})))
+              ;; write props to cell
+              (overwrite-cell {:cell cell :target {:x x :y y}})
+              ;; mark falling
+              (mark-cell-falling cell)))
         db
         new-cells)))
 
-(defn rotate-coord [[x y]]
-  [y (* -1 x)])
+(defn rotate-diff
+  "
+  x1 = y0
+  y1 = -x0
+  "
+  [{:keys [x y] :as cell}]
+  {:x y
+   :y (* -1 x)})
 
 (defn calc-diff [anchor-cell cell]
   {:x (- (:x anchor-cell) (:x cell))
@@ -254,6 +279,13 @@
 (defn apply-diff [anchor-cell cell]
   {:x (+ (:x anchor-cell) (:x cell))
    :y (+ (:y anchor-cell) (:y cell))})
+
+(defn calc-rotate-target [anchor-cell cell]
+  (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))
+
+(defn cell->coords [c]
+  {:x (:x c)
+   :y (:y c)})
 
 (defn rotate-piece
   "Rotates a falling piece in-place.
@@ -268,7 +300,7 @@
   [db]
   (let [grid (-> db :game-state :grid)
         falling-cells (get-falling-cells db)
-        anchor-cell (seq (filter :anchor falling-cells))]
+        anchor-cell (first (filter :anchor falling-cells))]
 
     (cond
       ;; no anchor-cell, do nothing
@@ -277,23 +309,27 @@
 
      true
      (let [to-rotate (seq (remove :anchor falling-cells))
-           diffs (map #(calc-diff anchor-cell %) to-rotate)
-           diffs-to-rotate (set (map (fn [c] [(:x c) (:y c)]) diffs))
-           rotated-diffs (set (map rotate-coord diffs-to-rotate))
-           diffs-to-unmark
-           (set/difference diffs-to-rotate rotated-diffs)
-           rotated-coords (map #(apply-diff anchor-cell %) rotated-diffs)
-           coords-to-unmark (map #(apply-diff diffs-to-unmark %) diffs-to-unmark)]
-       (print "rotating!")
+           vals (map (fn [c] {:cell c
+                              :target (calc-rotate-target anchor-cell c)})
+                     to-rotate)
+           new-cells (set (map (fn [{:keys [target]}] (cell->coords target))
+                               vals))
+           old-cells (set (map cell->coords to-rotate))
+           cells-to-clear
+           (set/difference old-cells new-cells)
+
+           any-cant-move? (seq (remove (fn [c]
+                                         (can-move? grid c))
+                                       new-cells))]
        (cond
-         (seq (remove #(can-move? grid %) rotated-coords))
+         ;; at least one dest cell is not allowed
+         (seq (remove #(can-move? grid %) new-cells))
          db
 
          true
          (as-> db db
-           ;; TODO do a proper copy cell here
-           (reduce unmark-cell-falling db coords-to-unmark)
-           (reduce mark-cell-falling db rotated-coords)))))))
+           (reduce overwrite-cell db vals)
+           (reduce clear-cell-props db cells-to-clear)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -437,19 +473,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Views
 
-(defn cell [{:keys [falling occupied]}]
- ^{:key (str (random-uuid))}
- [:div
-  {:style
-   {:max-width "30px"
-    :max-height "30px"
-    :width "30px"
-    :height "30px"
-    :background (cond falling "coral"
-                      occupied "gray"
-                      true "powderblue")
-    :border "black solid 1px"}}
-  ""])
+(defn cell [{:keys [falling occupied] :as cell}]
+  (let [debug true]
+   ^{:key (str (random-uuid))}
+   [:div
+    {:style
+     {:max-width "80px"
+      :max-height "120px"
+      :width "80px"
+      :height "120px"
+      :background (cond falling "coral"
+                        occupied "gray"
+                        true "powderblue")
+      :border "black solid 1px"}}
+    (if debug
+     (str cell)
+     "")]))
 
 (defn stage []
   (let [grid @(rf/subscribe [::grid-for-display])
