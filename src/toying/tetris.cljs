@@ -160,7 +160,7 @@
 (defn clear-full-rows [db]
   (let [grid (-> db :game-state :grid)
         cleared-grid (seq (remove row-fully-occupied? grid))
-        rows-to-add (- grid-height (count cleared-grid))
+        rows-to-add (- (+ grid-height grid-phantom-rows) (count cleared-grid))
         new-rows (take rows-to-add (repeat (build-row)))
         grid-with-new-rows (concat new-rows cleared-grid)
         updated-grid (reset-cell-labels grid-with-new-rows)]
