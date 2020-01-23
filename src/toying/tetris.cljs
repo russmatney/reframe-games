@@ -179,7 +179,8 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Updating the board
+;; Moving pieces and cells
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-falling-cells [db]
   (let [grid (-> db :game-state :grid)
@@ -238,6 +239,10 @@
       ;; otherwise just return the db
       true db)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Adding new pieces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn select-new-piece []
   (rand-nth allowed-shapes))
 
@@ -258,11 +263,13 @@
         db
         new-cells)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rotating pieces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn rotate-diff
-  "
-  x1 = y0
-  y1 = -x0
-  "
+  "x1 = y0
+  y1 = -x0"
   [{:keys [x y] :as cell}]
   {:x y
    :y (* -1 x)})
@@ -278,9 +285,11 @@
 (defn calc-rotate-target [anchor-cell cell]
   (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))
 
-(defn cell->coords [c]
-  {:x (:x c)
-   :y (:y c)})
+(defn cell->coords
+  "Returns only the coords of a cell as :x and :y
+  Essentially drops the props.
+  Used to compare sets of cells."
+  [{:keys [x y]}] {:x x :y y})
 
 (defn rotate-piece
   "Rotates a falling piece in-place.
@@ -332,13 +341,13 @@
 
 (defn step-falling [db]
   (cond
-    ;; game is over, update db and return
-    ;;(gameover? db) (assoc db :gameover true) ;; or :phase :gameover?
-    (gameover? db) (assoc db :game-state initial-game-state)
-
     ;; clear pieces, update db and return
     (rows-to-clear? db) ;; animation?
     (clear-full-rows db)
+
+    ;; game is over, update db and return
+    ;;(gameover? db) (assoc db :gameover true) ;; or :phase :gameover?
+    (gameover? db) (assoc db :game-state initial-game-state)
 
     ;; a piece is falling, move it down
     (any-falling? db)
@@ -356,61 +365,4 @@
     (case phase
       :falling (step-falling db)
       nil (step-falling db))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; DB
-
-(def initial-db
-  {:game-state initial-game-state})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Subs
-
-(rf/reg-sub
- ::tetris-db
- (fn [db]
-   (::db db)))
-
-(rf/reg-sub
- ::game-state
- :<- [::tetris-db]
- (fn [db]
-   (:game-state db)))
-
-(rf/reg-sub
- ::grid-for-display
- :<- [::game-state]
- (fn [game-state]
-   (filter (fn [row] (<= 0 (:y (first row)))) (:grid game-state))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Views
-
-(defn cell [{:keys [falling occupied] :as cell}]
-  (let [debug true]
-   ^{:key (str (random-uuid))}
-   [:div
-    {:style
-     {:max-width "80px"
-      :max-height "120px"
-      :width "80px"
-      :height "120px"
-      :background (cond falling "coral"
-                        occupied "gray"
-                        true "powderblue")
-      :border "black solid 1px"}}
-    (if debug
-     (str cell)
-     "")]))
-
-(defn stage []
-  (let [grid @(rf/subscribe [::grid-for-display])]
-   [:div
-     (for [row grid]
-       ^{:key (str (random-uuid))}
-       [:div
-        {:style {:display "flex"}}
-        (for [cell-state row]
-         (cell cell-state))])]))
 
