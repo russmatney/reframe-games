@@ -62,6 +62,9 @@
                 [[:space-pressed]
                  [{:keyCode 32}]]]}]) ;; space bar
 
+;; TODO customize controls
+;; TODO support fast-drop
+
 (rf/reg-event-fx
  :left-pressed
  (fn [{:keys [db]} _ _]

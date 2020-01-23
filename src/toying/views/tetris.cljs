@@ -3,7 +3,9 @@
    [re-frame.core :as rf]
    [toying.subs :as subs]))
 
-;; TODO mvoe to toying.tetris.views?
+;; TODO move to toying.tetris.views?
+;; TODO show coming pieces
+;; TODO show score
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell

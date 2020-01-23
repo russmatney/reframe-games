@@ -139,9 +139,8 @@
   The anchor stays in place - the other cells calc an x/y delta between
   themselves and the anchor.
 
-  Maybe this rule works:
-  x1 = y0
-  y1 = -x0
+  TODO implement 'bumping' - rotations against walls/blocks should move the
+  piece over to create space, if possible.
   "
   [{:keys [grid] :as db}]
   (let [falling-cells (get-falling-cells db)
@@ -161,8 +160,8 @@
 
 (defn select-new-piece
   "Selects a random new piece."
-  [{:keys [allowed-shapes] :as db}]
-  (rand-nth allowed-shapes))
+  [{:keys [allowed-shapes-f entry-cell] :as db}]
+  (rand-nth (allowed-shapes-f entry-cell)))
 
 (defn add-new-piece
   "Adds a new cell to the grid.
