@@ -1,4 +1,4 @@
-(ns games.views.tetris
+(ns games.tetris.views
   (:require
    [re-frame.core :as rf]
    [games.subs :as subs]))
@@ -27,8 +27,8 @@
       :height height
       :background (cond falling "coral"
                         occupied "gray"
-                        true "powderblue")}}
-      ;:border "black solid 1px"}}
+                        true "powderblue")
+      :border "black solid 1px"}}
     (if debug
      (str cell)
      "")]))

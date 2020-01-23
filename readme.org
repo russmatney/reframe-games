@@ -9,3 +9,22 @@ these rows need to be added to the board and ignored/handled in the right places
 ** [ ] deploy to start getting feedback and feature ideas
 ** [ ] build up a puzzle? pixelated art?
 ** [ ] replay or highlights feature?
+* deployment
+#+BEGIN_SRC sh
+# from project root
+
+# build release version
+shadow-cljs release app
+
+# deploy to s3
+aws s3 sync public/ s3://games.russmatney.com
+#+END_SRC
+
+relies on aws cli tool:
+
+#+BEGIN_SRC zsh
+yay -S aws-cli
+
+# setup creds
+aws configure
+#+END_SRC
