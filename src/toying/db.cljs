@@ -1,11 +1,10 @@
 (ns toying.db
  (:require
-  [toying.tetris :as tetris]))
+  [toying.tetris.db :as tetris.db]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DB
 
 (def initial-db
-  {::tetris/db
-   {:game-state tetris/initial-game-state}})
+  {::tetris.db/db tetris.db/initial-db})

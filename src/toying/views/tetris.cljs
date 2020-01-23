@@ -3,6 +3,7 @@
    [re-frame.core :as rf]
    [toying.subs :as subs]))
 
+;; TODO mvoe to toying.tetris.views?
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell

@@ -3,7 +3,8 @@
   [reagent.core :as reagent]
   [re-frame.core :as rf]
   [re-pressed.core :as rp]
-  [toying.tetris :as tetris]
+  [toying.tetris.db :as tetris.db]
+  [toying.tetris.core :as tetris]
   [toying.db :as db]
   [toying.events.timeout]))
 
@@ -18,13 +19,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TODO move to toying.tetris.events
 
 (rf/reg-event-fx
  ::game-tick
  (fn [{:keys [db]}]
-   (let [tetris-db (::tetris/db db)
+   (let [tetris-db (::tetris.db/db db)
          updated-tetris-db (tetris/step tetris-db)]
-    {:db (assoc db ::tetris/db updated-tetris-db)
+    {:db (assoc db ::tetris.db/db updated-tetris-db)
      :timeout {:id ::tick
                :event [::game-tick]
                :time 1000}})))
@@ -65,7 +67,7 @@
  (fn [{:keys [db]} _ _]
    {:db
     (update db
-            ::tetris/db
+            ::tetris.db/db
             (fn [t-db]
               (tetris/move-piece t-db :left)))}))
 
@@ -74,7 +76,7 @@
  (fn [{:keys [db]} _ _]
    {:db
     (update db
-            ::tetris/db
+            ::tetris.db/db
             (fn [t-db]
               (tetris/move-piece t-db :right)))}))
 
@@ -83,7 +85,7 @@
  (fn [{:keys [db]} _ _]
    {:db
     (update db
-            ::tetris/db
+            ::tetris.db/db
             (fn [t-db]
               (tetris/move-piece t-db :down)))}))
 
@@ -92,15 +94,15 @@
  (fn [{:keys [db]} _ _]
    {:db
     (update db
-            ::tetris/db
+            ::tetris.db/db
             (fn [t-db]
               (tetris/rotate-piece t-db)))}))
 
 (rf/reg-event-fx
  :space-pressed
  (fn [{:keys [db]} _ _]
-   (let [paused (-> db ::tetris/db :paused?)
-         updated-db (update-in db [::tetris/db :paused?] not)]
+   (let [paused (-> db ::tetris.db/db :paused?)
+         updated-db (update-in db [::tetris.db/db :paused?] not)]
      (if paused
        {:dispatch [::game-tick]
         :db updated-db}

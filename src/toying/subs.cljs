@@ -1,26 +1,21 @@
 (ns toying.subs
   (:require
    [re-frame.core :as rf]
-   [toying.tetris :as tetris]))
+   [toying.tetris.db :as tetris.db]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Subs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TODO move these to toying.tetris.subs?
 
 (rf/reg-sub
  ::tetris-db
  (fn [db]
-   (::tetris/db db)))
-
-(rf/reg-sub
- ::game-state
- :<- [::tetris-db]
- (fn [db]
-   (:game-state db)))
+   (::tetris.db/db db)))
 
 (rf/reg-sub
  ::grid-for-display
- :<- [::game-state]
- (fn [game-state]
-   (filter (fn [row] (<= 0 (:y (first row)))) (:grid game-state))))
+ :<- [::tetris-db]
+ (fn [{:keys [grid]}]
+   (filter #(<= 0 (-> % (first) :y))) grid))
