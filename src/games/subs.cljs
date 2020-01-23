@@ -1,13 +1,13 @@
-(ns toying.subs
+(ns games.subs
   (:require
    [re-frame.core :as rf]
-   [toying.tetris.db :as tetris.db]))
+   [games.tetris.db :as tetris.db]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Subs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO move these to toying.tetris.subs?
+;; TODO move these to games.tetris.subs?
 
 (rf/reg-sub
  ::tetris-db

@@ -1,4 +1,4 @@
-(ns toying.events.timeout
+(ns games.events.timeout
  (:require
   [reagent.core :as reagent]
   [re-frame.core :as rf]))

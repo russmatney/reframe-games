@@ -1,8 +1,8 @@
-(ns toying.core
+(ns games.core
   (:require
    [reagent.core :as reagent]
-   [toying.views :as views]
-   [toying.events :as events]
+   [games.views :as views]
+   [games.events :as events]
    [re-frame.core :as rf]
    [re-pressed.core :as rp]))
 

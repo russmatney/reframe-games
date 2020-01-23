@@ -1,6 +1,6 @@
-#+TITLE:   Re-frame Tetris
+#+TITLE: Re-frame Games
 
-* A tetris clone in Re-frame/Reagent (CLJS)
+* A tetris clone in Re-frame/Reagent (CLJS), and other games
 * todo
 ** [X] support pieces 'falling' into the screen
 when a piece's shape is more than a cell tall, it should enter one row at a time

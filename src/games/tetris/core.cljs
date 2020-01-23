@@ -1,7 +1,7 @@
-(ns toying.tetris.core
+(ns games.tetris.core
   (:require
-   [toying.tetris.db :as tetris.db]
-   [toying.grid.core :as grid]))
+   [games.tetris.db :as tetris.db]
+   [games.grid.core :as grid]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Predicates and game logic

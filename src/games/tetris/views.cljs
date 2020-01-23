@@ -1,9 +1,9 @@
-(ns toying.views.tetris
+(ns games.views.tetris
   (:require
    [re-frame.core :as rf]
-   [toying.subs :as subs]))
+   [games.subs :as subs]))
 
-;; TODO move to toying.tetris.views?
+;; TODO move to games.tetris.views?
 ;; TODO show coming pieces
 ;; TODO show score
 ;; TODO add color to pieces

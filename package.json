@@ -1,5 +1,5 @@
 {
-  "name": "toying",
+  "name": "games",
   "main": "index.js",
   "devDependencies": {
     "shadow-cljs": "^2.8.14"

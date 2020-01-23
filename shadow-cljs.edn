@@ -12,11 +12,11 @@
 
  :builds {:app
           {:target     :browser
-           :modules    {:main {:entries [toying.core]}}
+           :modules    {:main {:entries [games.core]}}
            :output-dir "public/js/compiled"
            :asset-path "/js/compiled"
 
            :devtools {:http-root "public"
                       :http-port 2989
                       :loader-mode :eval
-                      :after-load toying.core/mount-root}}}}
+                      :after-load games.core/mount-root}}}}

@@ -1,12 +1,12 @@
-(ns toying.events
+(ns games.events
  (:require
   [reagent.core :as reagent]
   [re-frame.core :as rf]
   [re-pressed.core :as rp]
-  [toying.tetris.db :as tetris.db]
-  [toying.tetris.core :as tetris]
-  [toying.db :as db]
-  [toying.events.timeout]))
+  [games.tetris.db :as tetris.db]
+  [games.tetris.core :as tetris]
+  [games.db :as db]
+  [games.events.timeout]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init
@@ -19,7 +19,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO move to toying.tetris.events
+;; TODO move to games.tetris.events
 
 (rf/reg-event-fx
  ::game-tick

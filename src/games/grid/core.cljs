@@ -1,4 +1,4 @@
-(ns toying.grid.core
+(ns games.grid.core
   (:require
    [clojure.set :as set]))
 

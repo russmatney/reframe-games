@@ -1,6 +1,6 @@
-(ns toying.db
+(ns games.db
  (:require
-  [toying.tetris.db :as tetris.db]))
+  [games.tetris.db :as tetris.db]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
