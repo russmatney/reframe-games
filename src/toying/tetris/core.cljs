@@ -7,33 +7,32 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Updating cells
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn update-cell
   "Applies the passed function to the cell at the specified coords."
-  ([db cell f]
-   (update-cell db (:x cell) (:y cell) f))
-  ([{:keys [grid phantom-rows] :as db} x y f]
-   (let [updated (update-in grid [(+ phantom-rows y) x] f)]
-      (assoc db :grid updated))))
+  [{:keys [grid phantom-rows] :as db} {:keys [x y]} f]
+  (let [updated (update-in grid [(+ phantom-rows y) x] f)]
+      (assoc db :grid updated)))
 
 (defn mark-cell-occupied
   "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.
   Returns an updated db."
-  ([db {:keys [x y]}]
-   (update-cell db x y
+  [db cell]
+  (update-cell db cell
                #(-> %
                   (assoc :occupied true)
-                  (dissoc :falling)))))
+                  (dissoc :falling))))
 
 (defn mark-cell-falling
   "Marks the passed cell (x, y) as falling.
   Returns an updated db."
-  ([db {:keys [x y]}]
-   (update-cell db x y #(assoc % :falling true))))
+  [db cell]
+  (update-cell db cell #(assoc % :falling true)))
 
 (defn get-cell
-  ([{:keys [grid phantom-rows]} {:keys [x y]}]
-   (-> grid (nth (+ y phantom-rows)) (nth x))))
+  [{:keys [grid phantom-rows]} {:keys [x y]}]
+  (-> grid (nth (+ y phantom-rows)) (nth x)))
 
 (defn overwrite-cell
   "Copies all props from `cell` to `target`.
@@ -59,7 +58,8 @@
                   :y (:y c)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Predicates and their helpers
+;; Predicates
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn cell-occupied? [db cell]
   (:occupied (get-cell db cell)))
@@ -85,7 +85,7 @@
 
 (defn row-fully-occupied? [row]
    (= (count row)
-      (count (seq (filter :occupied row)))))
+      (count (filter :occupied row))))
 
 (defn rows-to-clear?
   "Returns true if there are rows to be removed from the board."
@@ -93,7 +93,7 @@
   (seq (filter row-fully-occupied? db)))
 
 (defn clear-full-rows [{:keys [grid height phantom-rows] :as db}]
-  (let [cleared-grid (seq (remove row-fully-occupied? grid))
+  (let [cleared-grid (remove row-fully-occupied? grid)
         rows-to-add (- (+ height phantom-rows) (count cleared-grid))
         new-rows (take rows-to-add (repeat (tetris.db/build-row db)))
         grid-with-new-rows (concat new-rows cleared-grid)
@@ -120,7 +120,7 @@
 
 (defn get-falling-cells
   [{:keys [grid]}]
-  (seq (filter :falling (flatten grid))))
+  (filter :falling (flatten grid)))
 
 (defn move-cell [{:keys [x y]} direction]
   (let [x-diff (case direction :left -1 :right 1 0)
@@ -247,7 +247,7 @@
       db
 
      true
-     (let [to-rotate (seq (remove :anchor falling-cells))
+     (let [to-rotate (remove :anchor falling-cells)
            vals (map (fn [c] {:cell c
                               :target (calc-rotate-target anchor-cell c)})
                      to-rotate)
@@ -261,9 +261,8 @@
                                          (can-move? db c))
                                        new-cells))]
        (cond
-         ;; at least one dest cell is not allowed
-         (seq (remove #(can-move? db %) new-cells))
-         db
+         ;; at least one dest cell is not allowed, return db
+         any-cant-move? db
 
          true
          (as-> db db
@@ -273,6 +272,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn step-falling [db]
   (cond

@@ -18,4 +18,4 @@
  ::grid-for-display
  :<- [::tetris-db]
  (fn [{:keys [grid]}]
-   (filter #(<= 0 (-> % (first) :y))) grid))
+   (filter (fn [row] (<= 0 (-> row (first) :y))) grid)))
