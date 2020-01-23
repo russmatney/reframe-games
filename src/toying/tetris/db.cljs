@@ -51,6 +51,7 @@
   (reset-cell-labels db
     (take (+ height phantom-rows) (repeat (build-row db)))))
 
+;; TODO move grid stuff to grid namespace (db, etc)
 (def grid-opts
   "The height and width are a count for how many visible cells the board shows.
   Phantom rows help new pieces enter the board one row at a time, but adding
