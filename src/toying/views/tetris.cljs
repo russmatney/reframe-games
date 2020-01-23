@@ -6,6 +6,9 @@
 ;; TODO move to toying.tetris.views?
 ;; TODO show coming pieces
 ;; TODO show score
+;; TODO add color to pieces
+;; TODO do styles via ui?
+;; TODO add tool for collecting feedback?
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell
@@ -24,8 +27,8 @@
       :height height
       :background (cond falling "coral"
                         occupied "gray"
-                        true "powderblue")
-      :border "black solid 1px"}}
+                        true "powderblue")}}
+      ;:border "black solid 1px"}}
     (if debug
      (str cell)
      "")]))

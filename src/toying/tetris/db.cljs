@@ -97,7 +97,7 @@
   "The height and width are a count for how many visible cells the board shows.
   Phantom rows help new pieces enter the board one row at a time, but adding
   extra rows above the top of the board."
-  {:height 12
+  {:height 13
    :width 8
    :phantom-rows 4})
 

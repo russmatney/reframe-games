@@ -6,3 +6,6 @@
 when a piece's shape is more than a cell tall, it should enter one row at a time
 I think this can be mocked with 'phantom' rows above the board
 these rows need to be added to the board and ignored/handled in the right places
+** [ ] deploy to start getting feedback and feature ideas
+** [ ] build up a puzzle? pixelated art?
+** [ ] replay or highlights feature?
