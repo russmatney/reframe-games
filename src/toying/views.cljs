@@ -1,7 +1,7 @@
 (ns toying.views
   (:require
    [reagent.core :as reagent]
-   [toying.views.tetris :as views.tetris]))
+   [toying.tetris.views :as tetris.views]))
 
 (defn timer-component []
   (let [seconds-elapsed (reagent/atom 0)]
@@ -12,6 +12,6 @@
 (defn root []
   [:div#root
    [timer-component]
-   [views.tetris/grid]])
+   [tetris.views/grid]])
 
 
