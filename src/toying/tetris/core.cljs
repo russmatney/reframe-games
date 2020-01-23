@@ -1,8 +1,5 @@
 (ns toying.tetris.core
   (:require
-   [re-frame.core :as rf]
-   [re-pressed.core :as rp]
-   [clojure.set :as set]
    [toying.tetris.db :as tetris.db]
    [toying.grid.core :as grid]))
 
@@ -34,8 +31,8 @@
 
 (defn rows-to-clear?
   "Returns true if there are rows to be removed from the board."
-  [db]
-  (seq (filter row-fully-occupied? db)))
+  [{:keys [grid]}]
+  (seq (filter row-fully-occupied? grid)))
 
 (defn clear-full-rows [{:keys [grid height phantom-rows] :as db}]
   (let [cleared-grid (remove row-fully-occupied? grid)
@@ -52,6 +49,7 @@
 
 (defn gameover?
   "Returns true if no new pieces can be added.
+
   Needs to know what the next piece is, doesn't it?
   TODO generate list of pieces to be added, pull from the db here
   "
@@ -68,17 +66,17 @@
                   (dissoc :falling))))
 
 (defn mark-cell-falling
-  "Marks the passed cell (x, y) as falling.
+  "Marks the passed cell (x, y) as `:falling true`.
   Returns an updated db."
   [db cell]
   (grid/update-cell db cell #(assoc % :falling true)))
 
-
 (defn get-falling-cells [db]
+  "Returns all cells with a `:falling true` prop"
   (grid/get-cells db :falling))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Moving pieces and cells
+;; Move pieces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn move-piece
@@ -149,34 +147,13 @@
   (let [falling-cells (get-falling-cells db)
         anchor-cell (first (filter :anchor falling-cells))]
 
-    (cond
+    (if-not anchor-cell
       ;; no anchor-cell, do nothing
-      (not anchor-cell)
       db
-
-     true
-     (let [to-rotate (remove :anchor falling-cells)
-           vals (map (fn [c] {:cell c
-                              :target (calc-rotate-target anchor-cell c)})
-                     to-rotate)
-           new-cells (set (map (fn [{:keys [target]}] (grid/cell->coords target))
-                               vals))
-           old-cells (set (map grid/cell->coords to-rotate))
-           cells-to-clear
-           (set/difference old-cells new-cells)
-
-           any-cant-move? (seq (remove (fn [c]
-                                         (cell-open? db c))
-                                       new-cells))]
-       (cond
-         ;; at least one dest cell is not allowed, return db
-         any-cant-move? db
-
-         true
-         (as-> db db
-           (reduce grid/overwrite-cell db vals)
-           (reduce grid/clear-cell-props db cells-to-clear)))))))
-
+      (grid/move-cells db
+        {:move-f #(calc-rotate-target anchor-cell %)
+         :can-move? #(cell-open? db %)
+         :cells (remove :anchor falling-cells)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adding new pieces
@@ -208,7 +185,7 @@
 ;; Game tick/steps functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn step-falling [db]
+(defn step [db]
   (cond
     ;; clear pieces, update db and return
     (rows-to-clear? db) ;; animation?
@@ -229,5 +206,3 @@
     ;; do nothing
     true db))
 
-(defn step [db]
-  (step-falling db))
