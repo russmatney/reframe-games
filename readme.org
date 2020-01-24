@@ -9,6 +9,9 @@ these rows need to be added to the board and ignored/handled in the right places
 ** [ ] deploy to start getting feedback and feature ideas
 ** [ ] build up a puzzle? pixelated art?
 ** [ ] replay or highlights feature?
+** [ ] fix prod build to exclude shadow warning
+** [ ] fix keybindings not working on firefox
+** [ ] mobile touch/gesture support?
 * deployment
 #+BEGIN_SRC sh
 # from project root

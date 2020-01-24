@@ -3,6 +3,7 @@
    [reagent.core :as reagent]
    [games.views :as views]
    [games.events :as events]
+   [games.tetris.events :as tetris.events]
    [re-frame.core :as rf]
    [re-pressed.core :as rp]))
 
@@ -29,9 +30,10 @@
   (rf/dispatch-sync [::events/init-db])
 
   ;; start the game
-  (rf/dispatch-sync [::events/game-tick]))
+  (rf/dispatch-sync [::tetris.events/set-controls])
+  (rf/dispatch-sync [::tetris.events/game-tick]))
 
 
 (comment
-  (rf/dispatch-sync [::events/pause-game])
-  (rf/dispatch-sync [::events/game-tick]))
+  (rf/dispatch-sync [::tetris.events/pause-game])
+  (rf/dispatch-sync [::tetris.events/game-tick]))
