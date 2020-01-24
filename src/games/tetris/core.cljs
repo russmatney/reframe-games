@@ -34,12 +34,15 @@
   [{:keys [grid]}]
   (seq (filter row-fully-occupied? grid)))
 
-(defn clear-full-rows [{:keys [grid height phantom-rows] :as db}]
+(defn clear-full-rows
+  "TODO refactor into grid helper that takes a predicate for rows
+  to remove."
+  [{:keys [grid height phantom-rows] :as db}]
   (let [cleared-grid (remove row-fully-occupied? grid)
         rows-to-add (- (+ height phantom-rows) (count cleared-grid))
-        new-rows (take rows-to-add (repeat (tetris.db/build-row db)))
+        new-rows (take rows-to-add (repeat (grid/build-row db)))
         grid-with-new-rows (concat new-rows cleared-grid)
-        updated-grid (tetris.db/reset-cell-labels db grid-with-new-rows)]
+        updated-grid (grid/reset-cell-labels db grid-with-new-rows)]
     (assoc db :grid updated-grid)))
 
 (defn any-falling?

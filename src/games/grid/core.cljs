@@ -3,7 +3,39 @@
    [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cell functions
+;; Grid, row, and cell creation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn reset-cell-labels
+  "Adds :x, :y keys and vals to every cell in the grid.
+  Used to initialize the board, and to reset x/y after removing rows/cells.
+  "
+  [{:keys [phantom-rows]} grid]
+  (vec
+   (map-indexed
+    (fn [y row]
+     (vec
+      (map-indexed
+       (fn [x cell]
+        (assoc cell :y (- y phantom-rows) :x x))
+       row)))
+    grid)))
+
+(defn build-row
+  "Used to create initial rows as well as new ones after rows are removed."
+  [{:keys [width]}]
+  (vec (take width (repeat {}))))
+
+(defn build-grid
+  "Builds a grid with the passed `opts`.
+  Expects :height, :width, :phantom-rows as `int`s.
+  "
+  [{:keys [height phantom-rows] :as opts}]
+  (reset-cell-labels opts
+    (take (+ height phantom-rows) (repeat (build-row opts)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell Prop Updates
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn update-cell
@@ -35,18 +67,13 @@
                  {:x (:x c)
                   :y (:y c)})))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell Fetching
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn get-cell
   [{:keys [grid phantom-rows]} {:keys [x y]}]
   (-> grid (nth (+ y phantom-rows)) (nth x)))
-
-(defn move-cell-coords
-  "Returns a map with :x, :y coords relative to the passed direction
-  (:left, :right, :up, :down)."
-  [{:keys [x y]} direction]
-  (let [x-diff (case direction :left -1 :right 1 0)
-        y-diff (case direction :down 1 :up -1 0)]
-     {:x (+ x x-diff)
-      :y (+ y y-diff)}))
 
 (defn get-cells
   [{:keys [grid]} pred]
@@ -57,6 +84,19 @@
   Essentially drops the props.
   Used to compare sets of cells."
   [{:keys [x y]}] {:x x :y y})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell 'Movement'
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn move-cell-coords
+  "Returns a map with :x, :y coords relative to the passed direction
+  (:left, :right, :up, :down)."
+  [{:keys [x y]} direction]
+  (let [x-diff (case direction :left -1 :right 1 0)
+        y-diff (case direction :down 1 :up -1 0)]
+     {:x (+ x x-diff)
+      :y (+ y y-diff)}))
 
 (defn move-cells
   "Moves a group of passed `cells` according to `move-f`.
