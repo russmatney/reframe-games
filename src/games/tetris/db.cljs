@@ -78,8 +78,8 @@
                      :width 8
                      :phantom-rows 4})
    :preview-grid
-   (grid/build-grid {:height 4
-                     :width 4
-                     :phantom-rows 4})
+   (grid/build-grid {:height 5
+                     :width 5})
+   :piece-queue [(rand-nth allowed-shape-fns)]
    :entry-cell {:x 3 :y 0}
    :allowed-shape-fns allowed-shape-fns})

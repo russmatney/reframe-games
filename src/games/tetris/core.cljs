@@ -158,7 +158,7 @@
 ;; Adding new pieces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn select-new-piece
+(defn next-piece-fn
   "Selects a random new piece."
   [{:keys [allowed-shape-fns]}]
   (rand-nth allowed-shape-fns))
@@ -167,14 +167,28 @@
   "Adds a new cell to the grid.
   Does not care if there is room to add it!
   Depends on the `new-piece-coord`."
-  [{:keys [entry-cell game-grid] :as db}]
-  (let [make-cells (select-new-piece db)]
-    (update db :game-grid
-            (fn [grid]
-              (grid/add-cells grid
+  [{:keys [entry-cell game-grid piece-queue] :as db}]
+  (let [for-queue (next-piece-fn db)
+        make-cells (first piece-queue)]
+    (-> db
+        (update :piece-queue
+                #(as-> % q
+                     (drop 1 q)
+                     (concat q [for-queue])))
+     (update :game-grid
+             (fn [g]
+               (grid/add-cells g
                               {:entry-cell entry-cell
                                :update-cell #(assoc % :falling true)
-                               :make-cells make-cells})))))
+                               :make-cells make-cells})))
+     (update :preview-grid
+             (fn [g]
+               (-> g
+                   (grid/build-grid)
+                   (grid/add-cells
+                     {:entry-cell {:x 2 :y 3}
+                      :update-cell #(assoc % :preview true)
+                      :make-cells for-queue})))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions

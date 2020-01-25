@@ -29,6 +29,8 @@
 (defn build-grid
   "Builds a grid with the passed `opts`.
   Expects :height, :width, :phantom-rows as `int`s.
+
+  Can also be used to rebuild/reset the grid.
   "
   [{:keys [height phantom-rows] :as opts}]
   (-> opts
@@ -108,11 +110,13 @@
                   :y (:y c)})))
 
 (defn add-cells
-  "Adds the passed cells to the passed grid."
+  "Adds the passed cells to the passed grid.
+  TODO ensure update-cell is optional
+  "
   [db {:keys [make-cells update-cell entry-cell]}]
-  (let [cells (make-cells entry-cell)
+  (let [update-f (or update-cell #(%))
+        cells (make-cells entry-cell)
         cells (map update-cell cells)]
-    (print cells)
     (reduce
        (fn [db {:keys [x y] :as cell}]
          (overwrite-cell db {:cell cell :target {:x x :y y}}))

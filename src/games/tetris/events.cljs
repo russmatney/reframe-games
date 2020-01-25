@@ -20,7 +20,7 @@
     {:db (assoc db ::tetris.db/db updated-tetris-db)
      :timeout {:id ::tick
                :event [::game-tick]
-               :time 1000}})))
+               :time 100}})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Set Controls
