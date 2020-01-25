@@ -141,9 +141,6 @@
   This requires one falling cell to be an 'anchor'.
   The anchor stays in place - the other cells calc an x/y delta between
   themselves and the anchor.
-
-  TODO implement 'bumping' - rotations against walls/blocks should move the
-  piece over to create space, if possible.
   "
   [{:keys [game-grid] :as db}]
   (let [falling-cells (get-falling-cells db)

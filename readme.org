@@ -1,25 +1,31 @@
 #+TITLE: Re-frame Games
 
 * A tetris clone in Re-frame/Reagent (CLJS), and other games
-* todo
+* bugs
+** [ ] prod build shows shadow warning
+** [ ] keybindings not working on firefox
+* pre-publish
 ** [X] support pieces 'falling' into the screen
 when a piece's shape is more than a cell tall, it should enter one row at a time
 I think this can be mocked with 'phantom' rows above the board
 these rows need to be added to the board and ignored/handled in the right places
-** [ ] deploy to start getting feedback and feature ideas
-** [ ] build up a puzzle? pixelated art?
-** [ ] replay or highlights feature?
-** [ ] fix prod build to exclude shadow warning
-** [ ] fix keybindings not working on firefox
-** [ ] mobile touch/gesture support?
-
-** [ ] customize controls
+** [X] deploy to start getting feedback and feature ideas
+** [ ] implement and show score
+** [ ] implement and show time
+** [ ] increase speed over time (via levels?)
+** [ ] implement 'bumping'
+rotations against walls/blocks should move the piece over to create space, if
+possible.
 ** [ ] support fast-drop
-
-** TODO implement and show score
-** TODO implement and show time
-** TODO increase speed over time (levels?)
-
+** [ ] layout, colors, styling
+*** [ ] rotating styles on rows?
+:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
+* post-publish
+** [ ] mobile touch/gesture support?
+** [ ] customize controls
+* ideas
+** [ ] build up a puzzle? pixelated art?
+** [ ] show replay, or highlights?
 * deployment
 #+BEGIN_SRC sh
 # from project root

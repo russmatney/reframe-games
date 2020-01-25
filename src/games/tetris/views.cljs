@@ -64,7 +64,9 @@
       (for [row grid-data]
         ^{:key (str (random-uuid))}
         [:div
-         {:style {:display "flex"}}
+         {:style
+          {:display "flex"
+           :transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
          (for [cell-state row]
           (cell cell-state))])]))
 
