@@ -78,6 +78,8 @@
    :width 8
    :phantom-rows 4})
 
+(def shape-opts {})
+
 (def initial-db
   (-> grid-opts
     (assoc :grid (grid/build-grid grid-opts))

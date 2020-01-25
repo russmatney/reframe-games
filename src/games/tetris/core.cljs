@@ -22,7 +22,10 @@
 
 (defn can-add-new? [{:keys [entry-cell] :as db}]
   "Returns true if the entry cell is not occupied,
-  or if the entry cell itself can move down."
+  or if the entry cell itself can move down.
+  TODO refactor to depend on the next piece being added
+  (which may cover more than just the entry-cell)
+  "
   (not (cell-occupied? db entry-cell)))
 
 (defn row-fully-occupied? [row]
@@ -35,8 +38,6 @@
   (seq (filter row-fully-occupied? grid)))
 
 (defn clear-full-rows
-  "TODO refactor into grid helper that takes a predicate for rows
-  to remove."
   [{:keys [grid height phantom-rows] :as db}]
   (let [cleared-grid (remove row-fully-occupied? grid)
         rows-to-add (- (+ height phantom-rows) (count cleared-grid))

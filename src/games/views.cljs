@@ -11,7 +11,14 @@
 
 (defn root []
   [:div#root
+   {:style {:display "flex"}}
    [timer-component]
-   [tetris.views/grid]])
+   [:div
+    {:style {:display "flex" :margin "10px"}}
+    [tetris.views/grid]]
+
+   [:div
+    {:style {:display "flex" :margin "10px"}}
+    [tetris.views/alt-grid]]])
 
 
