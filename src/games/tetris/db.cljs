@@ -16,46 +16,60 @@
     (assoc :y (+ y0 y))))
 
 (defn line-shape [ec]
-  [(relative ec {:y -3})
-   (relative ec {:y -2})
-   (relative ec {:y -1 :anchor true})
-   ec])
+  (let [style {:background "powderblue"}]
+    (map #(assoc % :style style)
+      [(relative ec {:y -3})
+       (relative ec {:y -2})
+       (relative ec {:y -1 :anchor true})
+       ec])))
 
 (defn t-shape [ec]
-  [(relative ec {:y -1 :anchor true})
-   (relative ec {:y -1 :x -1})
-   (relative ec {:y -1 :x 1})
-   ec])
+  (let [style {:background "coral"}]
+    (map #(assoc % :style style)
+      [(relative ec {:y -1 :anchor true})
+       (relative ec {:y -1 :x -1})
+       (relative ec {:y -1 :x 1})
+       ec])))
 
 (defn z-shape [ec]
-  [(relative ec {:y -1 :anchor true})
-   (relative ec {:y -1 :x -1})
-   (relative ec {:y -2 :x -1})
-   ec])
+  (let [style {:background "red"}]
+    (map #(assoc % :style style)
+      [(relative ec {:y -1 :anchor true})
+       (relative ec {:y -1 :x -1})
+       (relative ec {:y -2 :x -1})
+       ec])))
 
 (defn s-shape [ec]
-  [(relative ec {:y -1 :anchor true})
-   (relative ec {:y -1 :x 1})
-   (relative ec {:y -2 :x 1})
-   ec])
+  (let [style {:background "green"}]
+    (map #(assoc % :style style)
+      [(relative ec {:y -1 :anchor true})
+       (relative ec {:y -1 :x 1})
+       (relative ec {:y -2 :x 1})
+       ec])))
 
 (defn r-shape [ec]
-  [(relative ec {:y -1 :anchor true})
-   (relative ec {:y -2})
-   (relative ec {:y -2 :x 1})
-   ec])
+  (let [style {:background "blue"}]
+    (map #(assoc % :style style)
+      [(relative ec {:y -1 :anchor true})
+       (relative ec {:y -2})
+       (relative ec {:y -2 :x 1})
+       ec])))
 
 (defn l-shape [ec]
-  [(relative ec {:y -1 :anchor true})
-   (relative ec {:y -2})
-   (relative ec {:y -2 :x -1})
-   ec])
+  (let [style {:background "orange"}]
+    (map #(assoc % :style style)
+      [(relative ec {:y -1 :anchor true})
+       (relative ec {:y -2})
+       (relative ec {:y -2 :x -1})
+       ec])))
 
 (defn square-shape [ec]
-  [(relative ec {:y -1 :anchor true})
-   (relative ec {:x -1})
-   (relative ec {:y -1 :x -1})
-   ec])
+  (let [style {:background "yellow"}]
+    (map #(assoc % :style style)
+      [(relative ec {:y -1 :anchor true})
+       (relative ec {:x -1})
+       (relative ec {:y -1 :x -1})
+       ec])))
 
 (def allowed-shape-fns
   [t-shape
