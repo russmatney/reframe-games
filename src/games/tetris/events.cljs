@@ -5,9 +5,6 @@
   [games.tetris.db :as tetris.db]
   [games.tetris.core :as tetris]))
 
-;; TODO customize controls
-;; TODO support fast-drop
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

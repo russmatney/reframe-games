@@ -90,7 +90,9 @@
   "Copies all props from `cell` to `target`.
   Looks up the cell passed to get the latest props before copying.
   Merges any new properies included on the passed `cell`.
-  TODO why a merge? why not clear and set props included w/ the passed `cell`?
+
+  Some thoughts after reading:
+  not sure why a merge here, vs clearing and setting the passed props.
   "
   [{:keys [grid] :as db} {:keys [cell target]}]
   (let [props (dissoc cell :x :y)]
@@ -110,11 +112,9 @@
                   :y (:y c)})))
 
 (defn add-cells
-  "Adds the passed cells to the passed grid.
-  TODO ensure update-cell is optional
-  "
+  "Adds the passed cells to the passed grid"
   [db {:keys [make-cells update-cell entry-cell]}]
-  (let [update-f (or update-cell #(%))
+  (let [update-f (or update-cell (fn [c] c))
         cells (make-cells entry-cell)
         cells (map update-cell cells)]
     (reduce

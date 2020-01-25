@@ -1,14 +1,7 @@
 (ns games.tetris.views
   (:require
    [re-frame.core :as rf]
-   [games.subs :as subs]))
-
-;; TODO move to games.tetris.views?
-;; TODO show coming pieces
-;; TODO show score
-;; TODO add color to pieces
-;; TODO do styles via ui?
-;; TODO add tool for collecting feedback?
+   [games.tetris.subs :as tetris.subs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell
@@ -66,7 +59,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn grid []
-  (let [grid-data @(rf/subscribe [::subs/game-grid])]
+  (let [grid-data @(rf/subscribe [::tetris.subs/game-grid])]
     [:div
       (for [row grid-data]
         ^{:key (str (random-uuid))}
@@ -76,7 +69,7 @@
           (cell cell-state))])]))
 
 (defn piece-preview []
-  (let [grid-data @(rf/subscribe [::subs/preview-grid])]
+  (let [grid-data @(rf/subscribe [::tetris.subs/preview-grid])]
     [:div
      [:h2 "Next piece"]
      [:div

@@ -18,13 +18,21 @@
    (grid/within-bounds? game-grid cell)
    (not (cell-occupied? db cell))))
 
-(defn can-add-new? [{:keys [entry-cell] :as db}]
-  "Returns true if the entry cell is not occupied,
-  or if the entry cell itself can move down.
-  TODO refactor to depend on the next piece being added
-  (which may cover more than just the entry-cell)
+(defn next-cells
+  "Supports can-add-next?
+  In danger of differing from `add-new-piece`...
   "
-  (not (cell-occupied? db entry-cell)))
+  [{:keys [entry-cell piece-queue]}]
+  ((first piece-queue) entry-cell))
+
+(defn can-add-next?
+  "Returns true if any of the cells for the next piece
+  are already occupied."
+  [{:keys [entry-cell] :as db}]
+  (->> (next-cells db)
+     (filter (fn [c] (cell-occupied? db c)))
+     (count)
+     (= 0)))
 
 (defn row-fully-occupied? [row f?]
    (grid/true-for-row? row :occupied))
@@ -48,12 +56,9 @@
 
 (defn gameover?
   "Returns true if no new pieces can be added.
-
-  Needs to know what the next piece is, doesn't it?
-  TODO generate list of pieces to be added, pull from the db here
   "
   [db]
-  (not (can-add-new? db)))
+  (not (can-add-next? db)))
 
 (defn mark-cell-occupied
   "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.
@@ -175,6 +180,7 @@
                 #(as-> % q
                      (drop 1 q)
                      (concat q [for-queue])))
+
      (update :game-grid
              (fn [g]
                (grid/add-cells g

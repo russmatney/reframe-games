@@ -12,6 +12,14 @@ these rows need to be added to the board and ignored/handled in the right places
 ** [ ] fix prod build to exclude shadow warning
 ** [ ] fix keybindings not working on firefox
 ** [ ] mobile touch/gesture support?
+
+** [ ] customize controls
+** [ ] support fast-drop
+
+** TODO implement and show score
+** TODO implement and show time
+** TODO increase speed over time (levels?)
+
 * deployment
 #+BEGIN_SRC sh
 # from project root
