@@ -7,18 +7,16 @@
 ;; Predicates and game logic
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn cell-occupied? [db cell]
-  (:occupied (grid/get-cell db cell)))
+(defn cell-occupied? [{:keys [game-grid]} cell]
+  (:occupied (grid/get-cell game-grid cell)))
 
 (defn cell-open?
-  "Returns true if the indicated cell is not occupied or beyond the edge of the
-  grid."
-  [{:keys [height width] :as db} {:keys [x y]}]
+  "Returns true if the indicated cell is within the grid's bounds AND not
+  occupied."
+  [{:keys [game-grid] :as db} cell]
   (and
-      (> height y)
-      (> width x)
-      (>= x 0)
-      (not (cell-occupied? db {:x x :y y}))))
+   (grid/within-bounds? game-grid cell)
+   (not (cell-occupied? db cell))))
 
 (defn can-add-new? [{:keys [entry-cell] :as db}]
   "Returns true if the entry cell is not occupied,
@@ -28,28 +26,25 @@
   "
   (not (cell-occupied? db entry-cell)))
 
-(defn row-fully-occupied? [row]
-   (= (count row)
-      (count (filter :occupied row))))
+(defn row-fully-occupied? [row f?]
+   (grid/true-for-row? row :occupied))
 
 (defn rows-to-clear?
   "Returns true if there are rows to be removed from the board."
-  [{:keys [grid]}]
-  (seq (filter row-fully-occupied? grid)))
+  [{:keys [game-grid]}]
+  (grid/any-row? game-grid row-fully-occupied?))
 
 (defn clear-full-rows
-  [{:keys [grid height phantom-rows] :as db}]
-  (let [cleared-grid (remove row-fully-occupied? grid)
-        rows-to-add (- (+ height phantom-rows) (count cleared-grid))
-        new-rows (take rows-to-add (repeat (grid/build-row db)))
-        grid-with-new-rows (concat new-rows cleared-grid)
-        updated-grid (grid/reset-cell-labels db grid-with-new-rows)]
-    (assoc db :grid updated-grid)))
+  "Removes rows satisfying the predicate, replacing them with rows of empty
+  cells."
+  [db]
+  (update db :game-grid
+    #(grid/remove-rows % row-fully-occupied?)))
 
 (defn any-falling?
   "Returns true if there is a falling cell anywhere in the grid."
-  [{:keys [grid]}]
-  (seq (filter :falling (flatten grid))))
+  [{:keys [game-grid]}]
+  (seq (grid/get-cells game-grid :falling)))
 
 (defn gameover?
   "Returns true if no new pieces can be added.
@@ -64,23 +59,19 @@
   "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.
   Returns an updated db."
   [db cell]
-  (grid/update-cell db cell
-               #(-> %
-                  (assoc :occupied true)
-                  (dissoc :falling))))
+  (update db :game-grid
+    #(grid/update-cell % cell
+      (fn [c] (-> c
+                (assoc :occupied true)
+                (dissoc :falling))))))
 
-(defn mark-cell-falling
-  "Marks the passed cell (x, y) as `:falling true`.
-  Returns an updated db."
-  [db cell]
-  (grid/update-cell db cell #(assoc % :falling true)))
-
-(defn get-falling-cells [db]
+(defn get-falling-cells
   "Returns all cells with a `:falling true` prop"
-  (grid/get-cells db :falling))
+  [{:keys [game-grid]}]
+  (grid/get-cells game-grid :falling))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Move pieces
+;; Move piece
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn move-piece
@@ -88,14 +79,17 @@
   If pieces try to move down but are blocked, they are locked in place (with an
   :occupied flag).
   "
-  [{:keys [grid] :as db} direction]
+  [{:keys [game-grid] :as db} direction]
   (let [falling-cells (get-falling-cells db)
         move-f #(grid/move-cell-coords % direction)
 
-        db (grid/move-cells db
+        updated-grid
+        (grid/move-cells game-grid
             {:move-f move-f
              :can-move? #(cell-open? db %)
              :cells falling-cells})
+
+        db (assoc db :game-grid updated-grid)
 
         should-lock-cells?
         (and
@@ -146,17 +140,19 @@
   TODO implement 'bumping' - rotations against walls/blocks should move the
   piece over to create space, if possible.
   "
-  [{:keys [grid] :as db}]
+  [{:keys [game-grid] :as db}]
   (let [falling-cells (get-falling-cells db)
         anchor-cell (first (filter :anchor falling-cells))]
 
     (if-not anchor-cell
       ;; no anchor-cell, do nothing
       db
-      (grid/move-cells db
-        {:move-f #(calc-rotate-target anchor-cell %)
-         :can-move? #(cell-open? db %)
-         :cells (remove :anchor falling-cells)}))))
+      (update db :game-grid
+              (fn [grid]
+                (grid/move-cells grid
+                 {:move-f #(calc-rotate-target anchor-cell %)
+                  :can-move? #(cell-open? db %)
+                  :cells (remove :anchor falling-cells)}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adding new pieces
@@ -164,25 +160,21 @@
 
 (defn select-new-piece
   "Selects a random new piece."
-  [{:keys [allowed-shapes-f entry-cell] :as db}]
-  (rand-nth (allowed-shapes-f entry-cell)))
+  [{:keys [allowed-shape-fns]}]
+  (rand-nth allowed-shape-fns))
 
 (defn add-new-piece
   "Adds a new cell to the grid.
   Does not care if there is room to add it!
-  Depends on the `new-piece-coord`.
-  "
-  [db]
-  (let [new-cells (select-new-piece db)]
-     (reduce
-        (fn [db {:keys [x y] :as cell}]
-          (-> db
-              ;; write props to cell
-              (grid/overwrite-cell {:cell cell :target {:x x :y y}})
-              ;; mark falling
-              (mark-cell-falling cell)))
-        db
-        new-cells)))
+  Depends on the `new-piece-coord`."
+  [{:keys [entry-cell game-grid] :as db}]
+  (let [make-cells (select-new-piece db)]
+    (update db :game-grid
+            (fn [grid]
+              (grid/add-cells grid
+                              {:entry-cell entry-cell
+                               :update-cell #(assoc % :falling true)
+                               :make-cells make-cells})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions

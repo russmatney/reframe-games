@@ -15,7 +15,13 @@
    (::tetris.db/db db)))
 
 (rf/reg-sub
- ::grid-for-display
+ ::game-grid
  :<- [::tetris-db]
- (fn [{:keys [grid]}]
-   (filter (fn [row] (<= 0 (-> row (first) :y))) grid)))
+ (fn [{:keys [game-grid]}]
+   (filter (fn [row] (<= 0 (-> row (first) :y))) (:grid game-grid))))
+
+(rf/reg-sub
+ ::preview-grid
+ :<- [::tetris-db]
+ (fn [db]
+   (:preview-grid db)))

@@ -57,31 +57,29 @@
    (relative ec {:y -1 :x -1})
    ec])
 
-(defn allowed-shapes-f [ec]
-  [(t-shape ec)
-   (z-shape ec)
-   (s-shape ec)
-   (r-shape ec)
-   (l-shape ec)
-   (square-shape ec)
-   (line-shape ec)])
+(def allowed-shape-fns
+  [t-shape
+   z-shape
+   s-shape
+   r-shape
+   l-shape
+   square-shape
+   line-shape])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Initial DB
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def grid-opts
-  "The height and width are a count for how many visible cells the board shows.
-  Phantom rows help new pieces enter the board one row at a time, but adding
-  extra rows above the top of the board."
-  {:height 13
-   :width 8
-   :phantom-rows 4})
-
 (def shape-opts {})
 
 (def initial-db
-  (-> grid-opts
-    (assoc :grid (grid/build-grid grid-opts))
-    (assoc :entry-cell {:x 3 :y 0})
-    (assoc :allowed-shapes-f allowed-shapes-f)))
+  {:game-grid
+   (grid/build-grid {:height 13
+                     :width 8
+                     :phantom-rows 4})
+   :preview-grid
+   (grid/build-grid {:height 4
+                     :width 4
+                     :phantom-rows 4})
+   :entry-cell {:x 3 :y 0}
+   :allowed-shape-fns allowed-shape-fns})

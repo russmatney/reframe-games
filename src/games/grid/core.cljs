@@ -31,8 +31,48 @@
   Expects :height, :width, :phantom-rows as `int`s.
   "
   [{:keys [height phantom-rows] :as opts}]
-  (reset-cell-labels opts
-    (take (+ height phantom-rows) (repeat (build-row opts)))))
+  (-> opts
+    (assoc :grid
+      (reset-cell-labels opts
+        (take (+ height phantom-rows) (repeat (build-row opts)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Row manipulation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn any-row?
+  "Returns true if any row satisfies the passed row predicate."
+  [{:keys [grid]} pred]
+  (seq (filter pred grid)))
+
+(defn true-for-row?
+  "Helper for writing row-predicates. Funs the passed `f?` against every cell in
+  a row, returning if the number of trues matches the number of cells."
+  [row f?]
+  (= (count row)
+     (count (filter f? row))))
+
+(defn remove-rows
+  "Removes rows that return true for the passed `row-predicate`"
+  [{:keys [grid height phantom-rows] :as db} row-predicate]
+  (let [cleared-grid (remove row-predicate grid)
+        rows-to-add (- (+ height phantom-rows) (count cleared-grid))
+        new-rows (take rows-to-add (repeat (build-row db)))
+        grid-with-new-rows (concat new-rows cleared-grid)
+        updated-grid (reset-cell-labels db grid-with-new-rows)]
+    (assoc db :grid updated-grid)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell Predicates
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn within-bounds?
+  "Returns true if the passed cell coords is within the edges of the grid."
+  [{:keys [height width] :as db} {:keys [x y]}]
+  (and
+   (> height y)
+   (> width x)
+   (>= x 0)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell Prop Updates
@@ -46,9 +86,9 @@
 
 (defn overwrite-cell
   "Copies all props from `cell` to `target`.
-  Looks up the cell in passed using coords to get the latest props before
-  copying.
+  Looks up the cell passed to get the latest props before copying.
   Merges any new properies included on the passed `cell`.
+  TODO why a merge? why not clear and set props included w/ the passed `cell`?
   "
   [{:keys [grid] :as db} {:keys [cell target]}]
   (let [props (dissoc cell :x :y)]
@@ -66,6 +106,18 @@
                (fn [c]
                  {:x (:x c)
                   :y (:y c)})))
+
+(defn add-cells
+  "Adds the passed cells to the passed grid."
+  [db {:keys [make-cells update-cell entry-cell]}]
+  (let [cells (make-cells entry-cell)
+        cells (map update-cell cells)]
+    (print cells)
+    (reduce
+       (fn [db {:keys [x y] :as cell}]
+         (overwrite-cell db {:cell cell :target {:x x :y y}}))
+       db
+       cells)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell Fetching

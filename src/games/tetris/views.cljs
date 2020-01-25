@@ -38,44 +38,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn grid []
-  (let [grid-data @(rf/subscribe [::subs/grid-for-display])]
-   [:div
-     (for [row grid-data]
-       ^{:key (str (random-uuid))}
-       [:div
-        {:style {:display "flex"}}
-        (for [cell-state row]
-         (cell cell-state))])]))
+  (let [grid-data @(rf/subscribe [::subs/game-grid])]
+    [:div
+      (for [row grid-data]
+        ^{:key (str (random-uuid))}
+        [:div
+         {:style {:display "flex"}}
+         (for [cell-state row]
+          (cell cell-state))])]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Alt-Grid
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn alt-cell [{:keys [falling occupied] :as c}]
-  (let [debug false
-        width (if debug "80px" "20px")
-        height (if debug "120px" "20px")]
-   ^{:key (str (random-uuid))}
-   [:div
-    {:style
-     {:max-width width
-      :max-height height
-      :width width
-      :height height
-      :background (cond falling "coral"
-                        occupied "gray"
-                        true "black")
-      :border "black solid 1px"}}
-    (if debug
-     (str c)
-     "")]))
-
-(defn alt-grid []
-  (let [grid-data @(rf/subscribe [::subs/grid-for-display])]
-   [:div
-     (for [row grid-data]
-       ^{:key (str (random-uuid))}
-       [:div
-        {:style {:display "flex"}}
-        (for [cell-state row]
-         (alt-cell cell-state))])]))
+(defn piece-preview []
+  (let [preview-grid @(rf/subscribe [::subs/preview-grid])]
+    ;;(print preview-grid)
+    [:div
+      "preview grid"]))

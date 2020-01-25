@@ -12,13 +12,10 @@
 (defn root []
   [:div#root
    {:style {:display "flex"}}
-   [timer-component]
+   ;;[timer-component]
    [:div
     {:style {:display "flex" :margin "10px"}}
-    [tetris.views/grid]]
-
-   [:div
-    {:style {:display "flex" :margin "10px"}}
-    [tetris.views/alt-grid]]])
+    [tetris.views/grid]
+    [tetris.views/piece-preview]]])
 
 
