@@ -28,3 +28,21 @@
  :<- [::tetris-db]
  (fn [db]
    (positive-rows (:grid (:preview-grid db)))))
+
+(rf/reg-sub
+ ::score
+ :<- [::tetris-db]
+ (fn [db]
+   (:score db)))
+
+(rf/reg-sub
+ ::time
+ :<- [::tetris-db]
+ (fn [db]
+   (:time db)))
+
+(rf/reg-sub
+ ::level
+ :<- [::tetris-db]
+ (fn [db]
+   (:level db)))

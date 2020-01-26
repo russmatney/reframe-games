@@ -13,9 +13,6 @@
   [:div#root
    {:style {:display "flex"}}
    ;;[timer-component]
-   [:div
-    {:style {:display "flex" :margin "10px"}}
-    [tetris.views/grid]
-    [tetris.views/piece-preview]]])
+   [tetris.views/page]])
 
 

@@ -9,15 +9,37 @@
 ;; Game loop
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn should-advance-level?
+  [{:keys [ticks-this-level game-tick-timeout level-timeout]}]
+  (let [time-this-level (* ticks-this-level game-tick-timeout)]
+    (> time-this-level level-timeout)))
+
+(defn advance-level [db]
+  (-> db
+    (update :level inc)
+    (assoc :ticks-this-level 0)
+    ;; 90% of current speed for now
+    (update :game-tick-timeout #(.floor js/Math (* % 0.9)))))
+
 (rf/reg-event-fx
  ::game-tick
  (fn [{:keys [db]}]
-   (let [tetris-db (::tetris.db/db db)
-         updated-tetris-db (tetris/step tetris-db)]
-    {:db (assoc db ::tetris.db/db updated-tetris-db)
+   (let [{:keys [ticks game-tick-timeout ticks-this-level level-timeout] :as tetris-db}
+         (::tetris.db/db db)
+         tetris-db (tetris/step tetris-db)
+         tetris-db (update tetris-db :ticks inc)
+         tetris-db (update tetris-db :ticks-this-level inc)
+         tetris-db (update tetris-db :time
+                           (fn [t] (+ t game-tick-timeout)))
+
+         {:keys [game-tick-timeout] :as tetris-db}
+         (if (should-advance-level? tetris-db)
+            (advance-level tetris-db)
+            tetris-db)]
+    {:db (assoc db ::tetris.db/db tetris-db)
      :timeout {:id ::tick
                :event [::game-tick]
-               :time 100}})))
+               :time game-tick-timeout}})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Set Controls

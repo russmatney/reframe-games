@@ -81,3 +81,30 @@
          {:style {:display "flex"}}
          (for [cell-state row]
           (preview-cell cell-state {:debug false}))])]]))
+
+(defn with-precision [p num]
+  (let [num (or num 0)]
+    (.toFixed num p)))
+
+(comment
+  (with-precision 4 195.556)
+  (with-precision 2 0))
+
+(defn page []
+  (let [score @(rf/subscribe [::tetris.subs/score])
+        t @(rf/subscribe [::tetris.subs/time])
+        level @(rf/subscribe [::tetris.subs/level])]
+   [:div
+    {:style
+     {:display "flex"
+      :margin "10px"}}
+    [:div
+     [:h2 "Score"]
+     [:h2 score]
+     [:h2 "Time"]
+     ;; TODO fix this g.d. timer to feel real
+     [:h2 (with-precision 2 (/ t 1000))]
+     [:h2 "Level"]
+     [:h2 level]]
+    [grid]
+    [piece-preview]]))
