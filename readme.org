@@ -2,7 +2,7 @@
 
 * A tetris clone in Re-frame/Reagent (CLJS), and other games
 * burndown
-** pre-publish: feature complete
+** [X] pre-publish: feature complete
 *** [X] support pieces 'falling' into the screen
 when a piece's shape is more than a cell tall, it should enter one row at a time
 I think this can be mocked with 'phantom' rows above the board
@@ -30,8 +30,8 @@ rotations against walls/blocks should move the piece over to create space, if
 possible.
 should also consider over-rotating (skipping a blocked one?)
 *** [X] controls: hold piece, swap for held piece
-*** [ ] publish
-** pre-publish: presentable
+*** [X] deploy latest
+** [ ] pre-publish: presentable
 *** [ ] move tetris to /tetris page, create brief landing page
 *** [ ] display controls
 *** [ ] layout
@@ -41,6 +41,9 @@ should also consider over-rotating (skipping a blocked one?)
 *** [ ] display some kind of message on mobile
 *** [ ] pause shouldn't allow movement or extra holds
 *** [ ] double tapping hold can over-stack the piece-queue
+*** [ ] holds should not be unlimited
+*** [ ] proper initial configs
+for pieces per level, speed increase, etc
 * v2
 ** [ ] mobile touch/gesture support
 ** [ ] customize controls
