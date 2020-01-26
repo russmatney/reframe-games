@@ -11,22 +11,37 @@
 
 (defonce timeouts (reagent/atom {}))
 
+(defn handle-timeout
+  [{:keys [id event time]}]
+  (when-some [existing (get @timeouts id)]
+    (js/clearTimeout existing)
+    (swap! timeouts dissoc id))
+  (when (some? event)
+    (swap! timeouts assoc id
+      (js/setTimeout
+        (fn []
+          (rf/dispatch event))
+        time))))
+
+(defn clear-timeout
+  [{:keys [id]}]
+  (when-some [existing (get @timeouts id)]
+    (js/clearTimeout existing)
+    (swap! timeouts dissoc id)))
+
 (rf/reg-fx
   :timeout
-  (fn [{:keys [id event time]}]
-    (when-some [existing (get @timeouts id)]
-      (js/clearTimeout existing)
-      (swap! timeouts dissoc id))
-    (when (some? event)
-      (swap! timeouts assoc id
-        (js/setTimeout
-          (fn []
-            (rf/dispatch event))
-          time)))))
+  handle-timeout)
+
+(rf/reg-fx
+  :timeouts
+  (fn [ts] (doall (map handle-timeout ts))))
 
 (rf/reg-fx
   :clear-timeout
-  (fn [{:keys [id]}]
-    (when-some [existing (get @timeouts id)]
-      (js/clearTimeout existing)
-      (swap! timeouts dissoc id))))
+  clear-timeout)
+
+(rf/reg-fx
+  :clear-timeouts
+  (fn [xs]
+    (doall (map clear-timeout xs))))

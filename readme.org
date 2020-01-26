@@ -11,7 +11,7 @@ these rows need to be added to the board and ignored/handled in the right places
 *** [X] implement and show time
 *** [X] increase speed over time (via levels?)
 *** [X] re-impl leveling to be based on number of pieces instead of time
-*** [ ] fix time to run more smoothly
+*** [X] fix time to run more smoothly
 probably with a secondary timer that's also paused when the user pauses it
 should run every 100 ms
 an insight was that the step-timer might intentionally get delayed by clever
@@ -41,6 +41,7 @@ should also consider over-rotating (skipping a blocked one?)
 *** [ ] prod build shows shadow warning
 *** [ ] keybindings not working on firefox
 *** [ ] display some kind of message on mobile
+*** [ ] pause shouldn't allow movement
 * v2
 ** [ ] mobile touch/gesture support
 ** [ ] customize controls

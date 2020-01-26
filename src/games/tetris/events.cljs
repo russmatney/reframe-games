@@ -26,8 +26,6 @@
    (let [{:keys [ticks tick-timeout level-timeout] :as tetris-db}
          (::tetris.db/db db)
          tetris-db (tetris/step tetris-db)
-         tetris-db (update tetris-db :time
-                           (fn [t] (+ t tick-timeout)))
 
          {:keys [tick-timeout] :as tetris-db}
          (if (should-advance-level? tetris-db)
@@ -37,6 +35,16 @@
      :timeout {:id ::tick
                :event [::game-tick]
                :time tick-timeout}})))
+
+(rf/reg-event-fx
+  ::inc-game-timer
+  (fn [{:keys [db]}]
+    (let [{:keys [timer-inc]} (::tetris.db/db db)]
+      {:db (update-in db [::tetris.db/db :time] #(+ % timer-inc))
+       :timeout
+       {:id ::game-timer
+        :event [::inc-game-timer]
+        :time timer-inc}})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Set Controls
@@ -102,7 +110,8 @@
  ::pause-game
  (fn [{:keys [db]} _ _]
    {:db db
-    :clear-timeout {:id ::tick}}))
+    :clear-timeouts [{:id ::tick}
+                     {:id ::game-timer}]}))
 
 (rf/reg-event-fx
  ::toggle-pause
@@ -110,7 +119,10 @@
    (let [paused (-> db ::tetris.db/db :paused?)
          updated-db (update-in db [::tetris.db/db :paused?] not)]
      (if paused
-       {:dispatch [::game-tick]
+       ;; unpause
+       {:dispatch-n [[::game-tick]
+                     [::inc-game-timer]]
         :db updated-db}
+       ;; pause
        {:dispatch [::pause-game]
         :db updated-db}))))
