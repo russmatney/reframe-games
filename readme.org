@@ -22,16 +22,14 @@ points added per piece played? upon conversion to occupied?
 **** points added for getting rid of a row
 **** combos - consecutive clears, multiple clears
 **** level should influence + increase score
+*** [ ] show more pieces coming, not just the next one
 *** [ ] better piece positions
 could be more consistently centered and anchored
 *** [ ] implement 'bumping'
 rotations against walls/blocks should move the piece over to create space, if
 possible.
 should also consider over-rotating (skipping a blocked one?)
-*** [ ] controls: instant-drop
 *** [ ] controls: hold piece, swap for held piece
-*** [ ] show more pieces coming, not just the next one
-*** [ ] high-score feature preserved per browser cookies
 ** pre-publish: presentable
 *** [ ] move tetris to /tetris page, create brief landing page
 *** [ ] display controls
@@ -57,6 +55,8 @@ given some count, create a piece to submit yourself
 ** [ ] shared high-score + leaderboard
 ** [ ] configurable options
 ** [ ] bonus for clearing the screen completely
+** [ ] controls: instant-drop
+** [ ] high-score feature preserved per browser cookies
 * deployment
 #+BEGIN_SRC sh
 # from project root
