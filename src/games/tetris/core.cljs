@@ -108,8 +108,13 @@
 
     (if should-lock-cells?
       ;; mark all cells
-      (reduce (fn [db cell] (mark-cell-occupied db cell))
-              db falling-cells)
+      (as-> db db
+        (reduce (fn [d cell] (mark-cell-occupied d cell))
+                db falling-cells)
+        ;; this also indicates that the pieces has been played, so we increment
+        (update db :pieces-played inc))
+
+
 
       ;; otherwise just return the db
       db)))

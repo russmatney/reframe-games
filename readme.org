@@ -10,7 +10,7 @@ these rows need to be added to the board and ignored/handled in the right places
 *** [X] deploy to start getting feedback and feature ideas
 *** [X] implement and show time
 *** [X] increase speed over time (via levels?)
-*** [ ] re-impl leveling to be based on number of pieces instead of time
+*** [X] re-impl leveling to be based on number of pieces instead of time
 *** [ ] fix time to run more smoothly
 probably with a secondary timer that's also paused when the user pauses it
 should run every 100 ms

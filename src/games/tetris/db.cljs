@@ -98,9 +98,9 @@
    :entry-cell {:x 3 :y 0}
    :allowed-shape-fns allowed-shape-fns
    :ticks 0
-   :game-tick-timeout 500
+   :tick-timeout 500
    :time 0
    :level 1
-   :level-timeout 5000 ;; 5 seconds for now? should probably be # of pieces, or non-linear
-   :ticks-this-level 0
+   :pieces-per-level 3
+   :pieces-played 0
    :score 0})
