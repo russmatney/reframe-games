@@ -23,7 +23,7 @@ points added per piece played? upon conversion to occupied?
 **** combos - consecutive clears, multiple clears
 **** level should influence + increase score
 *** [X] show more pieces coming, not just the next one
-*** [ ] better piece positions
+*** [X] better piece positions
 could be more consistently centered and anchored
 *** [ ] implement 'bumping'
 rotations against walls/blocks should move the piece over to create space, if

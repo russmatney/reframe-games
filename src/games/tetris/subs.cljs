@@ -1,7 +1,8 @@
 (ns games.tetris.subs
   (:require
    [re-frame.core :as rf]
-   [games.tetris.db :as tetris.db]))
+   [games.tetris.db :as tetris.db]
+   [games.tetris.core :as tetris]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,3 +47,12 @@
  :<- [::tetris-db]
  (fn [db]
    (:level db)))
+
+;; a hacky here, shouldn't be creating things on the fly in subs...
+(rf/reg-sub
+ ::allowed-piece-grids
+ :<- [::tetris-db]
+ (fn [db]
+   (map (fn [shape-fn]
+          (:grid (tetris/add-preview-piece {:height 5 :width 5} shape-fn)))
+        (:allowed-shape-fns db))))

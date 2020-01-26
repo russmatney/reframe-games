@@ -66,10 +66,10 @@
 (defn square-shape [ec]
   (let [style {:background "yellow"}]
     (map #(assoc % :style style)
-      [(relative ec {:y -1 :anchor true})
-       (relative ec {:x -1})
-       (relative ec {:y -1 :x -1})
-       ec])))
+      [(relative ec {:y -1})
+       (relative ec {:x 1})
+       (relative ec {:y -1 :x 1})
+       (assoc ec :anchor true)])))
 
 (def allowed-shape-fns
   [t-shape

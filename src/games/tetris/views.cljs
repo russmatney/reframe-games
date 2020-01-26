@@ -79,23 +79,30 @@
        (for [cell-state row]
         (preview-cell cell-state {:debug false}))])])
 
+(defn piece-preview-list
+  ([] (piece-preview-list {}))
+  ([{:keys [label piece-grids]}]
+   [:div
+    [:h2 label]
+    (for [g piece-grids]
+      ^{:key (str (random-uuid))}
+      [:div
+       {:style {:display "flex"}}
+       (piece-preview g)])]))
+
 (defn piece-previews []
   (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids])]
-    [:div
-     [:h2 "Next pieces"]
-     (for [preview-grid preview-grids]
-       ^{:key (str (random-uuid))}
-       [:div
-        {:style {:display "flex"}}
-        (piece-preview preview-grid)])]))
+    (piece-preview-list {:label "Next pieces"
+                         :piece-grids preview-grids})))
+
+(defn allowed-pieces []
+  (let [allowed-piece-grids @(rf/subscribe [::tetris.subs/allowed-piece-grids])]
+    (piece-preview-list {:label "All pieces"
+                         :piece-grids allowed-piece-grids})))
 
 (defn with-precision [p num]
   (let [num (or num 0)]
     (.toFixed num p)))
-
-(comment
-  (with-precision 4 195.556)
-  (with-precision 2 0))
 
 (defn page []
   (let [score @(rf/subscribe [::tetris.subs/score])
@@ -109,9 +116,9 @@
      [:h2 "Score"]
      [:h2 score]
      [:h2 "Time"]
-     ;; TODO fix this g.d. timer to feel real
-     [:h2 (with-precision 2 (/ t 1000))]
+     [:h2 (str (with-precision 1 (/ t 1000)) "s")]
      [:h2 "Level"]
      [:h2 level]]
     [grid]
-    [piece-previews]]))
+    [piece-previews]
+    [allowed-pieces]]))
