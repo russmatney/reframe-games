@@ -22,7 +22,7 @@ points added per piece played? upon conversion to occupied?
 **** points added for getting rid of a row
 **** combos - consecutive clears, multiple clears
 **** level should influence + increase score
-*** [ ] show more pieces coming, not just the next one
+*** [X] show more pieces coming, not just the next one
 *** [ ] better piece positions
 could be more consistently centered and anchored
 *** [ ] implement 'bumping'

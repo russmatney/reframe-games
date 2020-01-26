@@ -24,10 +24,10 @@
    (positive-rows (:grid game-grid))))
 
 (rf/reg-sub
- ::preview-grid
+ ::preview-grids
  :<- [::tetris-db]
  (fn [db]
-   (positive-rows (:grid (:preview-grid db)))))
+   (map :grid (:preview-grids db))))
 
 (rf/reg-sub
  ::score

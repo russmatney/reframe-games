@@ -70,17 +70,24 @@
          (for [cell-state row]
           (cell cell-state))])]))
 
-(defn piece-preview []
-  (let [grid-data @(rf/subscribe [::tetris.subs/preview-grid])]
+(defn piece-preview [grid-data]
+   [:div
+    (for [row grid-data]
+      ^{:key (str (random-uuid))}
+      [:div
+       {:style {:display "flex"}}
+       (for [cell-state row]
+        (preview-cell cell-state {:debug false}))])])
+
+(defn piece-previews []
+  (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids])]
     [:div
-     [:h2 "Next piece"]
-     [:div
-      (for [row grid-data]
-        ^{:key (str (random-uuid))}
-        [:div
-         {:style {:display "flex"}}
-         (for [cell-state row]
-          (preview-cell cell-state {:debug false}))])]]))
+     [:h2 "Next pieces"]
+     (for [preview-grid preview-grids]
+       ^{:key (str (random-uuid))}
+       [:div
+        {:style {:display "flex"}}
+        (piece-preview preview-grid)])]))
 
 (defn with-precision [p num]
   (let [num (or num 0)]
@@ -107,4 +114,4 @@
      [:h2 "Level"]
      [:h2 level]]
     [grid]
-    [piece-preview]]))
+    [piece-previews]]))
