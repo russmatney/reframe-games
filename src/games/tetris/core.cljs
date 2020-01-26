@@ -142,9 +142,14 @@
 (defn rotate-piece
   "Rotates a falling piece in-place.
   This requires one falling cell to be an 'anchor'.
-  The anchor stays in place - the other cells calc an x/y delta between
-  themselves and the anchor.
-  "
+  The anchor attempts to stay in place - the other cells calc an x/y delta
+  between themselves and the anchor, which is used to update the cells locations
+  as they rotate around the anchor.
+
+  If the rotation cannot be done due to conflict with boundaries or occupied
+  pieces, fallback moves are attempted, moving the pieces one two spaces to the
+  left or right before attempting the rotate. This results in the 'bumping' away
+  from walls when attempting to rotate on the edge of the grid."
   [{:keys [game-grid] :as db}]
   (let [falling-cells (get-falling-cells db)
         anchor-cell (first (filter :anchor falling-cells))]
@@ -154,8 +159,36 @@
       db
       (update db :game-grid
               (fn [grid]
-                (grid/move-cells grid
+                (grid/move-cells
+                 grid
                  {:move-f #(calc-rotate-target anchor-cell %)
+                  :fallback-moves
+                  [{:additional-cells [anchor-cell]
+                    :fallback-move-f (fn [c]
+                                       (as-> c c
+                                         (grid/move-cell-coords c :right)
+                                         (calc-rotate-target
+                                          (update anchor-cell :x inc) c)))}
+                   {:additional-cells [anchor-cell]
+                    :fallback-move-f (fn [c]
+                                       (as-> c c
+                                         (grid/move-cell-coords c :left)
+                                         (calc-rotate-target
+                                          (update anchor-cell :x dec) c)))}
+                   {:additional-cells [anchor-cell]
+                    :fallback-move-f (fn [c]
+                                       (as-> c c
+                                         (grid/move-cell-coords c :right)
+                                         (grid/move-cell-coords c :right)
+                                         (calc-rotate-target
+                                          (update anchor-cell :x #(+ % 2)) c)))}
+                   {:additional-cells [anchor-cell]
+                    :fallback-move-f (fn [c]
+                                       (as-> c c
+                                         (grid/move-cell-coords c :left)
+                                         (grid/move-cell-coords c :left)
+                                         (calc-rotate-target
+                                          (update anchor-cell :x #(- % 2)) c)))}]
                   :can-move? #(cell-open? db %)
                   :cells (remove :anchor falling-cells)}))))))
 

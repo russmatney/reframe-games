@@ -25,7 +25,7 @@ points added per piece played? upon conversion to occupied?
 *** [X] show more pieces coming, not just the next one
 *** [X] better piece positions
 could be more consistently centered and anchored
-*** [ ] implement 'bumping'
+*** [X] implement 'bumping'
 rotations against walls/blocks should move the piece over to create space, if
 possible.
 should also consider over-rotating (skipping a blocked one?)

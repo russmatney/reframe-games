@@ -154,15 +154,8 @@
      {:x (+ x x-diff)
       :y (+ y y-diff)}))
 
-(defn move-cells
-  "Moves a group of passed `cells` according to `move-f`.
-  Only moves if all passed cells return true for `can-move?`.
-
-  This function does the work of copying cell props from one cell to another,
-  clearing props on cells that have been abandoned, and being smart about not
-  clearing cells that are being moved into.
-  "
-  [db {:keys [cells move-f can-move?]}]
+(defn- calc-move-cells
+  [db {:keys [cells move-f can-move?] :as move-opts}]
   (let [cells-and-targets
         (map (fn [c] {:cell (get-cell db c)
                       :target (move-f c)})
@@ -171,12 +164,42 @@
         cells-to-move (set (map cell->coords cells))
         target-coords (set (map cell->coords targets))
         cells-to-clear (set/difference cells-to-move target-coords)
+        all-can-move? (not (seq (remove can-move? targets)))]
 
-        any-cant-move? (seq (remove can-move? targets))]
+    {:cells-and-targets cells-and-targets
+     :targets targets
+     :cells-to-clear cells-to-clear
+     :all-can-move? all-can-move?}))
 
-    (if any-cant-move? db
+(defn move-cells
+  "Moves a group of passed `cells` according to `move-f`.
+  Only moves if all passed cells return true for `can-move?`.
+  Otherwise, returns the db as-is.
+
+  This function does the work of copying cell props from one cell to another,
+  clearing props on cells that have been abandoned, and being smart about not
+  clearing cells that are being moved into.
+  "
+  [db {:keys [cells move-f fallback-moves] :as move-opts}]
+  (let [{:keys [cells-and-targets targets cells-to-clear all-can-move?]}
+        (calc-move-cells db move-opts)
+        {:keys [fallback-move-f additional-cells]} (first fallback-moves)]
+    (cond
+      all-can-move?
       (as-> db db
         ;; copy cells that are 'moving'
         (reduce overwrite-cell db cells-and-targets)
         ;; clear cells that were left
-        (reduce clear-cell-props db cells-to-clear)))))
+        (reduce clear-cell-props db cells-to-clear))
+
+      fallback-move-f
+      (let [fallback-moves (drop 1 fallback-moves)]
+        (as-> db db
+          (move-cells
+           db
+           (-> move-opts
+               (update :cells #(concat % additional-cells))
+               (assoc :move-f fallback-move-f)
+               (assoc :fallback-moves fallback-moves)))))
+
+      true db)))
