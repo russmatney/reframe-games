@@ -1,35 +1,61 @@
 #+TITLE: Re-frame Games
 
 * A tetris clone in Re-frame/Reagent (CLJS), and other games
-* bugs
-** [ ] prod build shows shadow warning
-** [ ] keybindings not working on firefox
-* pre-publish
-** [X] support pieces 'falling' into the screen
+* burndown
+** pre-publish: feature complete
+*** [X] support pieces 'falling' into the screen
 when a piece's shape is more than a cell tall, it should enter one row at a time
 I think this can be mocked with 'phantom' rows above the board
 these rows need to be added to the board and ignored/handled in the right places
-** [X] deploy to start getting feedback and feature ideas
-** [X] implement and show time
-** [X] increase speed over time (via levels?)
-** [ ] implement and show score
-** [ ] move tetris to /tetris page, create brief landing page
-** [ ] better rotation centering/anchors
-** [ ] fix time to run more smoothly
-** [ ] implement 'bumping'
+*** [X] deploy to start getting feedback and feature ideas
+*** [X] implement and show time
+*** [X] increase speed over time (via levels?)
+*** [ ] re-impl leveling to be based on number of pieces instead of time
+*** [ ] fix time to run more smoothly
+probably with a secondary timer that's also paused when the user pauses it
+should run every 100 ms
+an insight was that the step-timer might intentionally get delayed by clever
+user action
+so, no use trying to re-use it for a wall clock/stop watch
+*** [ ] implement and show score
+points added per piece played? upon conversion to occupied?
+**** points added for getting rid of a row
+**** bonus for clearing the screen completely
+**** combos - consecutive clears, multiple clears
+**** level should influence + increase score
+*** [ ] better piece positions
+could be more consistently centered and anchored
+*** [ ] implement 'bumping'
 rotations against walls/blocks should move the piece over to create space, if
 possible.
-** [ ] controls: fast-drop
-** [ ] controls: hold
-** [ ] layout, colors, styling
-*** [ ] rotating styles on rows?
-:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
-* post-publish
-** [ ] mobile touch/gesture support?
+should also consider over-rotating (skipping a blocked one?)
+*** [ ] controls: instant-drop
+*** [ ] controls: hold piece, swap for held piece
+*** [ ] show more pieces coming, not just the next one
+*** [ ] high-score feature preserved per browser cookies
+** pre-publish: presentable
+*** [ ] move tetris to /tetris page, create brief landing page
+*** [ ] display controls
+*** [ ] layout
+*** [ ] colors
+*** [ ] prod build shows shadow warning
+*** [ ] keybindings not working on firefox
+*** [ ] display some kind of message on mobile
+* v2
+** [ ] mobile touch/gesture support
 ** [ ] customize controls
-* ideas
-** [ ] build up a puzzle? pixelated art?
-** [ ] show replay, or highlights?
+** [ ] rotation styles on rows
+:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
+** [ ] custom game modes
+set height, width, blocks, speed
+*** bullet mode
+size-3 pieces, 10x speed
+** [ ] draw your own piece
+given some count, create a piece to submit yourself
+** [ ] build up a puzzle/art piece
+** [ ] record and show replay/highlights
+** [ ] shared high-score + leaderboard
+** [ ] configurable options
 * deployment
 #+BEGIN_SRC sh
 # from project root
