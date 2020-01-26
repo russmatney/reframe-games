@@ -99,8 +99,12 @@
                  (rand-nth allowed-shape-fns)
                  (rand-nth allowed-shape-fns)
                  (rand-nth allowed-shape-fns)]
+   :max-queue-size 5
    :entry-cell {:x 3 :y 0}
    :allowed-shape-fns allowed-shape-fns
+   :falling-shape-fn nil
+   :held-shape-fn nil
+   :held-grid (grid/build-grid {:height 5 :width 5})
    :ticks 0
    :tick-timeout 500
    :time 0

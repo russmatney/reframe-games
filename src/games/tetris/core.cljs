@@ -218,24 +218,36 @@
         next-three (take 3 (drop 1 piece-queue))
         make-cells (first piece-queue)]
     (-> db
-        (update :piece-queue
+      (update :piece-queue
                 #(as-> % q
                      (drop 1 q)
                      (concat q [for-queue])))
 
-     (update :game-grid
+      (assoc :falling-shape-fn make-cells)
+
+      (update :game-grid
              (fn [g]
                (grid/add-cells g
                               {:entry-cell entry-cell
                                :update-cell #(assoc % :falling true)
                                :make-cells make-cells})))
-     (update :preview-grids
+
+      (update :preview-grids
              (fn [gs]
                (let [[g1 g2 g3] gs
                      [p1 p2 p3] next-three]
                  [(add-preview-piece g1 p1)
                   (add-preview-piece g2 p2)
                   (add-preview-piece g3 p3)]))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Removing Pieces (for hold/swap feature)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn clear-falling-piece
+  "Removes all cells that have a :falling prop."
+  [db]
+  (update db :game-grid #(grid/clear-cells % :falling)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Score

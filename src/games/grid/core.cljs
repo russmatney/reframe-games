@@ -124,7 +124,7 @@
        cells)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cell Fetching
+;; Cell Fetching and Deleting
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-cell
@@ -134,6 +134,12 @@
 (defn get-cells
   [{:keys [grid]} pred]
   (filter pred (flatten grid)))
+
+(defn clear-cells
+  [db pred]
+  (reduce (fn [db c] (clear-cell-props db c))
+          db
+          (get-cells db pred)))
 
 (defn cell->coords
   "Returns only the coords of a cell as :x and :y

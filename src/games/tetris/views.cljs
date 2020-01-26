@@ -100,6 +100,11 @@
     (piece-preview-list {:label "All pieces"
                          :piece-grids allowed-piece-grids})))
 
+(defn held-piece []
+  (let [held-grid @(rf/subscribe [::tetris.subs/held-grid])]
+    (piece-preview-list {:label "Held"
+                         :piece-grids [held-grid]})))
+
 (defn with-precision [p num]
   (let [num (or num 0)]
     (.toFixed num p)))
@@ -120,5 +125,6 @@
      [:h2 "Level"]
      [:h2 level]]
     [grid]
+    [held-piece]
     [piece-previews]
     [allowed-pieces]]))

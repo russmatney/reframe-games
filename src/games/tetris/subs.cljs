@@ -31,6 +31,12 @@
    (map :grid (:preview-grids db))))
 
 (rf/reg-sub
+ ::held-grid
+ :<- [::tetris-db]
+ (fn [{:keys [held-grid]}]
+   (:grid held-grid)))
+
+(rf/reg-sub
  ::score
  :<- [::tetris-db]
  (fn [db]

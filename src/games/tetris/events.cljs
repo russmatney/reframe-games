@@ -23,8 +23,7 @@
 (rf/reg-event-fx
  ::game-tick
  (fn [{:keys [db]}]
-   (let [{:keys [ticks tick-timeout level-timeout] :as tetris-db}
-         (::tetris.db/db db)
+   (let [tetris-db (::tetris.db/db db)
          tetris-db (tetris/step tetris-db)
 
          {:keys [tick-timeout] :as tetris-db}
@@ -59,7 +58,7 @@
      {;; takes a collection of events followed by key combos that can trigger the
       ;; event
       :event-keys
-      [[[:enter-pressed]
+      [[[::toggle-pause]
         [{:keyCode 13}]] ;; enter key
        [[::move-piece :left]
         [{:keyCode 37}] ;; left arrow
@@ -70,10 +69,10 @@
        [[::move-piece :down]
         [{:keyCode 40}] ;; down arrow
         [{:keyCode 74}]] ;; j key
-       [[::rotate-piece]
+       [[::hold-and-swap-piece]
         [{:keyCode 38}] ;; up arrow
         [{:keyCode 75}]] ;; k key
-       [[::toggle-pause]
+       [[::rotate-piece]
         [{:keyCode 32}]]]}]})) ;; space bar
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -101,6 +100,45 @@
             ::tetris.db/db
             (fn [t-db]
               (tetris/rotate-piece t-db)))}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Hold/Swap
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(rf/reg-event-fx
+ ::hold-and-swap-piece
+ (fn [{:keys [db]} _ _]
+   ;; if there is a hold, move current hold to front of queue
+   ;; remove current falling piece from board, move it to hold
+   (let [tet-db (::tetris.db/db db)
+         held (:held-shape-fn tet-db)
+         falling (:falling-shape-fn tet-db)
+         tet-db (cond-> tet-db
+                  ;; prepend queue with held piece
+                  ;; TODO prevent quick double tap from stacking the queue here
+                  held
+                  (update :piece-queue (fn [q]
+                                         (cons held q)))
+
+                  ;; move falling piece to held piece
+                  falling
+                  (assoc :held-shape-fn falling)
+
+                  ;; clear falling piece if there was one
+                  falling
+                  (assoc :falling-shape-fn nil)
+
+                  ;; update grid for showing held piece
+                  falling
+                  (update :held-grid
+                          #(tetris/add-preview-piece % falling))
+
+                  ;; clear the falling pieces from the board
+                  falling
+                  (tetris/clear-falling-piece))]
+
+     {:db (assoc db ::tetris.db/db tet-db)})))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Pause
