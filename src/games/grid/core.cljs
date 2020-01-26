@@ -42,7 +42,7 @@
 ;; Row manipulation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn any-row?
+(defn select-rows
   "Returns true if any row satisfies the passed row predicate."
   [{:keys [grid]} pred]
   (seq (filter pred grid)))

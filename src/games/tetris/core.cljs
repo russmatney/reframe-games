@@ -37,10 +37,10 @@
 (defn row-fully-occupied? [row f?]
    (grid/true-for-row? row :occupied))
 
-(defn rows-to-clear?
+(defn rows-to-clear
   "Returns true if there are rows to be removed from the board."
   [{:keys [game-grid]}]
-  (grid/any-row? game-grid row-fully-occupied?))
+  (grid/select-rows game-grid row-fully-occupied?))
 
 (defn clear-full-rows
   "Removes rows satisfying the predicate, replacing them with rows of empty
@@ -113,8 +113,6 @@
                 db falling-cells)
         ;; this also indicates that the pieces has been played, so we increment
         (update db :pieces-played inc))
-
-
 
       ;; otherwise just return the db
       db)))
@@ -199,14 +197,42 @@
                       :make-cells for-queue})))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Score
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn update-score
+  "Score is a function of the number of rows cleared and the level.
+  Combos function by double-counting previously cleared rows.
+  Ex: if rows are cleared by piece n, and another row is cleared by piece n + 1,
+  the original rows are included in the row-count-score multipled by the current
+  level.
+  "
+  [{:keys [score-per-row-clear level rows-in-combo
+           last-combo-piece-num pieces-played] :as db}]
+  (let [rows-cleared (count (rows-to-clear db))
+        carry-combo? (= pieces-played (+ last-combo-piece-num 1))
+        row-count-score (if carry-combo?
+                          (+ rows-cleared rows-in-combo)
+                          rows-cleared)
+        updated-rows-in-combo (if carry-combo?
+                                row-count-score
+                                rows-cleared)]
+    (-> db
+      (update :score #(+ % (* score-per-row-clear row-count-score level)))
+      (assoc :rows-in-combo updated-rows-in-combo)
+      (assoc :last-combo-piece-num pieces-played))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn step [db]
   (cond
     ;; clear pieces, update db and return
-    (rows-to-clear? db) ;; animation?
-    (clear-full-rows db)
+    (> (count (rows-to-clear db)) 0)
+    (-> db
+      (update-score)
+      (clear-full-rows))
 
     ;; game is over, update db and return
     ;;(gameover? db) (assoc db :gameover true) ;; or :phase :gameover?

@@ -104,4 +104,7 @@
    :level 1
    :pieces-per-level 3
    :pieces-played 0
-   :score 0})
+   :score 0
+   :score-per-row-clear 10
+   :rows-in-combo 0
+   :last-combo-piece-num nil})

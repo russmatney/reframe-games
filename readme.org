@@ -17,10 +17,9 @@ should run every 100 ms
 an insight was that the step-timer might intentionally get delayed by clever
 user action
 so, no use trying to re-use it for a wall clock/stop watch
-*** [ ] implement and show score
+*** [X] implement and show score
 points added per piece played? upon conversion to occupied?
 **** points added for getting rid of a row
-**** bonus for clearing the screen completely
 **** combos - consecutive clears, multiple clears
 **** level should influence + increase score
 *** [ ] better piece positions
@@ -57,6 +56,7 @@ given some count, create a piece to submit yourself
 ** [ ] record and show replay/highlights
 ** [ ] shared high-score + leaderboard
 ** [ ] configurable options
+** [ ] bonus for clearing the screen completely
 * deployment
 #+BEGIN_SRC sh
 # from project root
