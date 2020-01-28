@@ -1,7 +1,8 @@
 (ns games.tetris.views
   (:require
    [re-frame.core :as rf]
-   [games.tetris.subs :as tetris.subs]))
+   [games.tetris.subs :as tetris.subs]
+   [games.views.util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell
@@ -58,10 +59,12 @@
 ;; Grid
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn grid []
+(defn matrix []
   (let [grid-data @(rf/subscribe [::tetris.subs/game-grid])]
     [:div
-      (for [row grid-data]
+     {:style
+      {:border "1px solid red"}}
+     (for [row grid-data]
         ^{:key (str (random-uuid))}
         [:div
          {:style
@@ -105,26 +108,28 @@
     (piece-preview-list {:label "Held"
                          :piece-grids [held-grid]})))
 
-(defn with-precision [p num]
-  (let [num (or num 0)]
-    (.toFixed num p)))
-
-(defn page []
+(defn score-panel []
   (let [score @(rf/subscribe [::tetris.subs/score])
         t @(rf/subscribe [::tetris.subs/time])
         level @(rf/subscribe [::tetris.subs/level])]
-   [:div
-    {:style
-     {:display "flex"
-      :margin "10px"}}
-    [:div
+    [:div.left-panel
      [:h2 "Score"]
      [:h2 score]
      [:h2 "Time"]
-     [:h2 (str (with-precision 1 (/ t 1000)) "s")]
+     [:h2 (str (util/with-precision 1 (/ t 1000)) "s")]
      [:h2 "Level"]
-     [:h2 level]]
-    [grid]
+     [:h2 level]]))
+
+(defn piece-panel []
+  [:div
     [held-piece]
-    [piece-previews]
-    [allowed-pieces]]))
+    [piece-previews]])
+    ;;[allowed-pieces]]))
+
+(defn page []
+  [:div
+   {:style
+    {:display "flex"}}
+   [score-panel]
+   [matrix]
+   [piece-panel]])

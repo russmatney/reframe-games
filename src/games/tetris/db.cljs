@@ -88,8 +88,8 @@
 
 (def initial-db
   {:game-grid
-   (grid/build-grid {:height 13
-                     :width 8
+   (grid/build-grid {:height 20
+                     :width 10
                      :phantom-rows 4})
    :preview-grids
    [(grid/build-grid {:height 5 :width 5})
@@ -111,7 +111,7 @@
    :time 0
    :timer-inc 100
    :level 1
-   :pieces-per-level 3
+   :pieces-per-level 10
    :pieces-played 0
    :score 0
    :score-per-row-clear 10

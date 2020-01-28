@@ -35,15 +35,17 @@ should also consider over-rotating (skipping a blocked one?)
 *** [X] holds should not be unlimited
 *** [X] pause shouldn't allow movement or extra holds
 *** [X] double tapping hold can over-stack the piece-queue
-*** [ ] move tetris to /tetris page, create brief landing page
-*** [ ] display controls
 *** [ ] layout
+640px by 360px?
 *** [ ] colors
 *** [X] prod build shows shadow warning
-*** [ ] keybindings not working on firefox
+*** [ ] keys annoying in browsers - spacebar, up, down arrow
+page scrolls...
+*** [ ] display controls
 *** [ ] display some kind of message on mobile
 *** [ ] proper initial configs
 for pieces per level, speed increase, etc
+*** [ ] display paused state
 ** reading tetris rules
 https://tetris.wiki/Tetris_Guideline
 *** [ ] levels by cleared rows, not pieces
@@ -53,6 +55,9 @@ https://tetris.wiki/Tetris_Guideline
 *** [ ] show ghost-piece
 *** [ ] 7-bag of pieces randomly filled
 * v2
+** [ ] move tetris to /tetris page, create brief landing page
+not sure how to integrate with both itch and personal website yet
+iframes, maybe?
 ** [ ] mobile touch/gesture support
 ** [ ] customize controls
 ** [ ] rotation styles on rows
