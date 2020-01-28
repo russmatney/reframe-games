@@ -49,7 +49,7 @@
         :background (when preview "coral")
         :border (if preview
                   "black solid 1px"
-                  "transparent solid 1px")}
+                  "gray solid 1px")}
        style)}
      (if debug
       (str c)
@@ -63,7 +63,13 @@
   (let [grid-data @(rf/subscribe [::tetris.subs/game-grid])]
     [:div
      {:style
-      {:border "1px solid red"}}
+      {:display "flex"
+       :flex "1"
+       :flex-direction "column"
+       :justify-content "flex-start"
+       :align-items "center"
+       :margin "0 24px"
+       :border "1px solid red"}}
      (for [row grid-data]
         ^{:key (str (random-uuid))}
         [:div
@@ -82,20 +88,30 @@
        (for [cell-state row]
         (preview-cell cell-state {:debug false}))])])
 
+(defn display-label
+  [{:keys [label]}]
+  [:h3
+   {:style {:opacity "0.8"}}
+   label])
+
 (defn piece-preview-list
   ([] (piece-preview-list {}))
-  ([{:keys [label piece-grids]}]
+  ([{:keys [label piece-grids] :as metric}]
    [:div
-    [:h2 label]
+    {:style
+     {:margin-top "24px"}}
+    [display-label metric]
     (for [g piece-grids]
       ^{:key (str (random-uuid))}
       [:div
-       {:style {:display "flex"}}
+       {:style
+        {:display "flex"
+         :border "1px solid red"}}
        (piece-preview g)])]))
 
 (defn piece-previews []
   (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids])]
-    (piece-preview-list {:label "Next pieces"
+    (piece-preview-list {:label "Next"
                          :piece-grids preview-grids})))
 
 (defn allowed-pieces []
@@ -108,20 +124,42 @@
     (piece-preview-list {:label "Held"
                          :piece-grids [held-grid]})))
 
+(defn metric [{:keys [label value] :as metric}]
+  [:div
+   {:style {:display "flex"
+            :text-align "right"
+            :margin-top "24px"
+            :flex-direction "column"}}
+
+   [display-label metric]
+   [:h2
+    {:style {:opacity "0.9"}}
+    value]])
+
 (defn score-panel []
   (let [score @(rf/subscribe [::tetris.subs/score])
         t @(rf/subscribe [::tetris.subs/time])
         level @(rf/subscribe [::tetris.subs/level])]
     [:div.left-panel
-     [:h2 "Score"]
-     [:h2 score]
-     [:h2 "Time"]
-     [:h2 (str (util/with-precision 1 (/ t 1000)) "s")]
-     [:h2 "Level"]
-     [:h2 level]]))
+     {:style
+      {:display "flex"
+       :flex "1"
+       :flex-direction "column"
+       :justify-content "flex-start"
+       :align-items "flex-end"}}
+     [metric {:label "Score" :value score}]
+     [metric {:label "Time"
+              :value (str (util/with-precision 1 (/ t 1000)) "s")}]
+     [metric {:label "Level" :value level}]]))
 
 (defn piece-panel []
   [:div
+    {:style
+      {:display "flex"
+       :flex "1"
+       :flex-direction "column"
+       :justify-content "flex-start"
+       :align-items "flex-start"}}
     [held-piece]
     [piece-previews]])
     ;;[allowed-pieces]]))
@@ -129,7 +167,9 @@
 (defn page []
   [:div
    {:style
-    {:display "flex"}}
+    {:height "100vh"
+     :display "flex"
+     :padding-top "24px"}}
    [score-panel]
    [matrix]
    [piece-panel]])

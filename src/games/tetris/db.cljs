@@ -91,20 +91,20 @@
    (grid/build-grid {:height 20
                      :width 10
                      :phantom-rows 4})
+   :entry-cell {:x 5 :y 0}
    :preview-grids
-   [(grid/build-grid {:height 5 :width 5})
-    (grid/build-grid {:height 5 :width 5})
-    (grid/build-grid {:height 5 :width 5})]
+   [(grid/build-grid {:height 4 :width 4})
+    (grid/build-grid {:height 4 :width 4})
+    (grid/build-grid {:height 4 :width 4})]
    :piece-queue [(rand-nth allowed-shape-fns)
                  (rand-nth allowed-shape-fns)
                  (rand-nth allowed-shape-fns)
                  (rand-nth allowed-shape-fns)]
    :max-queue-size 5
-   :entry-cell {:x 3 :y 0}
    :allowed-shape-fns allowed-shape-fns
    :falling-shape-fn nil
    :held-shape-fn nil
-   :held-grid (grid/build-grid {:height 5 :width 5})
+   :held-grid (grid/build-grid {:height 4 :width 4})
    :hold-lock false
    :ticks 0
    :tick-timeout 500

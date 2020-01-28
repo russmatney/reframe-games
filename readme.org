@@ -35,9 +35,12 @@ should also consider over-rotating (skipping a blocked one?)
 *** [X] holds should not be unlimited
 *** [X] pause shouldn't allow movement or extra holds
 *** [X] double tapping hold can over-stack the piece-queue
+*** [X] css reset
+https://github.com/hankchizljaw/modern-css-reset
 *** [ ] layout
 640px by 360px?
 *** [ ] colors
+*** [ ] fonts
 *** [X] prod build shows shadow warning
 *** [ ] keys annoying in browsers - spacebar, up, down arrow
 page scrolls...
@@ -45,7 +48,15 @@ page scrolls...
 *** [ ] display some kind of message on mobile
 *** [ ] proper initial configs
 for pieces per level, speed increase, etc
-*** [ ] display paused state
+*** [ ] display 'paused' state
+** [ ] pre-publish: publishable
+*** [ ] collect attributions to share
+**** [ ] reframe, reagent, react
+**** [ ] nes styles and font
+https://github.com/nostalgic-css/NES.css
+**** [ ] css reset
+https://github.com/hankchizljaw/modern-css-reset
+*** [ ] write description
 ** reading tetris rules
 https://tetris.wiki/Tetris_Guideline
 *** [ ] levels by cleared rows, not pieces
@@ -54,6 +65,7 @@ https://tetris.wiki/Tetris_Guideline
 *** [ ] rotate in two directions
 *** [ ] show ghost-piece
 *** [ ] 7-bag of pieces randomly filled
+*** [ ] adjust controls to match guidelines
 * v2
 ** [ ] move tetris to /tetris page, create brief landing page
 not sure how to integrate with both itch and personal website yet
@@ -75,6 +87,7 @@ given some count, create a piece to submit yourself
 ** [ ] bonus for clearing the screen completely
 ** [ ] controls: instant-drop
 ** [ ] high-score feature preserved per browser cookies
+** [ ] rows-to-next-level visual
 * deployment
 #+BEGIN_SRC sh
 # from project root
