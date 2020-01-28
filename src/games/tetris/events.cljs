@@ -73,7 +73,19 @@
         [{:keyCode 38}] ;; up arrow
         [{:keyCode 75}]] ;; k key
        [[::rotate-piece]
-        [{:keyCode 32}]]]}]})) ;; space bar
+        [{:keyCode 32}]]]} ;; space bar
+
+     :prevent-default-keys
+      [{:keyCode 13} ;; enter key
+       {:keyCode 37} ;; left arrow
+       {:keyCode 72} ;; h key
+       {:keyCode 39} ;;right arrow
+       {:keyCode 76} ;; l key
+       {:keyCode 40} ;; down arrow
+       {:keyCode 74} ;; j key
+       {:keyCode 38} ;; up arrow
+       {:keyCode 75} ;; k key
+       {:keyCode 32}]]})) ;; space bar
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move piece

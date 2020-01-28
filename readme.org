@@ -37,26 +37,26 @@ should also consider over-rotating (skipping a blocked one?)
 *** [X] double tapping hold can over-stack the piece-queue
 *** [X] css reset
 https://github.com/hankchizljaw/modern-css-reset
-*** [ ] layout
-640px by 360px?
-*** [ ] colors
-*** [ ] fonts
+*** [X] layout
+*** [X] colors
+*** [X] fonts
 *** [X] prod build shows shadow warning
-*** [ ] keys annoying in browsers - spacebar, up, down arrow
-page scrolls...
-*** [ ] display controls
-*** [ ] display some kind of message on mobile
-*** [ ] proper initial configs
+*** [X] proper initial configs
 for pieces per level, speed increase, etc
 *** [ ] display 'paused' state
+*** [ ] keys annoying in browsers - spacebar, up, down arrow
+page scrolls...
+*** [ ] display controls via control screen
+*** [ ] display some kind of message on mobile
 ** [ ] pre-publish: publishable
-*** [ ] collect attributions to share
+*** [ ] collect attributions to share in description and in game itself
 **** [ ] reframe, reagent, react
 **** [ ] nes styles and font
 https://github.com/nostalgic-css/NES.css
 **** [ ] css reset
 https://github.com/hankchizljaw/modern-css-reset
 *** [ ] write description
+*** [ ] make repo opensource
 ** reading tetris rules
 https://tetris.wiki/Tetris_Guideline
 *** [ ] levels by cleared rows, not pieces
@@ -88,6 +88,8 @@ given some count, create a piece to submit yourself
 ** [ ] controls: instant-drop
 ** [ ] high-score feature preserved per browser cookies
 ** [ ] rows-to-next-level visual
+** [ ] refactor colors to select at render time
+rather than piece creation time
 * deployment
 #+BEGIN_SRC sh
 # from project root
