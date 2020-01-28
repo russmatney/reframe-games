@@ -208,7 +208,7 @@
    (-> grid
      (grid/build-grid)
      (grid/add-cells
-       {:entry-cell {:x 2 :y 3}
+       {:entry-cell {:x 1 :y 1}
         :update-cell #(assoc % :preview true)
         :make-cells piece})))
 

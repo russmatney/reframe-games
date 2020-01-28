@@ -23,10 +23,14 @@
         :max-height height
         :width width
         :height height
-        :background (cond falling "coral"
-                          occupied "coral"
-                          true "gray")
-        :border "black solid 1px"}
+        :background
+        (cond falling "coral"
+              occupied "coral"
+              true "rgba(0, 0, 0, 0.1)")
+        :border
+        (cond falling "rgba(0, 0, 0, 0.8) solid 1px"
+              occupied "black solid 1px"
+              true "rgba(0, 0, 0, 0.4) solid 1px")}
        style)}
      (if debug
       (str c)
@@ -49,7 +53,8 @@
         :background (when preview "coral")
         :border (if preview
                   "black solid 1px"
-                  "gray solid 1px")}
+                  ;;"gray solid 1px"
+                  "transparent solid 1px")}
        style)}
      (if debug
       (str c)
@@ -68,8 +73,8 @@
        :flex-direction "column"
        :justify-content "flex-start"
        :align-items "center"
-       :margin "0 24px"
-       :border "1px solid red"}}
+       :margin "0 24px"}}
+       ;;:border "1px solid red"}}
      (for [row grid-data]
         ^{:key (str (random-uuid))}
         [:div
@@ -106,12 +111,14 @@
       [:div
        {:style
         {:display "flex"
-         :border "1px solid red"}}
+         :justify-content "center"
+         :margin-bottom "12px"}}
+         ;;:border "1px solid red"}}
        (piece-preview g)])]))
 
 (defn piece-previews []
   (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids])]
-    (piece-preview-list {:label "Next"
+    (piece-preview-list {:label "Queue"
                          :piece-grids preview-grids})))
 
 (defn allowed-pieces []
@@ -121,7 +128,7 @@
 
 (defn held-piece []
   (let [held-grid @(rf/subscribe [::tetris.subs/held-grid])]
-    (piece-preview-list {:label "Held"
+    (piece-preview-list {:label "Hold"
                          :piece-grids [held-grid]})))
 
 (defn metric [{:keys [label value] :as metric}]
@@ -160,8 +167,8 @@
        :flex-direction "column"
        :justify-content "flex-start"
        :align-items "flex-start"}}
-    [held-piece]
-    [piece-previews]])
+    [piece-previews]
+    [held-piece]])
     ;;[allowed-pieces]]))
 
 (defn page []

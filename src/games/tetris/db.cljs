@@ -18,50 +18,50 @@
 (defn line-shape [ec]
   (let [style {:background "powderblue"}]
     (map #(assoc % :style style)
-      [(relative ec {:y -3})
-       (relative ec {:y -2})
-       (relative ec {:y -1 :anchor true})
-       ec])))
+         [(relative ec {:x 2})
+          (relative ec {:x 1})
+          (assoc ec :anchor true)
+          (relative ec {:x -1})])))
 
 (defn t-shape [ec]
   (let [style {:background "coral"}]
     (map #(assoc % :style style)
-      [(relative ec {:y -1 :anchor true})
-       (relative ec {:y -1 :x -1})
-       (relative ec {:y -1 :x 1})
-       ec])))
+      [(relative ec {:y -1})
+       (relative ec {:x -1})
+       (relative ec {:x 1})
+       (assoc ec :anchor true)])))
 
 (defn z-shape [ec]
   (let [style {:background "red"}]
     (map #(assoc % :style style)
-      [(relative ec {:y -1 :anchor true})
+      [(relative ec {:y -1})
        (relative ec {:y -1 :x -1})
-       (relative ec {:y -2 :x -1})
-       ec])))
+       (relative ec {:x 1})
+       (assoc ec :anchor true)])))
 
 (defn s-shape [ec]
   (let [style {:background "green"}]
     (map #(assoc % :style style)
-      [(relative ec {:y -1 :anchor true})
+      [(relative ec {:y -1})
        (relative ec {:y -1 :x 1})
-       (relative ec {:y -2 :x 1})
-       ec])))
+       (relative ec {:x -1})
+       (assoc ec :anchor true)])))
 
 (defn r-shape [ec]
   (let [style {:background "blue"}]
     (map #(assoc % :style style)
-      [(relative ec {:y -1 :anchor true})
-       (relative ec {:y -2})
-       (relative ec {:y -2 :x 1})
-       ec])))
+      [(relative ec {:x -1 :y -1})
+       (relative ec {:x -1})
+       (relative ec {:x 1})
+       (assoc ec :anchor true)])))
 
 (defn l-shape [ec]
   (let [style {:background "orange"}]
     (map #(assoc % :style style)
-      [(relative ec {:y -1 :anchor true})
-       (relative ec {:y -2})
-       (relative ec {:y -2 :x -1})
-       ec])))
+      [(relative ec {:x 1 :y -1})
+       (relative ec {:x -1})
+       (relative ec {:x 1})
+       (assoc ec :anchor true)])))
 
 (defn square-shape [ec]
   (let [style {:background "yellow"}]
@@ -93,9 +93,9 @@
                      :phantom-rows 4})
    :entry-cell {:x 5 :y 0}
    :preview-grids
-   [(grid/build-grid {:height 4 :width 4})
-    (grid/build-grid {:height 4 :width 4})
-    (grid/build-grid {:height 4 :width 4})]
+   [(grid/build-grid {:height 2 :width 4})
+    (grid/build-grid {:height 2 :width 4})
+    (grid/build-grid {:height 2 :width 4})]
    :piece-queue [(rand-nth allowed-shape-fns)
                  (rand-nth allowed-shape-fns)
                  (rand-nth allowed-shape-fns)
@@ -104,7 +104,7 @@
    :allowed-shape-fns allowed-shape-fns
    :falling-shape-fn nil
    :held-shape-fn nil
-   :held-grid (grid/build-grid {:height 4 :width 4})
+   :held-grid (grid/build-grid {:height 2 :width 4})
    :hold-lock false
    :ticks 0
    :tick-timeout 500
