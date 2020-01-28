@@ -32,16 +32,16 @@ should also consider over-rotating (skipping a blocked one?)
 *** [X] controls: hold piece, swap for held piece
 *** [X] deploy latest
 ** [ ] pre-publish: presentable
+*** [ ] holds should not be unlimited
+*** [ ] pause shouldn't allow movement or extra holds
+*** [ ] double tapping hold can over-stack the piece-queue
 *** [ ] move tetris to /tetris page, create brief landing page
 *** [ ] display controls
 *** [ ] layout
 *** [ ] colors
-*** [ ] prod build shows shadow warning
+*** [X] prod build shows shadow warning
 *** [ ] keybindings not working on firefox
 *** [ ] display some kind of message on mobile
-*** [ ] pause shouldn't allow movement or extra holds
-*** [ ] double tapping hold can over-stack the piece-queue
-*** [ ] holds should not be unlimited
 *** [ ] proper initial configs
 for pieces per level, speed increase, etc
 * v2
