@@ -107,12 +107,15 @@
          (seq (remove #(cell-open? db (move-f %)) falling-cells)))]
 
     (if should-lock-cells?
-      ;; mark all cells
+      ;; mark all cells :occupied, remove :falling
+      ;; Effectively a 'piece-played' event
       (as-> db db
         (reduce (fn [d cell] (mark-cell-occupied d cell))
                 db falling-cells)
         ;; this also indicates that the pieces has been played, so we increment
-        (update db :pieces-played inc))
+        (update db :pieces-played inc)
+        ;; remove the hold-lock to allow another hold to happen
+        (assoc db :hold-lock false))
 
       ;; otherwise just return the db
       db)))
@@ -244,7 +247,7 @@
 ;; Removing Pieces (for hold/swap feature)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn clear-falling-piece
+(defn clear-falling-cells
   "Removes all cells that have a :falling prop."
   [db]
   (update db :game-grid #(grid/clear-cells % :falling)))

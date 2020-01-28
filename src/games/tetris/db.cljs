@@ -105,6 +105,7 @@
    :falling-shape-fn nil
    :held-shape-fn nil
    :held-grid (grid/build-grid {:height 5 :width 5})
+   :hold-lock false
    :ticks 0
    :tick-timeout 500
    :time 0

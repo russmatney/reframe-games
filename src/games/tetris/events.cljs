@@ -112,30 +112,42 @@
    ;; remove current falling piece from board, move it to hold
    (let [tet-db (::tetris.db/db db)
          held (:held-shape-fn tet-db)
-         falling (:falling-shape-fn tet-db)
-         tet-db (cond-> tet-db
-                  ;; prepend queue with held piece
-                  ;; TODO prevent quick double tap from stacking the queue here
-                  held
-                  (update :piece-queue (fn [q]
-                                         (cons held q)))
+         falling-shape (:falling-shape-fn tet-db)
+         hold-lock (:hold-lock tet-db)
+         tet-db
+         (if
+           ;; No holding if nothing falling, or if hold-lock in effect
+           (or (not falling-shape)
+               hold-lock)
+           tet-db
+           (cond-> tet-db
+             ;; prepend queue with held piece
+             ;; TODO prevent quick double tap from stacking the queue here
+             held
+             (update :piece-queue (fn [q]
+                                    (cons held q)))
 
-                  ;; move falling piece to held piece
-                  falling
-                  (assoc :held-shape-fn falling)
+             ;; move falling piece to held piece
+             falling-shape
+             (assoc :held-shape-fn falling-shape)
 
-                  ;; clear falling piece if there was one
-                  falling
-                  (assoc :falling-shape-fn nil)
+             ;; clear falling piece if there was one
+             falling-shape
+             (assoc :falling-shape-fn nil)
 
-                  ;; update grid for showing held piece
-                  falling
-                  (update :held-grid
-                          #(tetris/add-preview-piece % falling))
+             ;; clear the falling pieces from the board
+             falling-shape
+             (tetris/clear-falling-cells)
 
-                  ;; clear the falling pieces from the board
-                  falling
-                  (tetris/clear-falling-piece))]
+             ;; update grid for showing held piece
+             falling-shape
+             (update :held-grid
+                     #(tetris/add-preview-piece % falling-shape))
+
+             ;; indicate that a piece was held to prevent double-holds
+             falling-shape
+             (assoc :hold-lock true)))]
+
 
      {:db (assoc db ::tetris.db/db tet-db)})))
 

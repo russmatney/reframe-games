@@ -32,9 +32,9 @@ should also consider over-rotating (skipping a blocked one?)
 *** [X] controls: hold piece, swap for held piece
 *** [X] deploy latest
 ** [ ] pre-publish: presentable
-*** [ ] holds should not be unlimited
+*** [X] holds should not be unlimited
 *** [ ] pause shouldn't allow movement or extra holds
-*** [ ] double tapping hold can over-stack the piece-queue
+*** [X] double tapping hold can over-stack the piece-queue
 *** [ ] move tetris to /tetris page, create brief landing page
 *** [ ] display controls
 *** [ ] layout
@@ -44,6 +44,14 @@ should also consider over-rotating (skipping a blocked one?)
 *** [ ] display some kind of message on mobile
 *** [ ] proper initial configs
 for pieces per level, speed increase, etc
+** reading tetris rules
+https://tetris.wiki/Tetris_Guideline
+*** [ ] levels by cleared rows, not pieces
+*** [ ] gameover if a piece is negative space
+*** [ ] pieces start pointing down
+*** [ ] rotate in two directions
+*** [ ] show ghost-piece
+*** [ ] 7-bag of pieces randomly filled
 * v2
 ** [ ] mobile touch/gesture support
 ** [ ] customize controls
