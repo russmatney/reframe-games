@@ -33,7 +33,7 @@ should also consider over-rotating (skipping a blocked one?)
 *** [X] deploy latest
 ** [ ] pre-publish: presentable
 *** [X] holds should not be unlimited
-*** [ ] pause shouldn't allow movement or extra holds
+*** [X] pause shouldn't allow movement or extra holds
 *** [X] double tapping hold can over-stack the piece-queue
 *** [ ] move tetris to /tetris page, create brief landing page
 *** [ ] display controls

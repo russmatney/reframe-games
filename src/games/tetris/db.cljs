@@ -116,4 +116,5 @@
    :score 0
    :score-per-row-clear 10
    :rows-in-combo 0
-   :last-combo-piece-num nil})
+   :last-combo-piece-num nil
+   :paused? false})

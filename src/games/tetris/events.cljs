@@ -82,11 +82,13 @@
 (rf/reg-event-fx
  ::move-piece
  (fn [{:keys [db]} [_ direction]]
-   {:db
-    (update db
-            ::tetris.db/db
-            (fn [t-db]
-              (tetris/move-piece t-db direction)))}))
+   (let [paused? (-> db ::tetris.db/db :paused?)]
+     {:db
+      (if paused? db
+        (update db
+                ::tetris.db/db
+                (fn [t-db]
+                  (tetris/move-piece t-db direction))))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rotate piece
@@ -95,11 +97,13 @@
 (rf/reg-event-fx
  ::rotate-piece
  (fn [{:keys [db]} _ _]
-   {:db
-    (update db
-            ::tetris.db/db
-            (fn [t-db]
-              (tetris/rotate-piece t-db)))}))
+   (let [paused? (-> db ::tetris.db/db :paused?)]
+     {:db
+      (if paused? db
+        (update db
+                ::tetris.db/db
+                (fn [t-db]
+                  (tetris/rotate-piece t-db))))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Hold/Swap
@@ -114,11 +118,13 @@
          held (:held-shape-fn tet-db)
          falling-shape (:falling-shape-fn tet-db)
          hold-lock (:hold-lock tet-db)
+         paused? (:paused? tet-db)
          tet-db
          (if
            ;; No holding if nothing falling, or if hold-lock in effect
            (or (not falling-shape)
-               hold-lock)
+               hold-lock
+               paused?)
            tet-db
            (cond-> tet-db
              ;; prepend queue with held piece
