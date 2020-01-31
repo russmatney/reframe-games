@@ -44,20 +44,22 @@ https://github.com/hankchizljaw/modern-css-reset
 *** [X] proper initial configs
 for pieces per level, speed increase, etc
 *** [X] display 'paused' state
-*** [ ] some keys are annoying in browsers
+*** [X] some keys are annoying in browsers
 spacebar, up, down arrow, page scrolls...
+fixed via proper prevent-default-keys
 *** [ ] display controls/how-to-play via control screen
-*** [ ] display 'about' screen
+*** [ ] display 'about/credits' screen
 *** [ ] display some kind of message on mobile
 ** [ ] pre-publish: publishable
-*** [ ] collect attributions to share in description and in game itself
+*** [ ] collect attributions to share in description and about/credits page
 **** [ ] reframe, reagent, react
 **** [ ] nes styles and font
 https://github.com/nostalgic-css/NES.css
 **** [ ] css reset
 https://github.com/hankchizljaw/modern-css-reset
+**** [ ] og tetris creators
 *** [ ] write description
-*** [ ] make repo opensource
+*** [ ] make repo public
 ** 'real' tetris rules
 https://tetris.wiki/Tetris_Guideline
 *** [ ] levels by cleared rows, not pieces
@@ -132,3 +134,4 @@ Build for deploy as described above, then zip it up.
 #+BEGIN_SRC sh
 zip -r reframe-games.zip public
 #+END_SRC
+
