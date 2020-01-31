@@ -145,14 +145,15 @@
 (defn score-panel []
   (let [score @(rf/subscribe [::tetris.subs/score])
         t @(rf/subscribe [::tetris.subs/time])
-        level @(rf/subscribe [::tetris.subs/level])]
+        level @(rf/subscribe [::tetris.subs/level])
+        paused? @(rf/subscribe [::tetris.subs/paused?])]
     [:div.left-panel
      {:style
       {:display "flex"
        :flex "1"
        :flex-direction "column"}}
      [metric {:label "Score" :value score}]
-     [metric {:label "Time"
+     [metric {:label (if paused? "Time (Paused)" "Time")
               :value (str (util/with-precision 1 (/ t 1000)) "s")}]
      [metric {:label "Level" :value level}]]))
 

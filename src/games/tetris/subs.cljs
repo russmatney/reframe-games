@@ -14,6 +14,11 @@
  (fn [db]
    (::tetris.db/db db)))
 
+(rf/reg-sub
+ ::paused?
+ :<- [::tetris-db]
+ :paused?)
+
 (defn positive-rows
   [grid]
   (filter (fn [row] (<= 0 (-> row (first) :y))) grid))

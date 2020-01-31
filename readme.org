@@ -43,10 +43,11 @@ https://github.com/hankchizljaw/modern-css-reset
 *** [X] prod build shows shadow warning
 *** [X] proper initial configs
 for pieces per level, speed increase, etc
-*** [ ] display 'paused' state
-*** [ ] keys can be annoying in browsers (scrolling) - spacebar, up, down arrow
-page scrolls...
-*** [ ] display controls via control screen
+*** [X] display 'paused' state
+*** [ ] some keys are annoying in browsers
+spacebar, up, down arrow, page scrolls...
+*** [ ] display controls/how-to-play via control screen
+*** [ ] display 'about' screen
 *** [ ] display some kind of message on mobile
 ** [ ] pre-publish: publishable
 *** [ ] collect attributions to share in description and in game itself
@@ -101,6 +102,7 @@ rather than piece creation time
 ** [ ] poster-ized level clears
 [2020-01-30 Thu 00:23]
 Include meta data/game state
+** [ ] display commentary per piece
 * deployment
 #+BEGIN_SRC sh
 # remove 'complied' from dev-mode
