@@ -6,6 +6,24 @@
   [games.tetris.core :as tetris]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Current view
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(rf/reg-event-fx
+ ::set-view
+ (fn [{:keys [db]} [_ new-view]]
+   (let [should-pause? (or (= new-view :controls)
+                           (= new-view :about))
+         should-unpause? (= new-view :game)
+         dispatch (cond
+                    should-pause? [::pause-game]
+                    should-unpause? [::unpause-game]
+                    true [])]
+     {:db
+      (assoc-in db [::tetris.db/db :current-view] new-view)
+      :dispatch dispatch})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -19,6 +19,12 @@
  :<- [::tetris-db]
  :paused?)
 
+(rf/reg-sub
+ ::current-view
+ :<- [::tetris-db]
+ (fn [db]
+   (or (:current-view db) :game)))
+
 (defn positive-rows
   [grid]
   (filter (fn [row] (<= 0 (-> row (first) :y))) grid))
@@ -67,3 +73,22 @@
    (map (fn [shape-fn]
           (:grid (tetris/add-preview-piece {:height 5 :width 5} shape-fn)))
         (:allowed-shape-fns db))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Controls
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(rf/reg-sub
+ ::show-controls-key
+ :<- [::tetris-db]
+ (fn [db]
+   ;; TODO implement
+   nil))
+
+(rf/reg-sub
+ ::pause-key
+ :<- [::tetris-db]
+ (fn [db]
+   ;; TODO implement
+   nil))
+

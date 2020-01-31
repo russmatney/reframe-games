@@ -2,6 +2,10 @@
   (:require
    [re-frame.core :as rf]
    [games.tetris.subs :as tetris.subs]
+   [games.tetris.events :as tetris.events]
+   [games.tetris.views.components :refer [widget display-label]]
+   [games.tetris.views.controls :as controls]
+   [games.tetris.views.about :as about]
    [games.views.util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,23 +63,43 @@
 
 (defn matrix []
   (let [grid-data @(rf/subscribe [::tetris.subs/game-grid])]
-    [:div
-     {:class "nes-container is-dark"
-      :style
+    [widget
+     {:children
+      (for [row grid-data]
+         ^{:key (str (random-uuid))}
+         [:div
+          {:style
+           {:display "flex"}}
+            ;;:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
+          (for [cell-state row]
+           (cell cell-state))])}]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Left panel
+
+(defn left-panel []
+  (let [score @(rf/subscribe [::tetris.subs/score])
+        t @(rf/subscribe [::tetris.subs/time])
+        level @(rf/subscribe [::tetris.subs/level])
+        paused? @(rf/subscribe [::tetris.subs/paused?])
+        pause-key @(rf/subscribe [::tetris.subs/pause-key])
+        pause-key "Enter"]
+    [:div.left-panel
+     {:style
       {:display "flex"
        :flex "1"
-       :flex-direction "column"
-       :justify-content "center"
-       :align-items "center"}}
-       ;;:border "1px solid red"}}
-     (for [row grid-data]
-        ^{:key (str (random-uuid))}
-        [:div
-         {:style
-          {:display "flex"}}
-           ;;:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
-         (for [cell-state row]
-          (cell cell-state))])]))
+       :flex-direction "column"}}
+     [widget {:label "Score" :value score}]
+     ;; TODO support sub-head for these
+     [widget
+      {:label (if paused?
+                 (str "Paused (" pause-key " to continue)")
+                 (str "Time (" pause-key " to pause)"))
+       :value (str (util/with-precision 1 (/ t 1000)) "s")}]
+     [widget {:label "Level" :value level}]]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Right panel
 
 (defn piece-preview [grid-data]
    [:div
@@ -86,31 +110,22 @@
        (for [cell-state row]
         (preview-cell cell-state {:debug false}))])])
 
-(defn display-label
-  [{:keys [label]}]
-  [:h3
-   {:style
-    {:opacity "0.9"
-     :margin-bottom "12px"}}
-   label])
-
 (defn piece-preview-list
   ([] (piece-preview-list {}))
-  ([{:keys [label piece-grids] :as metric}]
-   [:div
-    {:class "nes-container is-dark"
-     :style
-     {:text-align "center"}}
-    [display-label metric]
-    (for [g piece-grids]
-      ^{:key (str (random-uuid))}
-      [:div
-       {:style
-        {:display "flex"
-         :justify-content "center"
-         :margin-bottom "12px"}}
-         ;;:border "1px solid red"}}
-       (piece-preview g)])]))
+  ([{:keys [label piece-grids]}]
+   [widget
+    {:label label
+     :style {:text-align "center"}
+     :children
+      (for [g piece-grids]
+        ^{:key (str (random-uuid))}
+        [:div
+         {:style
+          {:display "flex"
+           :justify-content "center"
+           :margin-bottom "12px"}}
+           ;;:border "1px solid red"}}
+         (piece-preview g)])}]))
 
 (defn piece-previews []
   (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids])]
@@ -127,60 +142,64 @@
     (piece-preview-list {:label "Hold"
                          :piece-grids [held-grid]})))
 
-(defn metric [{:keys [label value] :as metric}]
-  [:div
-   {:class "nes-container is-dark"
-    :style
-    {:display "flex"
-     :flex "1"
-     :text-align "center"
-     :flex-direction "column"
-     :justify-content "center"}}
 
-   [display-label metric]
-   [:h2
-    {:style {:opacity "0.95"}}
-    value]])
+(defn controls-and-about []
+  (let [show-controls-key @(rf/subscribe [::tetris.subs/show-controls-key])]
+    [widget
+     {:children
+      [^{:key "controls"}
+       [:h4
+        {:on-click #(rf/dispatch [::tetris.events/set-view :controls])}
+        (if show-controls-key
+              (str "Controls (" show-controls-key ")")
+              "Controls")]
+       ^{:key "about"}
+       [:h4
+        {:on-click #(rf/dispatch [::tetris.events/set-view :about])}
+        "About"]]}]))
 
-(defn score-panel []
-  (let [score @(rf/subscribe [::tetris.subs/score])
-        t @(rf/subscribe [::tetris.subs/time])
-        level @(rf/subscribe [::tetris.subs/level])
-        paused? @(rf/subscribe [::tetris.subs/paused?])]
-    [:div.left-panel
-     {:style
-      {:display "flex"
-       :flex "1"
-       :flex-direction "column"}}
-     [metric {:label "Score" :value score}]
-     [metric {:label (if paused? "Time (Paused)" "Time")
-              :value (str (util/with-precision 1 (/ t 1000)) "s")}]
-     [metric {:label "Level" :value level}]]))
-
-(defn piece-panel []
+(defn right-panel []
   [:div
     {:style
       {:display "flex"
        :flex "1"
        :flex-direction "column"}}
     [piece-previews]
-    [held-piece]])
+    [held-piece]
+    [controls-and-about]])
     ;;[allowed-pieces]]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Main page component
 
 (def background-color "#441086")
      ;;:background "#5d08c7"
 
 (defn page []
-  [:div
-   {:style
-    {:height "100vh"
-     :display "flex"
-     :background
-     (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
-     linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px")
-     :background-color background-color
-     :background-size "64px 128px"
-     :padding "24px"}}
-   [score-panel]
-   [matrix]
-   [piece-panel]])
+  (let [current-view @(rf/subscribe [::tetris.subs/current-view])
+        comps
+        (case current-view
+          :controls
+          [[controls/view]]
+
+          :about
+          [[about/view]]
+
+          :game
+          [^{:key "left"}
+           [left-panel]
+           ^{:key "matrix"}
+           [matrix]
+           ^{:key "right"}
+           [right-panel]])]
+    [:div
+     {:style
+      {:height "100vh"
+       :display "flex"
+       :background
+       (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
+       linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px")
+       :background-color background-color
+       :background-size "64px 128px"
+       :padding "24px"}}
+     (for [c comps] c)]))

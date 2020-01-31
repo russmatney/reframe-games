@@ -117,4 +117,5 @@
    :score-per-row-clear 10
    :rows-in-combo 0
    :last-combo-piece-num nil
-   :paused? false})
+   :paused? false
+   :current-view :game})
