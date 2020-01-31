@@ -44,7 +44,7 @@ https://github.com/hankchizljaw/modern-css-reset
 *** [X] proper initial configs
 for pieces per level, speed increase, etc
 *** [ ] display 'paused' state
-*** [ ] keys annoying in browsers - spacebar, up, down arrow
+*** [ ] keys can be annoying in browsers (scrolling) - spacebar, up, down arrow
 page scrolls...
 *** [ ] display controls via control screen
 *** [ ] display some kind of message on mobile
@@ -57,7 +57,7 @@ https://github.com/nostalgic-css/NES.css
 https://github.com/hankchizljaw/modern-css-reset
 *** [ ] write description
 *** [ ] make repo opensource
-** reading tetris rules
+** 'real' tetris rules
 https://tetris.wiki/Tetris_Guideline
 *** [ ] levels by cleared rows, not pieces
 *** [ ] gameover if a piece is negative space
@@ -90,9 +90,21 @@ given some count, create a piece to submit yourself
 ** [ ] rows-to-next-level visual
 ** [ ] refactor colors to select at render time
 rather than piece creation time
+** [ ] 'doom' face - show emotion during left/right/rotate/score
+[2020-01-25 Sat 00:25]
+** [ ] Add achievements
+[2020-01-29 Wed 22:10]
+*** [ ] Break the whole journey down
+[2020-01-29 Wed 22:11]
+*** [ ] Write them a story for every feature
+[2020-01-29 Wed 22:11]
+** [ ] poster-ized level clears
+[2020-01-30 Thu 00:23]
+Include meta data/game state
 * deployment
 #+BEGIN_SRC sh
-# from project root
+# remove 'complied' from dev-mode
+rm -rf public/js/compiled
 
 # build release version
 shadow-cljs release app
@@ -108,4 +120,13 @@ yay -S aws-cli
 
 # setup creds
 aws configure
+#+END_SRC
+
+** packaging for publishing to itch.io
+Itch.io requires a .zip of the web-app.
+
+Build for deploy as described above, then zip it up.
+
+#+BEGIN_SRC sh
+zip -r reframe-games.zip public
 #+END_SRC
