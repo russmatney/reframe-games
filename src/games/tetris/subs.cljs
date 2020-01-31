@@ -79,6 +79,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rf/reg-sub
+ ::keys-for
+ :<- [::tetris-db]
+ (fn [db [_ keys-for]]
+   (-> db :controls keys-for)))
+
+(rf/reg-sub
  ::show-controls-key
  :<- [::tetris-db]
  (fn [db]
@@ -87,8 +93,7 @@
 
 (rf/reg-sub
  ::pause-key
- :<- [::tetris-db]
- (fn [db]
-   ;; TODO implement
-   nil))
+ :<- [::keys-for :pause]
+ (fn [keys] keys))
+
 

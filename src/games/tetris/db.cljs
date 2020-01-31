@@ -118,4 +118,11 @@
    :rows-in-combo 0
    :last-combo-piece-num nil
    :paused? false
-   :current-view :game})
+   :current-view :game
+   :controls {;; TODO use sets here
+              :move-left ["h" "<left>"]
+              :move-right ["l" "<right>"]
+              :move-down ["j" "<down>"]
+              :hold-swap ["k" "<up>"]
+              :rotate ["<space>"]
+              :pause ["<enter>"]}})

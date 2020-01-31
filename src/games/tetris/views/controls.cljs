@@ -6,21 +6,22 @@
    [games.tetris.views.components :refer [widget display-label]]))
 
 (defn view []
-  [:div
-   {:style
-    {:display "flex"
-     :flex-wrap "wrap"
-     :flex-direction "row"
-     :width "100%"
-     :padding "24px"}}
-   [widget
-    {:style
-     {:width "100%"}
-     :label "Controls"}]
-   [widget
-    {:style
-     {:flex "1"}
-     :label "Move Left: h"}]])
+  (let [move-left-keys @(rf/subscribe [::tetris.subs/keys-for :move-left])]
+    [:div
+     {:style
+      {:display "flex"
+       :flex-wrap "wrap"
+       :flex-direction "row"
+       :width "100%"
+       :padding "24px"}}
+     [widget
+      {:style
+       {:width "100%"}
+       :label "Controls"}]
+     [widget
+      {:style
+       {:flex "1"}
+       :label (str "Move Left: " move-left-keys)}]]))
 
 (comment
   (rf/dispatch [::tetris.events/set-view :controls])

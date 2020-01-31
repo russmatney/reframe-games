@@ -67,43 +67,56 @@
 ;; Set Controls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def key-label->re-pressed-key
+  {"<enter>" {:keyCode 13}
+   "<space>" {:keyCode 32}
+   "<left>" {:keyCode 37}
+   "<right>" {:keyCode 39}
+   "<up>" {:keyCode 38}
+   "<down>" {:keyCode 40}
+   "h" {:keyCode 72}
+   "j" {:keyCode 74}
+   "k" {:keyCode 75}
+   "l" {:keyCode 76}})
+
+(def control->event
+  {:move-left [::move-piece :left]
+   :move-right [::move-piece :right]
+   :move-down [::move-piece :down]
+   :hold-swap [::rotate-piece]
+   :pause [::toggle-pause]
+   :rotate [::rotate-piece]})
+
+(defn controls->event-keys
+  [controls]
+  (into []
+        (map
+         (fn [[control keys]]
+           (into []
+            (cons
+             (control->event control)
+             (map (fn [k] [(key-label->re-pressed-key k)]) keys))))
+         controls)))
+
+(defn controls->all-keys
+  [controls]
+  (into []
+        (mapcat
+         (fn [[_ keys]]
+           (map key-label->re-pressed-key keys))
+         controls)))
+
 (rf/reg-event-fx
  ::set-controls
  (fn [{:keys [db]}]
-   {:db db
-    :dispatch
-    [::rp/set-keydown-rules
-     {;; takes a collection of events followed by key combos that can trigger the
-      ;; event
-      :event-keys
-      [[[::toggle-pause]
-        [{:keyCode 13}]] ;; enter key
-       [[::move-piece :left]
-        [{:keyCode 37}] ;; left arrow
-        [{:keyCode 72}]] ;; h key
-       [[::move-piece :right]
-        [{:keyCode 39}] ;;right arrow
-        [{:keyCode 76}]] ;; l key
-       [[::move-piece :down]
-        [{:keyCode 40}] ;; down arrow
-        [{:keyCode 74}]] ;; j key
-       [[::hold-and-swap-piece]
-        [{:keyCode 38}] ;; up arrow
-        [{:keyCode 75}]] ;; k key
-       [[::rotate-piece]
-        [{:keyCode 32}]]] ;; space bar
-
-      :prevent-default-keys
-       [{:keyCode 13} ;; enter key
-        {:keyCode 37} ;; left arrow
-        {:keyCode 72} ;; h key
-        {:keyCode 39} ;;right arrow
-        {:keyCode 76} ;; l key
-        {:keyCode 40} ;; down arrow
-        {:keyCode 74} ;; j key
-        {:keyCode 38} ;; up arrow
-        {:keyCode 75} ;; k key
-        {:keyCode 32}]}]})) ;; space bar
+   (let [controls (-> db ::tetris.db/db :controls)
+         event-keys (controls->event-keys controls)
+         prevent-default-keys (controls->all-keys controls)]
+     {:db db
+      :dispatch
+      [::rp/set-keydown-rules
+       {:event-keys event-keys
+        :prevent-default-keys prevent-default-keys}]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move piece
