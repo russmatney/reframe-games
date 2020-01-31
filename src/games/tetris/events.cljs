@@ -174,23 +174,30 @@
 ;; Pause
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; pauses, ignoring whatever the current state is
 (rf/reg-event-fx
  ::pause-game
  (fn [{:keys [db]} _ _]
-   {:db db
-    :clear-timeouts [{:id ::tick}
-                     {:id ::game-timer}]}))
+   (let [updated-db (assoc-in db [::tetris.db/db :paused?] true)]
+     {:db updated-db
+      :clear-timeouts [{:id ::tick}
+                       {:id ::game-timer}]})))
+
+;; resumes the game
+(rf/reg-event-fx
+ ::resume-game
+ (fn [{:keys [db]} _ _]
+   (let [updated-db (assoc-in db [::tetris.db/db :paused?] false)]
+     {:db updated-db
+      :dispatch-n [[::game-tick]
+                   [::inc-game-timer]]})))
 
 (rf/reg-event-fx
  ::toggle-pause
  (fn [{:keys [db]} _ _]
-   (let [paused (-> db ::tetris.db/db :paused?)
-         updated-db (update-in db [::tetris.db/db :paused?] not)]
+   (let [paused (-> db ::tetris.db/db :paused?)]
      (if paused
        ;; unpause
-       {:dispatch-n [[::game-tick]
-                     [::inc-game-timer]]
-        :db updated-db}
+       {:dispatch [::resume-game]}
        ;; pause
-       {:dispatch [::pause-game]
-        :db updated-db}))))
+       {:dispatch [::pause-game]}))))
