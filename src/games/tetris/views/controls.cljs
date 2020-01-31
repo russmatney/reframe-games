@@ -9,14 +9,30 @@
   [:div
    {:style
     {:display "flex"
+     :flex-wrap "wrap"
+     :flex-direction "row"
+     :width "100%"
      :padding "24px"}}
    [widget
-    {:style {:flex "3"}
+    {:style
+     {:width "100%"}
      :label "Controls"}]
    [widget
-    {:label "Move Left"
-     :value "h"}]])
+    {:style
+     {:flex "1"}
+     :label "Move Left: h"}]])
 
 (comment
   (rf/dispatch [::tetris.events/set-view :controls])
   (rf/dispatch [::tetris.events/set-view :game]))
+
+   ;; [:div
+   ;;  {:style
+   ;;   {:width "100%"}}
+   ;;  "Controls"]
+   ;; [:div
+   ;;  {:style {:flex "1"}}
+   ;;  "Move Left: h"]
+   ;; [:div
+   ;;  {:style {:flex "1"}}
+   ;;  "Move Left: h"]))

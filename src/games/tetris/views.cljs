@@ -64,7 +64,9 @@
 (defn matrix []
   (let [grid-data @(rf/subscribe [::tetris.subs/game-grid])]
     [widget
-     {:children
+     {:style
+      {:flex "1"}
+      :children
       (for [row grid-data]
          ^{:key (str (random-uuid))}
          [:div
@@ -89,14 +91,23 @@
       {:display "flex"
        :flex "1"
        :flex-direction "column"}}
-     [widget {:label "Score" :value score}]
+     [widget
+      {
+       :style
+       {:flex "1"}
+       :label "Score" :value score}]
      ;; TODO support sub-head for these
      [widget
-      {:label (if paused?
+      {:style
+       {:flex "1"}
+       :label (if paused?
                  (str "Paused (" pause-key " to continue)")
                  (str "Time (" pause-key " to pause)"))
        :value (str (util/with-precision 1 (/ t 1000)) "s")}]
-     [widget {:label "Level" :value level}]]))
+     [widget
+      {:style
+       {:flex "1"}
+       :label "Level" :value level}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Right panel
@@ -115,7 +126,9 @@
   ([{:keys [label piece-grids]}]
    [widget
     {:label label
-     :style {:text-align "center"}
+     :style
+     {:flex "1"
+      :text-align "center"}
      :children
       (for [g piece-grids]
         ^{:key (str (random-uuid))}
@@ -146,7 +159,9 @@
 (defn controls-and-about []
   (let [show-controls-key @(rf/subscribe [::tetris.subs/show-controls-key])]
     [widget
-     {:children
+     {:style
+      {:flex "1"}
+      :children
       [^{:key "controls"}
        [:h4
         {:on-click #(rf/dispatch [::tetris.events/set-view :controls])}
@@ -195,6 +210,7 @@
     [:div
      {:style
       {:height "100vh"
+       :width "100vw"
        :display "flex"
        :background
        (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),

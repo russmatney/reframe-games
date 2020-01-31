@@ -20,7 +20,6 @@
      :style
      (merge
       {:display "flex"
-       :flex "1"
        :text-align "center"
        :align-items "center"
        :flex-direction "column"
