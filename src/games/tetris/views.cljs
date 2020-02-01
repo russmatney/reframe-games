@@ -92,8 +92,7 @@
        :flex "1"
        :flex-direction "column"}}
      [widget
-      {
-       :style
+      {:style
        {:flex "1"}
        :label "Score" :value score}]
      ;; TODO support sub-head for these
