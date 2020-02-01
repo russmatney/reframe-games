@@ -31,7 +31,7 @@ possible.
 should also consider over-rotating (skipping a blocked one?)
 *** [X] controls: hold piece, swap for held piece
 *** [X] deploy latest
-** [ ] pre-publish: presentable
+** [X] pre-publish: presentable
 *** [X] holds should not be unlimited
 *** [X] pause shouldn't allow movement or extra holds
 *** [X] double tapping hold can over-stack the piece-queue
@@ -48,10 +48,11 @@ for pieces per level, speed increase, etc
 spacebar, up, down arrow, page scrolls...
 fixed via proper prevent-default-keys
 *** [X] display controls/how-to-play via control screen
-*** [ ] display 'about/credits' screen
-*** [ ] display some kind of message on mobile
-*** [ ] game-over screen
 ** [ ] pre-publish: publishable
+*** [ ] display 'about/credits' screen
+*** [ ] mobile detection and alert
+*** [ ] game-over screen
+show final screen, write restart command
 *** [ ] collect attributions to share in description and about/credits page
 **** [ ] reframe, reagent, react
 **** [ ] nes styles and font
@@ -61,15 +62,9 @@ https://github.com/hankchizljaw/modern-css-reset
 **** [ ] og tetris creators
 *** [ ] write description
 *** [ ] make repo public
-** 'real' tetris rules
-https://tetris.wiki/Tetris_Guideline
 *** [ ] levels by cleared rows, not pieces
-*** [ ] gameover if a piece is negative space
-*** [ ] pieces start pointing down
-*** [ ] rotate in two directions
-*** [ ] show ghost-piece
-*** [ ] 7-bag of pieces randomly filled
-*** [ ] adjust controls to match guidelines
+*** [ ] gameover if a piece is in negative space
+*** [ ] 7-bag of pieces randomly filled (more balanced pieces)
 * v2
 ** [ ] move tetris to /tetris page, create brief landing page
 not sure how to integrate with both itch and personal website yet
@@ -106,6 +101,10 @@ rather than piece creation time
 [2020-01-30 Thu 00:23]
 Include meta data/game state
 ** [ ] display commentary per piece
+** [ ] rotate in two directions
+** [ ] show 'ghost' piece (for fast drop)
+* tetris official guidelines
+https://tetris.wiki/Tetris_Guideline
 * deployment
 #+BEGIN_SRC sh
 # remove 'complied' from dev-mode
