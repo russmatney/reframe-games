@@ -79,10 +79,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rf/reg-sub
- ::keys-for
+ ::controls
  :<- [::tetris-db]
- (fn [db [_ keys-for]]
-   (-> db :controls keys-for)))
+ (fn [db]
+   (-> db :controls)))
+
+(rf/reg-sub
+ ::keys-for
+ :<- [::controls]
+ (fn [controls [_ keys-for]]
+   (-> controls keys-for)))
 
 (rf/reg-sub
  ::show-controls-key

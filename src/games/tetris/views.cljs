@@ -84,8 +84,8 @@
         t @(rf/subscribe [::tetris.subs/time])
         level @(rf/subscribe [::tetris.subs/level])
         paused? @(rf/subscribe [::tetris.subs/paused?])
-        pause-key @(rf/subscribe [::tetris.subs/pause-key])
-        pause-key "Enter"]
+        pause-keys @(rf/subscribe [::tetris.subs/keys-for :pause])
+        pause-key (first pause-keys)]
     [:div.left-panel
      {:style
       {:display "flex"
@@ -101,7 +101,7 @@
       {:style
        {:flex "1"}
        :label (if paused?
-                 (str "Paused (" pause-key " to continue)")
+                 (str "Paused (" pause-key " to resume)")
                  (str "Time (" pause-key " to pause)"))
        :value (str (util/with-precision 1 (/ t 1000)) "s")}]
      [widget
@@ -195,10 +195,12 @@
         comps
         (case current-view
           :controls
-          [[controls/view]]
+          [^{:key "controls"}
+           [controls/view]]
 
           :about
-          [[about/view]]
+          [^{:key "about"}
+           [about/view]]
 
           :game
           [^{:key "left"}

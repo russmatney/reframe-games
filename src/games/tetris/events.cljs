@@ -14,10 +14,10 @@
  (fn [{:keys [db]} [_ new-view]]
    (let [should-pause? (or (= new-view :controls)
                            (= new-view :about))
-         should-unpause? (= new-view :game)
+         should-resume? (= new-view :game)
          dispatch (cond
                     should-pause? [::pause-game]
-                    should-unpause? [::unpause-game]
+                    should-resume? [::resume-game]
                     true [])]
      {:db
       (assoc-in db [::tetris.db/db :current-view] new-view)
@@ -67,25 +67,17 @@
 ;; Set Controls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def key-label->re-pressed-key
-  {"<enter>" {:keyCode 13}
-   "<space>" {:keyCode 32}
-   "<left>" {:keyCode 37}
-   "<right>" {:keyCode 39}
-   "<up>" {:keyCode 38}
-   "<down>" {:keyCode 40}
-   "h" {:keyCode 72}
-   "j" {:keyCode 74}
-   "k" {:keyCode 75}
-   "l" {:keyCode 76}})
-
 (def control->event
+  "Maps a control to it's corresponding event."
   {:move-left [::move-piece :left]
    :move-right [::move-piece :right]
    :move-down [::move-piece :down]
-   :hold-swap [::rotate-piece]
+   :hold-swap [::hold-and-swap-piece]
    :pause [::toggle-pause]
-   :rotate [::rotate-piece]})
+   :rotate [::rotate-piece]
+   :controls [::set-view :controls]
+   :about [::set-view :about]
+   :game [::set-view :game]})
 
 (defn controls->event-keys
   [controls]
@@ -95,7 +87,9 @@
            (into []
             (cons
              (control->event control)
-             (map (fn [k] [(key-label->re-pressed-key k)]) keys))))
+             (map (fn [k]
+                    [(tetris.db/key-label->re-pressed-key k)])
+                  keys))))
          controls)))
 
 (defn controls->all-keys
@@ -103,7 +97,7 @@
   (into []
         (mapcat
          (fn [[_ keys]]
-           (map key-label->re-pressed-key keys))
+           (map tetris.db/key-label->re-pressed-key keys))
          controls)))
 
 (rf/reg-event-fx
@@ -218,10 +212,12 @@
 (rf/reg-event-fx
  ::resume-game
  (fn [{:keys [db]} _ _]
-   (let [updated-db (assoc-in db [::tetris.db/db :paused?] false)]
-     {:db updated-db
-      :dispatch-n [[::game-tick]
-                   [::inc-game-timer]]})))
+   (let [game-in-view? (= :game (get-in db [::tetris.db/db :current-view]))
+         updated-db (assoc-in db [::tetris.db/db :paused?] false)]
+     (if game-in-view?
+       {:db updated-db
+        :dispatch-n [[::game-tick]
+                     [::inc-game-timer]]}))))
 
 (rf/reg-event-fx
  ::toggle-pause
