@@ -9,8 +9,7 @@
   [label]
   [:h3
    {:style
-    {:opacity "0.9"
-     :margin-bottom "12px"}}
+    {:opacity "0.9"}}
    label])
 
 (defn widget
@@ -36,7 +35,8 @@
       (when label [display-label label])
       (when value
         [:h2
-         {:style {:opacity "0.95"}}
+         {:style {:margin-top "12px"
+                  :opacity "0.95"}}
          value])
       (when children
         (for [c children] c))])))

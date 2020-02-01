@@ -15,8 +15,7 @@
      {:flex "1 0 25%"}
      :label (tetris.db/control->label control)
      :children [^{:key (str keys)}
-                [:p
-                 (string/join "," keys)]]}])
+                [:p (string/join "," keys)]]}])
 
 (defn view []
   (let [controls @(rf/subscribe [::tetris.subs/controls])]
