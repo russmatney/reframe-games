@@ -48,29 +48,30 @@ for pieces per level, speed increase, etc
 spacebar, up, down arrow, page scrolls...
 fixed via proper prevent-default-keys
 *** [X] display controls/how-to-play via control screen
-** [ ] pre-publish: publishable
-*** [ ] display 'about/credits' screen
-*** [ ] mobile detection and alert
-*** [ ] game-over screen
-show final screen, write restart command
-*** [ ] collect attributions to share in description and about/credits page
+** [ ] pre-publish: last steps
+*** [ ] 'about/credits' screen
 **** [ ] reframe, reagent, react
 **** [ ] nes styles and font
 https://github.com/nostalgic-css/NES.css
 **** [ ] css reset
 https://github.com/hankchizljaw/modern-css-reset
 **** [ ] og tetris creators
-*** [ ] write description
+*** [ ] mobile detection and 'alert'
+*** [ ] game-over screen
+show final screen, write restart command
+*** [ ] write itch.io description
+*** [ ] clean up readme
 *** [ ] make repo public
-*** [ ] levels by cleared rows, not pieces
+*** [ ] increase levels by cleared rows, not pieces
 *** [ ] gameover if a piece is in negative space
-*** [ ] 7-bag of pieces randomly filled (more balanced pieces)
+*** [ ] more balanced queue (7-bag)
+*** [ ] pause doesn't always stop the clock?
 * v2
 ** [ ] move tetris to /tetris page, create brief landing page
 not sure how to integrate with both itch and personal website yet
 iframes, maybe?
 ** [ ] mobile touch/gesture support
-** [ ] customize controls
+** [ ] customizable controls
 ** [ ] rotation styles on rows
 :transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
 ** [ ] custom game modes
@@ -135,3 +136,13 @@ Build for deploy as described above, then zip it up.
 zip -r reframe-games.zip public
 #+END_SRC
 
+#+RESULTS:
+| updating: | public/                         | (stored   |  0%) |
+| updating: | public/js/                      | (stored   |  0%) |
+| updating: | public/js/compiled/             | (stored   |  0%) |
+| updating: | public/js/compiled/manifest.edn | (deflated | 73%) |
+| updating: | public/js/compiled/main.js      | (deflated | 73%) |
+| updating: | public/css/                     | (stored   |  0%) |
+| updating: | public/css/reset.css            | (deflated | 51%) |
+| updating: | public/css/nes.css              | (deflated | 88%) |
+| updating: | public/index.html               | (deflated | 49%) |
