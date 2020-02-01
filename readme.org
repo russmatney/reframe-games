@@ -47,9 +47,10 @@ for pieces per level, speed increase, etc
 *** [X] some keys are annoying in browsers
 spacebar, up, down arrow, page scrolls...
 fixed via proper prevent-default-keys
-*** [ ] display controls/how-to-play via control screen
+*** [X] display controls/how-to-play via control screen
 *** [ ] display 'about/credits' screen
 *** [ ] display some kind of message on mobile
+*** [ ] game-over screen
 ** [ ] pre-publish: publishable
 *** [ ] collect attributions to share in description and about/credits page
 **** [ ] reframe, reagent, react

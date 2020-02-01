@@ -14,11 +14,7 @@
  (fn [{:keys [db]} [_ new-view]]
    (let [should-pause? (or (= new-view :controls)
                            (= new-view :about))
-         should-resume? (= new-view :game)
-         dispatch (cond
-                    should-pause? [::pause-game]
-                    should-resume? [::resume-game]
-                    true [])]
+         dispatch (if should-pause? [::pause-game] [])]
      {:db
       (assoc-in db [::tetris.db/db :current-view] new-view)
       :dispatch dispatch})))
@@ -72,7 +68,7 @@
   {:move-left [::move-piece :left]
    :move-right [::move-piece :right]
    :move-down [::move-piece :down]
-   :hold-swap [::hold-and-swap-piece]
+   :hold [::hold-and-swap-piece]
    :pause [::toggle-pause]
    :rotate [::rotate-piece]
    :controls [::set-view :controls]

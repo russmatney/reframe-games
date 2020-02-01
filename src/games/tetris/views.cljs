@@ -84,29 +84,26 @@
         t @(rf/subscribe [::tetris.subs/time])
         level @(rf/subscribe [::tetris.subs/level])
         paused? @(rf/subscribe [::tetris.subs/paused?])
-        pause-keys @(rf/subscribe [::tetris.subs/keys-for :pause])
-        pause-key (first pause-keys)]
+        time (str (util/with-precision 1 (/ t 1000)) "s")]
     [:div.left-panel
      {:style
       {:display "flex"
        :flex "1"
        :flex-direction "column"}}
      [widget
-      {:style
+      {:on-click #(rf/dispatch [::tetris.events/toggle-pause])
+       :style
        {:flex "1"}
-       :label "Score" :value score}]
-     ;; TODO support sub-head for these
+       :label (if paused? "Paused" "Time")
+       :value time}]
      [widget
       {:style
        {:flex "1"}
-       :label (if paused?
-                 (str "Paused (" pause-key " to resume)")
-                 (str "Time (" pause-key " to pause)"))
-       :value (str (util/with-precision 1 (/ t 1000)) "s")}]
+       :label "Level" :value level}]
      [widget
       {:style
        {:flex "1"}
-       :label "Level" :value level}]]))
+       :label "Score" :value score}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Right panel
@@ -150,27 +147,49 @@
                          :piece-grids allowed-piece-grids})))
 
 (defn held-piece []
-  (let [held-grid @(rf/subscribe [::tetris.subs/held-grid])]
-    (piece-preview-list {:label "Hold"
+  (let [held-grid @(rf/subscribe [::tetris.subs/held-grid])
+        any-held? @(rf/subscribe [::tetris.subs/any-held?])
+        hold-keys @(rf/subscribe [::tetris.subs/keys-for :hold])
+        hold-key (first hold-keys)
+        hold-string (str (if any-held? "Swap (" "Hold (") hold-key ")")]
+    (piece-preview-list {:label hold-string
                          :piece-grids [held-grid]})))
 
 
 (defn controls-and-about []
-  (let [show-controls-key @(rf/subscribe [::tetris.subs/show-controls-key])]
+  (let [pause-keys @(rf/subscribe [::tetris.subs/keys-for :pause])
+        pause-key (first pause-keys)
+        controls-keys @(rf/subscribe [::tetris.subs/keys-for :controls])
+        controls-key (first controls-keys)
+        about-keys @(rf/subscribe [::tetris.subs/keys-for :about])
+        about-key (first about-keys)
+        rotate-keys @(rf/subscribe [::tetris.subs/keys-for :rotate])
+        rotate-key (first rotate-keys)]
     [widget
      {:style
-      {:flex "1"}
+      {:padding "0.9rem"
+       :flex "1"}
       :children
-      [^{:key "controls"}
-       [:h4
-        {:on-click #(rf/dispatch [::tetris.events/set-view :controls])}
-        (if show-controls-key
-              (str "Controls (" show-controls-key ")")
-              "Controls")]
+      [^{:key "rotate"}
+       [:p
+        {:style {:margin-bottom "0.3rem"}
+         :on-click #(rf/dispatch [::tetris.events/rotate-piece])}
+        (str "Rotate (" rotate-key ")")]
+       ^{:key "pause"}
+       [:p
+        {:style {:margin-bottom "0.3rem"}
+         :on-click #(rf/dispatch [::tetris.events/toggle-pause])}
+        (str "Pause (" pause-key ")")]
+       ^{:key "controls"}
+       [:p
+        {:style {:margin-bottom "0.3rem"}
+         :on-click #(rf/dispatch [::tetris.events/set-view :controls])}
+        (str "Controls (" controls-key ")")]
        ^{:key "about"}
-       [:h4
-        {:on-click #(rf/dispatch [::tetris.events/set-view :about])}
-        "About"]]}]))
+       [:p
+        {:style {:margin-bottom "0.3rem"}
+         :on-click #(rf/dispatch [::tetris.events/set-view :about])}
+        (str "About (" about-key ")")]]}]))
 
 (defn right-panel []
   [:div

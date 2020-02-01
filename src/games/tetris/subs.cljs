@@ -48,6 +48,12 @@
    (:grid held-grid)))
 
 (rf/reg-sub
+ ::any-held?
+ :<- [::tetris-db]
+ (fn [{:keys [held-shape-fn]}]
+   held-shape-fn))
+
+(rf/reg-sub
  ::score
  :<- [::tetris-db]
  (fn [db]
@@ -89,17 +95,3 @@
  :<- [::controls]
  (fn [controls [_ keys-for]]
    (-> controls keys-for)))
-
-(rf/reg-sub
- ::show-controls-key
- :<- [::tetris-db]
- (fn [db]
-   ;; TODO implement
-   nil))
-
-(rf/reg-sub
- ::pause-key
- :<- [::keys-for :pause]
- (fn [keys] keys))
-
-

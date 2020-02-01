@@ -119,11 +119,11 @@
    :last-combo-piece-num nil
    :paused? false
    :current-view :game
-   :controls {:move-left (set ["h" "a" "left"])
-              :move-down (set ["j" "s" "down"])
-              :move-right (set ["l" "d" "right"])
-              :hold-swap (set ["k" "w" "up"])
-              :rotate (set ["space"])
+   :controls {:move-left (set ["left" "h" "a"])
+              :move-down (set ["down" "j" "s"])
+              :move-right (set ["right" "l" "d"])
+              :hold (set ["space"])
+              :rotate (set ["up" "k" "w"])
               :pause (set ["enter"])
               :controls (set ["c"])
               :about (set ["b"])
@@ -163,7 +163,7 @@
    :move-right "Move Right"
    :move-down "Move Down"
    :rotate "Rotate"
-   :hold-swap "Hold / Swap"
+   :hold "Hold / Swap"
    :pause "Pause"
    :controls "Controls"
    :about "About"
