@@ -96,10 +96,7 @@
    [(grid/build-grid {:height 2 :width 4})
     (grid/build-grid {:height 2 :width 4})
     (grid/build-grid {:height 2 :width 4})]
-   :piece-queue [(rand-nth allowed-shape-fns)
-                 (rand-nth allowed-shape-fns)
-                 (rand-nth allowed-shape-fns)
-                 (rand-nth allowed-shape-fns)]
+   :piece-queue (shuffle allowed-shape-fns)
    :max-queue-size 5
    :allowed-shape-fns allowed-shape-fns
    :falling-shape-fn nil
