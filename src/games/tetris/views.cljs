@@ -15,11 +15,11 @@
 (defn cell
   "Renders a cell as a div."
   ([c] (cell c {}))
-  ([{:keys [falling occupied style] :as c} opts]
+  ([{:keys [falling occupied style x y] :as c} opts]
    (let [debug (:debug opts)
          width (if debug "80px" "20px")
          height (if debug "120px" "20px")]
-    ^{:key (str (random-uuid))}
+    ^{:key (str x y)}
     [:div
      {:style
       (merge
@@ -35,11 +35,11 @@
 
 (defn preview-cell
   "Renders a cell as a div."
-  [{:keys [preview style] :as c} opts]
+  [{:keys [preview style x y] :as c} opts]
   (let [debug (:debug opts)
         width (if debug "80px" "20px")
         height (if debug "120px" "20px")]
-    ^{:key (str (random-uuid))}
+    ^{:key (str x y)}
     [:div
      {:style
       (merge
@@ -65,8 +65,8 @@
   "Returns the rows of cells."
   []
   (let [grid-data @(rf/subscribe [::tetris.subs/game-grid])]
-    (for [row grid-data]
-       ^{:key (str (random-uuid))}
+    (for [[i row] (map-indexed vector grid-data)]
+       ^{:key (str i)}
        [:div
         {:style
          {:display "flex"}}
@@ -134,8 +134,8 @@
 
 (defn piece-preview [grid-data]
    [:div
-    (for [row grid-data]
-      ^{:key (str (random-uuid))}
+    (for [[i row] (map-indexed vector grid-data)]
+      ^{:key (str i)}
       [:div
        {:style {:display "flex"}}
        (for [cell-state row]
@@ -150,15 +150,15 @@
      {:flex "1"
       :text-align "center"}
      :children
-      (for [g piece-grids]
-        ^{:key (str (random-uuid))}
-        [:div
-         {:style
-          {:display "flex"
-           :justify-content "center"
-           :margin-bottom "12px"}}
-           ;;:border "1px solid red"}}
-         (piece-preview g)])}]))
+     (for [[i g] (map-indexed vector piece-grids)]
+       ^{:key (str i)}
+       [:div
+        {:style
+         {:display "flex"
+          :justify-content "center"
+          :margin-bottom "12px"}}
+          ;;:border "1px solid red"}}
+        (piece-preview g)])}]))
 
 (defn piece-previews []
   (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids])]
