@@ -1,121 +1,54 @@
-#+TITLE: Re-frame Games
+#+TITLE: Reframe Games
 
-* A tetris clone in Re-frame/Reagent (CLJS), and other games
-* burndown
-** [X] pre-publish: feature complete
-*** [X] support pieces 'falling' into the screen
-when a piece's shape is more than a cell tall, it should enter one row at a time
-I think this can be mocked with 'phantom' rows above the board
-these rows need to be added to the board and ignored/handled in the right places
-*** [X] deploy to start getting feedback and feature ideas
-*** [X] implement and show time
-*** [X] increase speed over time (via levels?)
-*** [X] re-impl leveling to be based on number of pieces instead of time
-*** [X] fix time to run more smoothly
-probably with a secondary timer that's also paused when the user pauses it
-should run every 100 ms
-an insight was that the step-timer might intentionally get delayed by clever
-user action
-so, no use trying to re-use it for a wall clock/stop watch
-*** [X] implement and show score
-points added per piece played? upon conversion to occupied?
-**** points added for getting rid of a row
-**** combos - consecutive clears, multiple clears
-**** level should influence + increase score
-*** [X] show more pieces coming, not just the next one
-*** [X] better piece positions
-could be more consistently centered and anchored
-*** [X] implement 'bumping'
-rotations against walls/blocks should move the piece over to create space, if
-possible.
-should also consider over-rotating (skipping a blocked one?)
-*** [X] controls: hold piece, swap for held piece
-*** [X] deploy latest
-** [X] pre-publish: presentable
-*** [X] holds should not be unlimited
-*** [X] pause shouldn't allow movement or extra holds
-*** [X] double tapping hold can over-stack the piece-queue
-*** [X] css reset
-https://github.com/hankchizljaw/modern-css-reset
-*** [X] layout
-*** [X] colors
-*** [X] fonts
-*** [X] prod build shows shadow warning
-*** [X] proper initial configs
-for pieces per level, speed increase, etc
-*** [X] display 'paused' state
-*** [X] some keys are annoying in browsers
-spacebar, up, down arrow, page scrolls...
-fixed via proper prevent-default-keys
-*** [X] display controls/how-to-play via control screen
-** [ ] pre-publish: last steps
-*** [X] game-over screen
-show final screen, write restart command
-*** [X] increase levels by cleared rows, not pieces
-*** [X] gameover if a piece is in negative space
-*** [X] more balanced queue (7-bag)
-*** [X] 'about/credits' screen
-*** [X] force user click at start (on itch.io)
-*** [ ] write itch.io description
-*** [ ] clean up readme
-*** [ ] make repo public
-*** [ ] clean up itch.io profile page
-* v2
-** [ ] move tetris to /tetris page, create brief landing page
-not sure how to integrate with both itch and personal website yet
-iframes, maybe?
-** [ ] mobile touch/gesture support
-** [ ] customizable controls
-** [ ] rotation styles on rows
-:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
-** [ ] custom game modes
-set height, width, blocks, speed
-*** bullet mode
-size-3 pieces, 10x speed
-** [ ] draw your own piece
-given some count, create a piece to submit yourself
-** [ ] build up a puzzle/art piece
-** [ ] record and show replay/highlights
-** [ ] shared high-score + leaderboard
-** [ ] configurable options
-** [ ] bonus for clearing the screen completely
-** [ ] controls: instant-drop
-** [ ] high-score feature preserved per browser cookies
-** [ ] rows-to-next-level visual
-** [ ] refactor colors to select at render time
-rather than piece creation time
-** [ ] 'doom' face - show emotion during left/right/rotate/score
-[2020-01-25 Sat 00:25]
-** [ ] Add achievements
-[2020-01-29 Wed 22:10]
-*** [ ] Break the whole journey down
-[2020-01-29 Wed 22:11]
-*** [ ] Write them a story for every feature
-[2020-01-29 Wed 22:11]
-** [ ] poster-ized level clears
-[2020-01-30 Thu 00:23]
-Include meta data/game state
-** [ ] display commentary per piece
-** [ ] rotate in two directions
-** [ ] show 'ghost' piece (for fast drop)
-*** [ ] mobile detection and 'alert'?
-*** [ ] pause doesn't always stop the clock?
-* tetris official guidelines
-https://tetris.wiki/Tetris_Guideline
-* deployment
+Games built in ClojureScript, with [[https://github.com/reagent-project/reagent][Reagent]], [[https://github.com/day8/re-frame][Re-frame]], [[https://github.com/thheller/shadow-cljs][Shadow-cljs]], and
+[[https://github.com/nostalgic-css/NES.css][NES.css]].
+
+This repo will be expanded to include other games, but for now, it's just a
+Tetris clone. Check out the live game at [[https://russmatney.itch.io/tetruss][russmatney.itch.io/tetruss]].
+
+* Tetruss
+The [[https://tetris.wiki][Tetris Wiki]] has some great Tetris related resources.
+
+**** Ideas, Version 2, and Punted Features/Issues
+- [ ] mobile touch/gesture support
+- [ ] customizable controls
+- [ ] rotation styles on rows
+- [ ] bullet mode: size-3 pieces, 10x speed
+- [ ] draw your own piece
+- [ ] build up a puzzle/art piece
+- [ ] record and show replay/highlights
+- [ ] shared high-score + leaderboard
+- [ ] configurable pieces and board size
+- [ ] bonus for clearing the screen completely
+- [ ] controls: instant-drop
+- [ ] high-score, custom controls preserved across re-fresh
+- [ ] rows-to-next-level visual indication
+- [ ] refactor colors into view, rather than attached to cells
+- [ ] 'doom' face - show emotion during left/right/rotate/score
+- [ ] Add achievements
+- [ ] poster-ized level clears (gunn style)
+  include current game state metadata
+- [ ] display character commentary per piece played
+- [ ] rotate in two directions
+- [ ] show 'ghost' piece (for fast drop)
+- [ ] mobile detection and 'alert'?
+- [ ] pause doesn't always stop the clock?
+**** Build and Deploy
+***** Building the release
 #+BEGIN_SRC sh
-# remove 'complied' from dev-mode
+# remove 'complied' dir from dev-mode
 rm -rf public/js/compiled
 
 # build release version
 shadow-cljs release app
-
+#+END_SRC
+***** Deploying to s3
+#+BEGIN_SRC sh
 # deploy to s3
 aws s3 sync public/ s3://games.russmatney.com
 #+END_SRC
 
-relies on aws cli tool:
-
+******* Requires aws cli tool:
 #+BEGIN_SRC zsh
 yay -S aws-cli
 
@@ -123,11 +56,15 @@ yay -S aws-cli
 aws configure
 #+END_SRC
 
-** packaging for publishing to itch.io
+***** Packaging for itch.io
 Itch.io requires a .zip of the web-app.
 
-Build for deploy as described above, then zip it up.
+Build as described above, then zip it up.
 
 #+BEGIN_SRC sh
 zip -r reframe-games.zip public
 #+END_SRC
+* Mean-bean Machine clone
+**** V1
+- [ ] break build process apart to support multiple apps
+- [ ] build game engine
