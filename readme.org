@@ -55,10 +55,11 @@ show final screen, write restart command
 *** [X] gameover if a piece is in negative space
 *** [X] more balanced queue (7-bag)
 *** [X] 'about/credits' screen
-*** [ ] force user click at start (on itch.io)
+*** [X] force user click at start (on itch.io)
 *** [ ] write itch.io description
 *** [ ] clean up readme
 *** [ ] make repo public
+*** [ ] clean up itch.io profile page
 * v2
 ** [ ] move tetris to /tetris page, create brief landing page
 not sure how to integrate with both itch and personal website yet
@@ -130,14 +131,3 @@ Build for deploy as described above, then zip it up.
 #+BEGIN_SRC sh
 zip -r reframe-games.zip public
 #+END_SRC
-
-#+RESULTS:
-| updating: | public/                         | (stored   |  0%) |
-| updating: | public/js/                      | (stored   |  0%) |
-| updating: | public/js/compiled/             | (stored   |  0%) |
-| updating: | public/js/compiled/manifest.edn | (deflated | 73%) |
-| updating: | public/js/compiled/main.js      | (deflated | 73%) |
-| updating: | public/css/                     | (stored   |  0%) |
-| updating: | public/css/reset.css            | (deflated | 51%) |
-| updating: | public/css/nes.css              | (deflated | 88%) |
-| updating: | public/index.html               | (deflated | 49%) |
