@@ -135,6 +135,10 @@
   [{:keys [grid]} pred]
   (filter pred (flatten grid)))
 
+(defn any-cell?
+  [db pred]
+  (seq (get-cells db pred)))
+
 (defn clear-cells
   [db pred]
   (reduce (fn [db c] (clear-cell-props db c))

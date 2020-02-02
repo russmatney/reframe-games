@@ -55,10 +55,11 @@
   (seq (grid/get-cells game-grid :falling)))
 
 (defn gameover?
-  "Returns true if no new pieces can be added.
-  "
-  [db]
-  (not (can-add-next? db)))
+  "Returns true if any cell of the grid has a y < 0."
+  [{:keys [game-grid]}]
+  (grid/any-cell? game-grid (fn [{:keys [y occupied]}]
+                              (and occupied
+                                   (< y 0)))))
 
 (defn mark-cell-occupied
   "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.

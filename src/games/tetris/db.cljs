@@ -91,7 +91,7 @@
    (grid/build-grid {:height 20
                      :width 10
                      :phantom-rows 4})
-   :entry-cell {:x 5 :y 0}
+   :entry-cell {:x 5 :y -1}
    :preview-grids
    [(grid/build-grid {:height 2 :width 4})
     (grid/build-grid {:height 2 :width 4})

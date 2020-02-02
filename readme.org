@@ -49,6 +49,12 @@ spacebar, up, down arrow, page scrolls...
 fixed via proper prevent-default-keys
 *** [X] display controls/how-to-play via control screen
 ** [ ] pre-publish: last steps
+*** [ ] game-over screen
+show final screen, write restart command
+*** [ ] increase levels by cleared rows, not pieces
+*** [X] gameover if a piece is in negative space
+*** [ ] more balanced queue (7-bag)
+*** [ ] force user click at start (on itch.io)
 *** [ ] 'about/credits' screen
 **** [ ] reframe, reagent, react
 **** [ ] nes styles and font
@@ -56,15 +62,10 @@ https://github.com/nostalgic-css/NES.css
 **** [ ] css reset
 https://github.com/hankchizljaw/modern-css-reset
 **** [ ] og tetris creators
-*** [ ] mobile detection and 'alert'
-*** [ ] game-over screen
-show final screen, write restart command
 *** [ ] write itch.io description
 *** [ ] clean up readme
 *** [ ] make repo public
-*** [ ] increase levels by cleared rows, not pieces
-*** [ ] gameover if a piece is in negative space
-*** [ ] more balanced queue (7-bag)
+*** [ ] mobile detection and 'alert'
 *** [ ] pause doesn't always stop the clock?
 * v2
 ** [ ] move tetris to /tetris page, create brief landing page
