@@ -88,7 +88,7 @@
             [:p
              {:style {:margin-top "1rem"}
               :on-click #(rf/dispatch [::tetris.events/start-game])}
-             "Click here to Restart."]])
+             "Click here to restart."]])
           (matrix))]
     [:div.center-panel
      {:style

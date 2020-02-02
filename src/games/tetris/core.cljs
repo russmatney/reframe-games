@@ -200,10 +200,12 @@
 ;; Adding new pieces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn next-piece-fn
-  "Selects a random new piece."
+(defn next-bag
+  "Returns a shuffled group of the allowed shapes.
+  https://tetris.wiki/Random_Generator
+  "
   [{:keys [allowed-shape-fns]}]
-  (rand-nth allowed-shape-fns))
+  (shuffle allowed-shape-fns))
 
 (defn add-preview-piece [grid piece]
    (-> grid
@@ -218,14 +220,15 @@
   Does not care if there is room to add it!
   Depends on the `new-piece-coord`."
   [{:keys [entry-cell game-grid piece-queue] :as db}]
-  (let [for-queue (next-piece-fn db)
-        next-three (take 3 (drop 1 piece-queue))
+  (let [next-three (take 3 (drop 1 piece-queue))
         make-cells (first piece-queue)]
     (-> db
       (update :piece-queue
-                #(as-> % q
-                     (drop 1 q)
-                     (concat q [for-queue])))
+              (fn [q]
+                (let [q (drop 1 q)]
+                  (if (< (count q) 7)
+                    (concat q (next-bag db))
+                    q))))
 
       (assoc :falling-shape-fn make-cells)
 
