@@ -54,19 +54,11 @@ show final screen, write restart command
 *** [X] increase levels by cleared rows, not pieces
 *** [X] gameover if a piece is in negative space
 *** [X] more balanced queue (7-bag)
+*** [X] 'about/credits' screen
 *** [ ] force user click at start (on itch.io)
-*** [ ] 'about/credits' screen
-**** [ ] reframe, reagent, react
-**** [ ] nes styles and font
-https://github.com/nostalgic-css/NES.css
-**** [ ] css reset
-https://github.com/hankchizljaw/modern-css-reset
-**** [ ] og tetris creators
 *** [ ] write itch.io description
 *** [ ] clean up readme
 *** [ ] make repo public
-*** [ ] mobile detection and 'alert'
-*** [ ] pause doesn't always stop the clock?
 * v2
 ** [ ] move tetris to /tetris page, create brief landing page
 not sure how to integrate with both itch and personal website yet
@@ -105,6 +97,8 @@ Include meta data/game state
 ** [ ] display commentary per piece
 ** [ ] rotate in two directions
 ** [ ] show 'ghost' piece (for fast drop)
+*** [ ] mobile detection and 'alert'?
+*** [ ] pause doesn't always stop the clock?
 * tetris official guidelines
 https://tetris.wiki/Tetris_Guideline
 * deployment
