@@ -119,6 +119,7 @@
    :rows-in-combo 0
    :last-combo-piece-num nil
    :paused? false
+   :gameover? false
    :current-view :game
    :controls {:move-left (set ["left" "h" "a"])
               :move-down (set ["down" "j" "s"])

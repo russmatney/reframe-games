@@ -20,6 +20,11 @@
  :paused?)
 
 (rf/reg-sub
+ ::gameover?
+ :<- [::tetris-db]
+ :gameover?)
+
+(rf/reg-sub
  ::current-view
  :<- [::tetris-db]
  (fn [db]

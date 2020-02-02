@@ -61,20 +61,44 @@
 ;; Grid
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn matrix []
+(defn matrix
+  "Returns the rows of cells."
+  []
   (let [grid-data @(rf/subscribe [::tetris.subs/game-grid])]
-    [widget
+    (for [row grid-data]
+       ^{:key (str (random-uuid))}
+       [:div
+        {:style
+         {:display "flex"}}
+          ;;:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
+        (for [cell-state row]
+         (cell cell-state))])))
+
+(defn center-panel []
+  (let [gameover? @(rf/subscribe [::tetris.subs/gameover?])
+        children
+        (if gameover?
+          (concat
+           [^{:key "go"}
+            [:h3
+             {:style {:margin-bottom "1rem"}}
+             "Game Over."]]
+           (matrix)
+           [^{:key "rest."}
+            [:p
+             {:style {:margin-top "1rem"}
+              :on-click #(rf/dispatch [::tetris.events/start-game])}
+             "Click here to Restart."]])
+          (matrix))]
+    [:div.center-panel
      {:style
-      {:flex "1"}
-      :children
-      (for [row grid-data]
-         ^{:key (str (random-uuid))}
-         [:div
-          {:style
-           {:display "flex"}}
-            ;;:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
-          (for [cell-state row]
-           (cell cell-state))])}]))
+      {:display "flex"
+       :flex "1"}}
+     [widget
+       {:style
+        {:flex "1"}
+        :children
+        children}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Left panel
@@ -223,8 +247,8 @@
           :game
           [^{:key "left"}
            [left-panel]
-           ^{:key "matrix"}
-           [matrix]
+           ^{:key "center"}
+           [center-panel]
            ^{:key "right"}
            [right-panel]])]
     [:div

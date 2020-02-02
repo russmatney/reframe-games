@@ -30,9 +30,7 @@
   (rf/dispatch-sync [::events/init-db])
 
   ;; start the game
-  (rf/dispatch-sync [::tetris.events/set-controls])
-  (rf/dispatch-sync [::tetris.events/game-tick])
-  (rf/dispatch-sync [::tetris.events/inc-game-timer]))
+  (rf/dispatch-sync [::tetris.events/start-game]))
 
 
 (comment

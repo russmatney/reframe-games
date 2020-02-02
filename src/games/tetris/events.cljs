@@ -13,15 +13,24 @@
  ::set-view
  (fn [{:keys [db]} [_ new-view]]
    (let [should-pause? (or (= new-view :controls)
-                           (= new-view :about))
-         dispatch (if should-pause? [::pause-game] [])]
-     {:db
-      (assoc-in db [::tetris.db/db :current-view] new-view)
-      :dispatch dispatch})))
+                           (= new-view :about))]
+     (cond->
+       {:db (assoc-in db [::tetris.db/db :current-view] new-view)}
+
+       should-pause?
+       (assoc :dispatch [::pause-game])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(rf/reg-event-fx
+ ::start-game
+ (fn [{:keys [db]} _]
+    {:db (assoc db ::tetris.db/db tetris.db/initial-db)
+     :dispatch-n [[::set-controls]
+                  [::game-tick]
+                  [::inc-game-timer]]}))
 
 (defn should-advance-level?
   [{:keys [level rows-per-level rows-cleared]}]
@@ -37,17 +46,20 @@
 (rf/reg-event-fx
  ::game-tick
  (fn [{:keys [db]}]
-   (let [tetris-db (::tetris.db/db db)
+   (let [{:keys [gameover?] :as tetris-db} (::tetris.db/db db)
          tetris-db (tetris/step tetris-db)
 
          {:keys [tick-timeout] :as tetris-db}
          (if (should-advance-level? tetris-db)
             (advance-level tetris-db)
             tetris-db)]
-    {:db (assoc db ::tetris.db/db tetris-db)
-     :timeout {:id ::tick
-               :event [::game-tick]
-               :time tick-timeout}})))
+     (if gameover?
+       {:clear-timeouts [{:id ::tick}
+                         {:id ::game-timer}]}
+       {:db (assoc db ::tetris.db/db tetris-db)
+        :timeout {:id ::tick
+                  :event [::game-tick]
+                  :time tick-timeout}}))))
 
 (rf/reg-event-fx
   ::inc-game-timer
@@ -219,8 +231,9 @@
  ::toggle-pause
  (fn [{:keys [db]} _ _]
    (let [paused (-> db ::tetris.db/db :paused?)]
-     (if paused
-       ;; unpause
-       {:dispatch [::resume-game]}
-       ;; pause
-       {:dispatch [::pause-game]}))))
+     (if-not (-> db ::tetris.db/db :gameover?)
+       (if paused
+         ;; unpause
+         {:dispatch [::resume-game]}
+         ;; pause
+         {:dispatch [::pause-game]})))))

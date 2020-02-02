@@ -293,8 +293,8 @@
       (clear-full-rows))
 
     ;; game is over, update db and return
-    ;;(gameover? db) (assoc db :gameover true) ;; or :phase :gameover?
-    (gameover? db) tetris.db/initial-db
+    (gameover? db) (assoc db :gameover? true)
+    ;;(gameover? db) tetris.db/initial-db
 
     ;; a piece is falling, move it down
     (any-falling? db)

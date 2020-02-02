@@ -49,7 +49,7 @@ spacebar, up, down arrow, page scrolls...
 fixed via proper prevent-default-keys
 *** [X] display controls/how-to-play via control screen
 ** [ ] pre-publish: last steps
-*** [ ] game-over screen
+*** [X] game-over screen
 show final screen, write restart command
 *** [X] increase levels by cleared rows, not pieces
 *** [X] gameover if a piece is in negative space
