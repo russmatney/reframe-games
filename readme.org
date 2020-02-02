@@ -51,7 +51,7 @@ fixed via proper prevent-default-keys
 ** [ ] pre-publish: last steps
 *** [ ] game-over screen
 show final screen, write restart command
-*** [ ] increase levels by cleared rows, not pieces
+*** [X] increase levels by cleared rows, not pieces
 *** [X] gameover if a piece is in negative space
 *** [ ] more balanced queue (7-bag)
 *** [ ] force user click at start (on itch.io)

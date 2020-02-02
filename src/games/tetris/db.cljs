@@ -111,7 +111,8 @@
    :time 0
    :timer-inc 100
    :level 1
-   :pieces-per-level 10
+   :rows-per-level 5
+   :rows-cleared 0
    :pieces-played 0
    :score 0
    :score-per-row-clear 10

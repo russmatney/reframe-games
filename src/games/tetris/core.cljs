@@ -18,7 +18,7 @@
    (grid/within-bounds? game-grid cell)
    (not (cell-occupied? db cell))))
 
-(defn next-cells
+(defn- next-cells
   "Supports can-add-next?
   In danger of differing from `add-new-piece`...
   "
@@ -277,7 +277,8 @@
     (-> db
       (update :score #(+ % (* score-per-row-clear row-count-score level)))
       (assoc :rows-in-combo updated-rows-in-combo)
-      (assoc :last-combo-piece-num pieces-played))))
+      (assoc :last-combo-piece-num pieces-played)
+      (update :rows-cleared #(+ % rows-cleared)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions

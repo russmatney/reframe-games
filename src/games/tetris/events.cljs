@@ -24,8 +24,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn should-advance-level?
-  [{:keys [level pieces-per-level pieces-played]}]
-  (>= pieces-played (* level pieces-per-level)))
+  [{:keys [level rows-per-level rows-cleared]}]
+  (>= rows-cleared (* level rows-per-level)))
 
 (defn advance-level
   "Each level updates the step timeout to 90% of the current speed."
