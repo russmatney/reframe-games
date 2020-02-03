@@ -42,7 +42,7 @@
             sounds (range 1 2)]
     (if-not (nil? (first sounds))
       (let [sound          (first sounds)
-            decoded-buffer (<! (get-and-decode {:url   (str "/audio/" sound ".mp3")
+            decoded-buffer (<! (get-and-decode {:url   (str "/reframe-games/public/audio/" sound ".mp3")
                                                 :sound sound}))]
         (prn sound)
         (prn decoded-buffer)

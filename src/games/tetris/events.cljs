@@ -251,5 +251,7 @@
 (rf/reg-event-db
  :play-sample
  (fn [db [_ sample]]
+   (when (= (.-state @(rf/subscribe [:audio-context])) "suspended")
+     (.resume @(rf/subscribe [:audio-context])))
    (sound/play-sample! sample)
    db))
