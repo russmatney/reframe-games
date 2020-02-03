@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="assets/favicon.ico" />
+    <link rel="stylesheet" href="/reframe-games/public/css/reset.css" />
+    <link rel="stylesheet" href="/reframe-games/public/css/nes.css" />
+
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+
+    <style>
+      html, body, pre, code, kbd, samp {
+          font-family: "Press Start 2P";
+      }
+    </style>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-29545122-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'UA-29545122-1');
+    </script>
+
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="/reframe-games/public/js/compiled/main.js"></script>
+    <script>
+      games.core.init();
+    </script>
+  </body>
+</html>
