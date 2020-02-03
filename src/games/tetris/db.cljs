@@ -87,46 +87,51 @@
 (def shape-opts {})
 
 (def initial-db
-  {:game-grid
-   (grid/build-grid {:height 20
-                     :width 10
-                     :phantom-rows 4})
-   :entry-cell {:x 5 :y -1}
-   :preview-grids
-   [(grid/build-grid {:height 2 :width 4})
-    (grid/build-grid {:height 2 :width 4})
-    (grid/build-grid {:height 2 :width 4})]
-   :piece-queue (shuffle allowed-shape-fns)
-   :max-queue-size 5
-   :allowed-shape-fns allowed-shape-fns
-   :falling-shape-fn nil
-   :held-shape-fn nil
-   :held-grid (grid/build-grid {:height 2 :width 4})
-   :hold-lock false
-   :ticks 0
-   :tick-timeout 500
-   :time 0
-   :timer-inc 100
-   :level 1
-   :rows-per-level 5
-   :rows-cleared 0
-   :pieces-played 0
-   :score 0
-   :score-per-row-clear 10
-   :rows-in-combo 0
+  {:game-grid            (grid/build-grid {:height       20
+                                           :width        10
+                                           :phantom-rows 4})
+   :entry-cell           {:x 5
+                          :y -1}
+   :preview-grids        [(grid/build-grid {:height 2
+                                            :width  4})
+                          (grid/build-grid {:height 2
+                                            :width  4})
+                          (grid/build-grid {:height 2
+                                            :width  4})]
+   :piece-queue          (shuffle allowed-shape-fns)
+   :max-queue-size       5
+   :allowed-shape-fns    allowed-shape-fns
+   :falling-shape-fn     nil
+   :held-shape-fn        nil
+   :held-grid            (grid/build-grid {:height 2
+                                           :width  4})
+   :hold-lock            false
+   :ticks                0
+   :tick-timeout         500
+   :time                 0
+   :timer-inc            100
+   :level                1
+   :rows-per-level       5
+   :rows-cleared         0
+   :pieces-played        0
+   :score                0
+   :score-per-row-clear  10
+   :rows-in-combo        0
    :last-combo-piece-num nil
-   :paused? false
-   :gameover? false
-   :current-view :game
-   :controls {:move-left (set ["left" "h" "a"])
-              :move-down (set ["down" "j" "s"])
-              :move-right (set ["right" "l" "d"])
-              :hold (set ["space"])
-              :rotate (set ["up" "k" "w"])
-              :pause (set ["enter"])
-              :controls (set ["c"])
-              :about (set ["b"])
-              :game (set ["g"])}})
+   :paused?              false
+   :gameover?            false
+   :current-view         :game
+   :controls             {:move-left  (set ["left" "h" "a"])
+                          :move-down  (set ["down" "j" "s"])
+                          :move-right (set ["right" "l" "d"])
+                          :hold       (set ["space"])
+                          :rotate     (set ["up" "k" "w"])
+                          :pause      (set ["enter"])
+                          :controls   (set ["c"])
+                          :about      (set ["b"])
+                          :game       (set ["g"])}
+   :audio-context        (js/AudioContext.)
+   :samples              nil})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Control helpers

@@ -4,7 +4,8 @@
   [reagent "0.8.1"]
   [re-frame "0.11.0-rc4"]
   [cider/cider-nrepl "0.18.0"]
-  [re-pressed "0.3.1"]]
+  [re-pressed "0.3.1"]
+  [org.clojure/core.async "0.4.500"]]
 
  :source-paths ["src"]
 

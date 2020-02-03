@@ -100,3 +100,20 @@
  :<- [::controls]
  (fn [controls [_ keys-for]]
    (-> controls keys-for)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sound
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(rf/reg-sub
+ :audio-context
+ :<- [::tetris-db]
+ (fn [db]
+   (-> db :audio-context)))
+
+(rf/reg-sub
+ :samples
+ :<- [::tetris-db]
+ (fn [db]
+   (-> db :samples)))

@@ -3,7 +3,8 @@
   [re-frame.core :as rf]
   [re-pressed.core :as rp]
   [games.tetris.db :as tetris.db]
-  [games.tetris.core :as tetris]))
+  [games.tetris.core :as tetris]
+  [games.sound :as sound]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Current view
@@ -237,3 +238,18 @@
          {:dispatch [::resume-game]}
          ;; pause
          {:dispatch [::pause-game]})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sound
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(rf/reg-event-db
+ :load-samples
+ (fn [db [_ samples]]
+   (assoc-in db [::tetris.db/db :samples] samples)))
+
+(rf/reg-event-db
+ :play-sample
+ (fn [db [_ sample]]
+   (sound/play-sample! sample)
+   db))
