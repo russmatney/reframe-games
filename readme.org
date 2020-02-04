@@ -68,3 +68,14 @@ zip -r reframe-games.zip public
 **** V1
 - [ ] break build process apart to support multiple apps
 - [ ] build game engine
+* Contributing
+My intention for this repository is to build some things from scratch on my
+own - selfishly, I'm somewhat closed-minded to contributions.
+
+I'm open to talking about the things in here via PRs and Issues, and I encourage
+you to fork and do what you want with the code!
+
+My motivation for developing this in the public:
+- to share the code as an example
+- to get feedback
+- (hopefully) to inspire others to build things!
