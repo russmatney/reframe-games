@@ -226,7 +226,7 @@
       (update :piece-queue
               (fn [q]
                 (let [q (drop 1 q)]
-                  (if (< (count q) 7)
+                  (if (< (count q) 7) ;; TODO refactor to read q size
                     (concat q (next-bag db))
                     q))))
 

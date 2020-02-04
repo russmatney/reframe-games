@@ -132,6 +132,7 @@
 ;; Control helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO move into game.controls namespace and de-dupe
 (def key-label->re-pressed-key
   "Maps a nice string to a re-pressed key with keyCode."
   {"enter" {:keyCode 13}
@@ -154,8 +155,10 @@
    "s" {:keyCode 83}
    "w" {:keyCode 87}})
 
+;; TODO move into game.controls namespace and de-dupe
 (def supported-keys (set (keys key-label->re-pressed-key)))
 
+;; TODO move into game.controls namespace and de-dupe
 (def control->label
   "Maps a control to a human label"
   {:move-left "Move Left"
