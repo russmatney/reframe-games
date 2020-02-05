@@ -30,6 +30,7 @@
   ;; initialize db
   (rf/dispatch-sync [::events/init-db])
 
+  ;; TODO support env var or arg passed in? break the builds apart
   ;; start tetris
   ;; (rf/dispatch-sync [::tetris.events/start-game])
 

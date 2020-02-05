@@ -22,23 +22,22 @@
 (defn cell
   ([c] (cell c {}))
   ([{:keys [falling occupied x y] :as c} opts]
-   (let [debug (:debug opts)
-         debug true
-         width (if debug "260px" "20px")
+   (let [debug  (:debug opts)
+         width  (if debug "260px" "20px")
          height (if debug "120px" "20px")]
-    ^{:key (str x y)}
-    [:div
-     {:style
-      (merge
-       {:max-width width
-        :max-height height
-        :width width
-        :height height
-        :border "#484848 solid 1px"}
-       (cell->style c))}
-     (if debug
-      (str c)
-      "")])))
+     ^{:key (str x y)}
+     [:div
+      {:style
+       (merge
+         {:max-width  width
+          :max-height height
+          :width      width
+          :height     height
+          :border     "#484848 solid 1px"}
+         (cell->style c))}
+      (if debug
+        (str c)
+        "")])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid

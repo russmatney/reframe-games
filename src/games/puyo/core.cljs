@@ -243,28 +243,48 @@
   "Clears groups that are have reached the group-size."
   [db groups]
   (update db :game-grid
-    (fn [grid]
-      (grid/update-cells
-       grid
-       (fn [cell]
-         (seq (filter #(contains? % cell) groups)))
-       #(dissoc % :occupied :color :anchor)))))
+          (fn [grid]
+            (grid/update-cells
+              grid
+              (fn [cell]
+                (seq (filter #(contains? % cell) groups)))
+              #(dissoc % :occupied :color :anchor)))))
+
+(defn deeper-y?
+  [{y0 :y} {y1 :y}]
+  (> y0 y1))
+
+;; TODO grid helper?
+(defn ->deepest-by-x
+  [cells]
+  (let [cols            (vals (group-by :x cells))
+        deepest-per-col (map #(first (sort deeper-y? %))
+                             cols)]
+    (->>
+      deepest-per-col
+      (group-by :x)
+      (map (fn [[k v]] [k (first v)]))
+      (into {}))))
 
 (defn update-fallers
-  "Updates cells that now have nothing occupied beneath them.
-  Could update to falling anything with a matching x and smaller y.
-  Big hammer for now - mark everything falling again.
-  TODO only update cells with gaps below them.
-  "
+  "Updates cells that have had a cell below removed."
   [db groups]
-  (update db :game-grid
-    (fn [grid]
-      (grid/update-cells
-       grid
-       (fn [{:keys [color]}] color)
-       #(-> %
-            (dissoc :occupied)
-            (assoc :falling true))))))
+  (let [deepest-by-x (->deepest-by-x (reduce set/union groups))
+        should-update?
+        (fn [{:keys [color x y]}]
+          (let [deep-y (:y (get deepest-by-x x))]
+            (and
+              color
+              (not (nil? deep-y))
+              (< y deep-y))))]
+    (update db :game-grid
+            (fn [grid]
+              (grid/update-cells
+                grid
+                should-update?
+                #(-> %
+                     (dissoc :occupied)
+                     (assoc :falling true)))))))
 
 (defn step
   [db]
