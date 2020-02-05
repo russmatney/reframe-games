@@ -25,7 +25,34 @@
 ;; Initial DB
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def shape-opts {})
+(def initial-controls
+  {:move-left  {:label "Move Left"
+                :keys  (set ["left" "h" "a"])
+                :event [:games.puyo.events/move-piece :left]}
+   :move-down  {:label "Move Down"
+                :keys  (set ["down" "j" "s"])
+                :event [:games.puyo.events/move-piece :down]}
+   :move-right {:label "Move Right"
+                :keys  (set ["right" "l" "d"])
+                :event [:games.puyo.events/move-piece :right]}
+   :hold       {:label "Hold"
+                :keys  (set ["space"])
+                :event [:games.puyo.events/hold-and-swap-piece]}
+   :rotate     {:label "Rotate Piece"
+                :keys  (set ["up" "k" "w"])
+                :event [:games.puyo.events/rotate-piece]}
+   :pause      {:label "Pause"
+                :keys  (set ["enter"])
+                :event [:games.puyo.events/toggle-pause]}
+   :controls   {:label "Controls"
+                :keys  (set ["c"])
+                :event [:games.puyo.events/set-view :controls]}
+   :about      {:label "About"
+                :keys  (set ["b"])
+                :event [:games.puyo.events/set-view :about]}
+   :game       {:label "Return to game"
+                :keys  (set ["g"])
+                :event [:games.puyo.events/set-view :game]}})
 
 (def initial-db
   {:game-grid
@@ -40,55 +67,7 @@
    :tick-timeout   500
    :paused?        false
    :gameover?      false
-   :controls       {:move-left  (set ["left" "h" "a"])
-                    :move-down  (set ["down" "j" "s"])
-                    :move-right (set ["right" "l" "d"])
-                    :hold       (set ["space"])
-                    :rotate     (set ["up" "k" "w"])
-                    :pause      (set ["enter"])
-                    :controls   (set ["c"])
-                    :about      (set ["b"])
-                    :game       (set ["g"])}})
+   :controls       initial-controls})
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Control helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO move into game.controls namespace and de-dupe
-(def key-label->re-pressed-key
-  "Maps a nice string to a re-pressed key with keyCode."
-  {"enter" {:keyCode 13}
-   "space" {:keyCode 32}
-   "left"  {:keyCode 37}
-   "right" {:keyCode 39}
-   "up"    {:keyCode 38}
-   "down"  {:keyCode 40}
-   "a"     {:keyCode 65}
-   "b"     {:keyCode 66}
-   "c"     {:keyCode 67}
-   "d"     {:keyCode 68}
-   "e"     {:keyCode 69}
-   "f"     {:keyCode 70}
-   "g"     {:keyCode 71}
-   "h"     {:keyCode 72}
-   "j"     {:keyCode 74}
-   "k"     {:keyCode 75}
-   "l"     {:keyCode 76}
-   "s"     {:keyCode 83}
-   "w"     {:keyCode 87}})
 
-;; TODO move into game.controls namespace and de-dupe
-(def supported-keys (set (keys key-label->re-pressed-key)))
-
-;; TODO move into game.controls namespace and de-dupe
-(def control->label
-  "Maps a control to a human label"
-  {:move-left  "Move Left"
-   :move-right "Move Right"
-   :move-down  "Move Down"
-   :rotate     "Rotate"
-   :hold       "Hold / Swap"
-   :pause      "Pause"
-   :controls   "Controls"
-   :about      "About"
-   :game       "Back to Game"})

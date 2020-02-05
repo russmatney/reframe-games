@@ -20,8 +20,8 @@
   occupied."
   [{:keys [game-grid] :as db} cell]
   (and
-   (grid/within-bounds? game-grid cell)
-   (not (cell-occupied? db cell))))
+    (grid/within-bounds? game-grid cell)
+    (not (cell-occupied? db cell))))
 
 (defn any-falling?
   "Returns true if there is a falling cell anywhere in the grid."
@@ -38,10 +38,10 @@
   Returns an updated db."
   [db cell]
   (update db :game-grid
-    #(grid/update-cell % cell
-      (fn [c] (-> c
-                (assoc :occupied true)
-                (dissoc :falling))))))
+          #(grid/update-cell % cell
+                             (fn [c] (-> c
+                                         (assoc :occupied true)
+                                         (dissoc :falling))))))
 
 (defn gameover?
   "Returns true if any cell of the grid has a y < 0.
@@ -79,7 +79,7 @@
 (defn rotate-piece
   [{:keys [game-grid] :as db}]
   (let [falling-cells (get-falling-cells db)
-        anchor-cell (first (filter :anchor falling-cells))]
+        anchor-cell   (first (filter :anchor falling-cells))]
 
     (if-not anchor-cell
       ;; no anchor-cell, do nothing
@@ -87,46 +87,46 @@
       (update db :game-grid
               (fn [grid]
                 (grid/move-cells
-                 grid
-                 {:move-f #(calc-rotate-target anchor-cell %)
-                  :fallback-moves
-                  [{:additional-cells [anchor-cell]
-                    :fallback-move-f (fn [c]
-                                       (as-> c c
-                                         (grid/move-cell-coords c :right)
-                                         (calc-rotate-target
-                                          (update anchor-cell :x inc) c)))}
-                   {:additional-cells [anchor-cell]
-                    :fallback-move-f (fn [c]
-                                       (as-> c c
-                                         (grid/move-cell-coords c :left)
-                                         (calc-rotate-target
-                                          (update anchor-cell :x dec) c)))}]
-                  :can-move? #(cell-open? db %)
-                  :cells (remove :anchor falling-cells)}))))))
+                  grid
+                  {:move-f    #(calc-rotate-target anchor-cell %)
+                   :fallback-moves
+                   [{:additional-cells [anchor-cell]
+                     :fallback-move-f  (fn [c]
+                                         (as-> c c
+                                           (grid/move-cell-coords c :right)
+                                           (calc-rotate-target
+                                             (update anchor-cell :x inc) c)))}
+                    {:additional-cells [anchor-cell]
+                     :fallback-move-f  (fn [c]
+                                         (as-> c c
+                                           (grid/move-cell-coords c :left)
+                                           (calc-rotate-target
+                                             (update anchor-cell :x dec) c)))}]
+                   :can-move? #(cell-open? db %)
+                   :cells     (remove :anchor falling-cells)}))))))
 
 (defn move-piece
   [{:keys [game-grid] :as db} direction]
   (let [falling-cells (get-falling-cells db)
-        move-f #(grid/move-cell-coords % direction)
+        move-f        #(grid/move-cell-coords % direction)
 
         updated-grid
         (grid/move-cells game-grid
-            {:move-f move-f
-             :can-move? #(cell-open? db %)
-             :cells falling-cells})
+                         {:move-f    move-f
+                          :can-move? #(cell-open? db %)
+                          :cells     falling-cells})
 
         db (assoc db :game-grid updated-grid)
 
         any-blocked-cells?
         (and
-         ;; down-only
-         (= direction :down)
-         ;; any falling cells?
-         falling-cells
-         ;; any falling cells that can't move down?
-         ;; i.e. with occupied cells below them
-         (seq (remove #(cell-open? db (move-f %)) falling-cells)))]
+          ;; down-only
+          (= direction :down)
+          ;; any falling cells?
+          falling-cells
+          ;; any falling cells that can't move down?
+          ;; i.e. with occupied cells below them
+          (seq (remove #(cell-open? db (move-f %)) falling-cells)))]
 
     ;; TODO do not allow movement after first break or after cells are removed
     ;; TODO 'falling' pieces above other falling pieces lock a step later...
@@ -139,10 +139,10 @@
                     (mark-cell-occupied d cell)
                     d))
                 db falling-cells))
-        ;; this also indicates that the pieces has been played, so we increment
-        ;; (update db :pieces-played inc)
-        ;; remove the hold-lock to allow another hold to happen
-        ;; (assoc db :hold-lock false))
+      ;; this also indicates that the pieces has been played, so we increment
+      ;; (update db :pieces-played inc)
+      ;; remove the hold-lock to allow another hold to happen
+      ;; (assoc db :hold-lock false))
 
       ;; otherwise just return the db
       db)))
@@ -164,21 +164,21 @@
   [{:keys [entry-cell game-grid piece-queue min-queue-size] :as db}]
   (let [make-cells (first piece-queue)]
     (-> db
-      (update :piece-queue
-              (fn [q]
-                (let [q (drop 1 q)]
-                  (if (< (count q) min-queue-size)
-                    (concat q (next-bag db))
-                    q))))
+        (update :piece-queue
+                (fn [q]
+                  (let [q (drop 1 q)]
+                    (if (< (count q) min-queue-size)
+                      (concat q (next-bag db))
+                      q))))
 
-      (assoc :falling-shape-fn make-cells)
+        (assoc :falling-shape-fn make-cells)
 
-      (update :game-grid
-             (fn [g]
-               (grid/add-cells g
-                              {:entry-cell entry-cell
-                               :update-cell #(assoc % :falling true)
-                               :make-cells make-cells}))))))
+        (update :game-grid
+                (fn [g]
+                  (grid/add-cells g
+                                  {:entry-cell  entry-cell
+                                   :update-cell #(assoc % :falling true)
+                                   :make-cells  make-cells}))))))
 
 (defn add-preview-piece [db shape-fn]
   db)
@@ -190,14 +190,14 @@
   [c0 c1]
   (let [{x0 :x y0 :y} c0
         {x1 :x y1 :y} c1]
-     (or (and (= x0 x1)
-            (or
-             (= y0 (+ y1 1))
-             (= y0 (- y1 1))))
-         (and (= y0 y1)
-            (or
-             (= x0 (+ x1 1))
-             (= x0 (- x1 1)))))))
+    (or (and (= x0 x1)
+             (or
+               (= y0 (+ y1 1))
+               (= y0 (- y1 1))))
+        (and (= y0 y1)
+             (or
+               (= x0 (+ x1 1))
+               (= x0 (- x1 1)))))))
 
 ;; TODO move to grid api?
 (defn- group-adjacent-cells
@@ -211,18 +211,18 @@
   ;; iterate
   (reduce
     (fn [groups cell]
-      (let [in-a-set? (seq (filter #(contains? % cell) groups))
+      (let [in-a-set?      (seq (filter #(contains? % cell) groups))
             adjacent-cells (set (filter #(adjacent? % cell) cells))]
         (if in-a-set?
           ;; in a set, so walk and update group in-place
           ;; probably a better way to do this kind of in-place update
           (walk/walk
-           (fn [group]
-             (if (contains? group cell)
-               (set/union group adjacent-cells)
-               group))
-           identity
-           groups)
+            (fn [group]
+              (if (contains? group cell)
+                (set/union group adjacent-cells)
+                group))
+            identity
+            groups)
           ;; otherwise, add a new set to groups
           (conj groups (conj adjacent-cells cell)))))
     []
@@ -231,9 +231,9 @@
 (defn groups-to-clear
   "Returns true if there are any groups of 4 or more adjacent same-color cells."
   [{:keys [game-grid group-size] :as db}]
-  (let [puyos (grid/get-cells game-grid :occupied)
+  (let [puyos        (grid/get-cells game-grid :occupied)
         color-groups (vals (group-by :color puyos))
-        groups (mapcat group-adjacent-cells color-groups)]
+        groups       (mapcat group-adjacent-cells color-groups)]
     (filter (fn [group] (<= group-size (count group))) groups)))
 
 (defn update-score [db]
@@ -301,9 +301,9 @@
       ;; clear puyo groups, update db and return
       (seq groups)
       (-> db
-        (update-score)
-        (clear-groups groups)
-        (update-fallers groups))
+          (update-score)
+          (clear-groups groups)
+          (update-fallers groups))
 
       ;; nothing is falling, add a new piece
       (not (any-falling? db))

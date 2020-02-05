@@ -1,24 +1,25 @@
 (ns games.tetris.events
- (:require
-  [re-frame.core :as rf]
-  [re-pressed.core :as rp]
-  [games.tetris.db :as tetris.db]
-  [games.tetris.core :as tetris]))
+  (:require
+   [re-frame.core :as rf]
+   [re-pressed.core :as rp]
+   [games.tetris.db :as tetris.db]
+   [games.tetris.core :as tetris]
+   [games.controls.events :as controls.events]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Current view
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rf/reg-event-fx
- ::set-view
- (fn [{:keys [db]} [_ new-view]]
-   (let [should-pause? (or (= new-view :controls)
-                           (= new-view :about))]
-     (cond->
-       {:db (assoc-in db [::tetris.db/db :current-view] new-view)}
+  ::set-view
+  (fn [{:keys [db]} [_ new-view]]
+    (let [should-pause? (or (= new-view :controls)
+                            (= new-view :about))]
+      (cond->
+          {:db (assoc-in db [::tetris.db/db :current-view] new-view)}
 
-       should-pause?
-       (assoc :dispatch [::pause-game])))))
+        should-pause?
+        (assoc :dispatch [::pause-game])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
@@ -67,73 +68,34 @@
     (let [{:keys [timer-inc]} (::tetris.db/db db)]
       {:db (update-in db [::tetris.db/db :time] #(+ % timer-inc))
        :timeout
-       {:id ::game-timer
+       {:id    ::game-timer
         :event [::inc-game-timer]
-        :time timer-inc}})))
+        :time  timer-inc}})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Set Controls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def control->event
-  "Maps a control to it's corresponding event."
-  {:move-left [::move-piece :left]
-   :move-right [::move-piece :right]
-   :move-down [::move-piece :down]
-   :hold [::hold-and-swap-piece]
-   :pause [::toggle-pause]
-   :rotate [::rotate-piece]
-   :controls [::set-view :controls]
-   :about [::set-view :about]
-   :game [::set-view :game]})
-
-(defn controls->event-keys
-  [controls]
-  (into []
-        (map
-         (fn [[control keys]]
-           (into []
-            (cons
-             (control->event control)
-             (map (fn [k]
-                    [(tetris.db/key-label->re-pressed-key k)])
-                  keys))))
-         controls)))
-
-(defn controls->all-keys
-  [controls]
-  (into []
-        (mapcat
-         (fn [[_ keys]]
-           (map tetris.db/key-label->re-pressed-key keys))
-         controls)))
-
 (rf/reg-event-fx
- ::set-controls
- (fn [{:keys [db]}]
-   (let [controls (-> db ::tetris.db/db :controls)
-         event-keys (controls->event-keys controls)
-         prevent-default-keys (controls->all-keys controls)]
-     {:db db
-      :dispatch
-      [::rp/set-keydown-rules
-       {:event-keys event-keys
-        :prevent-default-keys prevent-default-keys}]})))
+  ::set-controls
+  (fn [{:keys [db]}]
+    (let [controls (-> db ::tetris.db/db :controls)]
+      {:dispatch [::controls.events/set controls]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move piece
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rf/reg-event-fx
- ::move-piece
- (fn [{:keys [db]} [_ direction]]
-   (let [paused? (-> db ::tetris.db/db :paused?)]
-     {:db
-      (if paused? db
-        (update db
-                ::tetris.db/db
-                (fn [t-db]
-                  (tetris/move-piece t-db direction))))})))
+  ::move-piece
+  (fn [{:keys [db]} [_ direction]]
+    (let [paused? (-> db ::tetris.db/db :paused?)]
+      {:db
+       (if paused? db
+           (update db
+                   ::tetris.db/db
+                   (fn [t-db]
+                     (tetris/move-piece t-db direction))))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rotate piece

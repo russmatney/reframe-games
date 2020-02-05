@@ -3,6 +3,7 @@
    [reagent.core :as reagent]
    [games.views :as views]
    [games.events :as events]
+   [games.controls.events :as controls.events]
    [games.tetris.events :as tetris.events]
    [games.puyo.events :as puyo.events]
    [re-frame.core :as rf]
@@ -24,18 +25,19 @@
   (dev-setup)
   (mount-root)
 
-  ;; set a listener for keydown events
-  (rf/dispatch-sync [::rp/add-keyboard-event-listener "keydown"])
-
   ;; initialize db
   (rf/dispatch-sync [::events/init-db])
 
-  ;; TODO support env var or arg passed in? break the builds apart
+  ;; setup controls
+  (rf/dispatch-sync [::controls.events/init])
+
+  ;; TODO break the builds apart
   ;; start tetris
-  ;; (rf/dispatch-sync [::tetris.events/start-game])
+  (rf/dispatch-sync [::tetris.events/start-game])
 
   ;; start puyo
-  (rf/dispatch-sync [::puyo.events/start-game]))
+  ;; (rf/dispatch-sync [::puyo.events/start-game])
+  )
 
 
 (comment

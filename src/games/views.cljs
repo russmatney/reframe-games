@@ -6,7 +6,8 @@
 
 (defn root []
   [:div#root
-   ;;[tetris.views/page]
-   [puyo.views/page]])
+   [tetris.views/page]
+   ;; [puyo.views/page]
+   ])
 
 

@@ -96,7 +96,7 @@
    (-> db :controls)))
 
 (rf/reg-sub
- ::keys-for
- :<- [::controls]
- (fn [controls [_ keys-for]]
-   (-> controls keys-for)))
+  ::keys-for
+  :<- [::controls]
+  (fn [controls [_ keys-for]]
+    (-> controls keys-for :keys)))

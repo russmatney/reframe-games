@@ -253,13 +253,13 @@
            [right-panel]])]
     [:div
      {:style
-      {:height "100vh"
-       :width "100vw"
-       :display "flex"
+      {:height           "100vh"
+       :width            "100vw"
+       :display          "flex"
        :background
        (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
        linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px")
        :background-color background-color
-       :background-size "64px 128px"
-       :padding "24px"}}
+       :background-size  "64px 128px"
+       :padding          "24px"}}
      (for [c comps] c)]))

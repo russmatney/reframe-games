@@ -7,31 +7,31 @@
    [games.tetris.events :as tetris.events]
    [games.tetris.views.components :refer [widget display-label]]))
 
-(defn display-control [[control keys]]
-   ^{:key control}
-   [widget
-    {:on-click #(rf/dispatch (tetris.events/control->event control))
-     :style
-     {:flex "1 0 25%"}
-     :label (tetris.db/control->label control)
-     :children [^{:key (str keys)}
-                [:p (string/join "," keys)]]}])
+(defn display-control [[control {:keys [keys event label]}]]
+  ^{:key control}
+  [widget
+   {:on-click #(rf/dispatch event)
+    :style
+    {:flex "1 0 25%"}
+    :label    label
+    :children [^{:key (str keys)}
+               [:p (string/join "," keys)]]}])
 
 (defn view []
   (let [controls @(rf/subscribe [::tetris.subs/controls])]
     [:div
      {:style
-      {:display "flex"
-       :flex-wrap "wrap"
+      {:display        "flex"
+       :flex-wrap      "wrap"
        :flex-direction "row"
-       :width "100%"
-       :padding "24px"}}
+       :width          "100%"
+       :padding        "24px"}}
      [widget
       {:style
        {:width "100%"}
        :label "Controls"}]
-     (for [c-k controls]
-       (display-control c-k))]))
+     (for [control controls]
+       (display-control control))]))
 
 (comment
   (rf/dispatch [::tetris.events/set-view :controls])
