@@ -1,6 +1,7 @@
 (ns games.grid.core
   (:require
-   [clojure.set :as set]))
+   [clojure.set :as set]
+   [clojure.walk :as walk]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid, row, and cell creation
@@ -85,6 +86,23 @@
   [{:keys [grid phantom-rows] :as db} {:keys [x y]} f]
   (let [updated (update-in grid [(+ phantom-rows y) x] f)]
       (assoc db :grid updated)))
+
+(defn update-cells
+  "Applies the passed function to the cells that return true for pred."
+  [db pred f]
+  (update db :grid
+   (fn [g]
+    (into []
+     (map
+       (fn [row]
+         (into []
+          (map
+           (fn [cell]
+             (if (pred cell)
+               (f cell)
+               cell))
+           row)))
+       g)))))
 
 (defn overwrite-cell
   "Copies all props from `cell` to `target`.

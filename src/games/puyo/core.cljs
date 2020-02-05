@@ -1,7 +1,9 @@
 (ns games.puyo.core
   (:require
    [games.puyo.db :as puyo.db]
-   [games.grid.core :as grid]))
+   [games.grid.core :as grid]
+   [clojure.walk :as walk]
+   [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game logic, predicates, helpers
@@ -42,7 +44,8 @@
                 (dissoc :falling))))))
 
 (defn gameover?
-  "Returns true if any cell of the grid has a y < 0."
+  "Returns true if any cell of the grid has a y < 0.
+  TODO fix this! only true if entry cell blocked"
   [{:keys [game-grid]}]
   (grid/any-cell? game-grid (fn [{:keys [y occupied]}]
                               (and occupied
@@ -71,6 +74,8 @@
   (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))
 
 ;; TODO dry up?
+;; TODO think about swapping colors vs 'rotating', especially in narrow
+;; situations
 (defn rotate-piece
   [{:keys [game-grid] :as db}]
   (let [falling-cells (get-falling-cells db)
@@ -123,6 +128,8 @@
          ;; i.e. with occupied cells below them
          (seq (remove #(cell-open? db (move-f %)) falling-cells)))]
 
+    ;; TODO do not allow movement after first break or after cells are removed
+    ;; TODO 'falling' pieces above other falling pieces lock a step later...
     (if any-blocked-cells?
       ;; mark blocked cells :occupied, remove :falling
       ;; Effectively a 'piece-played' event
@@ -140,9 +147,10 @@
       ;; otherwise just return the db
       db)))
 
-;; TODO dry up
-(defn clear-falling-cells [db]
-  db)
+(defn clear-falling-cells
+  "Supports the 'hold/swap' mechanic."
+  [db]
+  (update db :game-grid #(grid/clear-cells % :falling)))
 
 (defn next-bag
   ;; TODO balance colors reasonably
@@ -175,35 +183,112 @@
 (defn add-preview-piece [db shape-fn]
   db)
 
-(defn groups-to-clear? [db]
-  false)
+(defn- adjacent?
+  "True if the cells are neighboring cells.
+  Determined by having the same x and y +/- 1, or same y and x +/- 1.
+  "
+  [c0 c1]
+  (let [{x0 :x y0 :y} c0
+        {x1 :x y1 :y} c1]
+     (or (and (= x0 x1)
+            (or
+             (= y0 (+ y1 1))
+             (= y0 (- y1 1))))
+         (and (= y0 y1)
+            (or
+             (= x0 (+ x1 1))
+             (= x0 (- x1 1)))))))
+
+;; TODO move to grid api?
+(defn- group-adjacent-cells
+  "Takes a collection of cells, returns a list of cells grouped by adjacency.
+  See `adjacent?`."
+  [cells]
+  ;; iterate over cells
+  ;; first cell - create set, add all adjacent cells from group
+  ;; next cell - if in first cell, add all adjacent to that group
+  ;;    else, add all adjacent to new set
+  ;; iterate
+  (reduce
+    (fn [groups cell]
+      (let [in-a-set? (seq (filter #(contains? % cell) groups))
+            adjacent-cells (set (filter #(adjacent? % cell) cells))]
+        (if in-a-set?
+          ;; in a set, so walk and update group in-place
+          ;; probably a better way to do this kind of in-place update
+          (walk/walk
+           (fn [group]
+             (if (contains? group cell)
+               (set/union group adjacent-cells)
+               group))
+           identity
+           groups)
+          ;; otherwise, add a new set to groups
+          (conj groups (conj adjacent-cells cell)))))
+    []
+    cells))
+
+(defn groups-to-clear
+  "Returns true if there are any groups of 4 or more adjacent same-color cells."
+  [{:keys [game-grid group-size] :as db}]
+  (let [puyos (grid/get-cells game-grid :occupied)
+        color-groups (vals (group-by :color puyos))
+        groups (mapcat group-adjacent-cells color-groups)]
+    (filter (fn [group] (<= group-size (count group))) groups)))
 
 (defn update-score [db]
   db)
 
-(defn clear-groups [db]
-  db)
+(defn clear-groups
+  "Clears groups that are have reached the group-size."
+  [db groups]
+  (update db :game-grid
+    (fn [grid]
+      (grid/update-cells
+       grid
+       (fn [cell]
+         (seq (filter #(contains? % cell) groups)))
+       #(dissoc % :occupied :color :anchor)))))
 
-(defn step [db]
-  (cond
-    ;; clear puyo groups, update db and return
-    (groups-to-clear? db)
-    (-> db
-      (update-score)
-      (clear-groups))
+(defn update-fallers
+  "Updates cells that now have nothing occupied beneath them.
+  Could update to falling anything with a matching x and smaller y.
+  Big hammer for now - mark everything falling again.
+  TODO only update cells with gaps below them.
+  "
+  [db groups]
+  (update db :game-grid
+    (fn [grid]
+      (grid/update-cells
+       grid
+       (fn [{:keys [color]}] color)
+       #(-> %
+            (dissoc :occupied)
+            (assoc :falling true))))))
 
-    ;; game is over, update db and return
-    ;;(gameover? db) (assoc db :gameover? true)
-    (gameover? db) puyo.db/initial-db
+(defn step
+  [db]
+  (let [groups (groups-to-clear db)]
+    (cond
+      ;; game is over, update db and return
+      ;;(gameover? db) (assoc db :gameover? true)
+      (gameover? db) puyo.db/initial-db
 
-    ;; a piece is falling, move it down
-    (any-falling? db)
-    (move-piece db :down)
+      ;; a piece is falling, move it down
+      (any-falling? db)
+      (move-piece db :down)
 
-    ;; nothing is falling, add a new piece
-    (not (any-falling? db))
-    (add-new-piece db)
+      ;; clear puyo groups, update db and return
+      (seq groups)
+      (-> db
+        (update-score)
+        (clear-groups groups)
+        (update-fallers groups))
 
-    ;; do nothing
-    true db))
+      ;; nothing is falling, add a new piece
+      (not (any-falling? db))
+      (add-new-piece db)
+
+      ;; do nothing
+      true db)))
 

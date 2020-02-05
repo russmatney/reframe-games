@@ -15,6 +15,7 @@
     (assoc :x (+ x0 x))
     (assoc :y (+ y0 y))))
 
+;; TODO refactor style/color into view?
 (defn line-shape [ec]
   (let [style {:background "#6ebff5"}] ;; light blue
     (map #(assoc % :style style)
@@ -32,7 +33,7 @@
        (assoc ec :anchor true)])))
 
 (defn z-shape [ec]
-  (let [style {:background "rgb(231,110,85)"}] ;; green
+  (let [style {:background "rgb(231,110,85)"}] ;; orange/red
     (map #(assoc % :style style)
       [(relative ec {:y -1})
        (relative ec {:y -1 :x -1})
@@ -64,7 +65,7 @@
        (assoc ec :anchor true)])))
 
 (defn square-shape [ec]
-  (let [style {:background "rgb(247,213,29)"}] ;; yello
+  (let [style {:background "rgb(247,213,29)"}] ;; yellow
     (map #(assoc % :style style)
       [(relative ec {:y -1})
        (relative ec {:x 1})

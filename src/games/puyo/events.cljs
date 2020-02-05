@@ -180,8 +180,8 @@
          updated-db (assoc-in db [::puyo.db/db :paused?] false)]
      (if game-in-view?
        {:db updated-db
-        :dispatch-n [[::game-tick]
-                     [::inc-game-timer]]}))))
+        :dispatch-n [[::game-tick]]}))))
+                     ;;[::inc-game-timer]]}))))
 
 (rf/reg-event-fx
  ::toggle-pause

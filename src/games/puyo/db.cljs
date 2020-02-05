@@ -29,13 +29,14 @@
 
 (def initial-db
   {:game-grid
-   (grid/build-grid {:height 16
-                     :width 8
+   (grid/build-grid {:height 8
+                     :width 4
                      :phantom-rows 2})
-   ;; TODO move entry-cell into grid?
-   :entry-cell {:x 3 :y -1}
+   ;; TODO move entry-cell into grid.
+   :entry-cell {:x 1 :y -1}
    :piece-queue (repeat 5 entry-cell->puyo)
    :min-queue-size 5
+   :group-size 4 ;; number of puyos in a group to be removed
    :tick-timeout 500
    :paused? false
    :gameover? false

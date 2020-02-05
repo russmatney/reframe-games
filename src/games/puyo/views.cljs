@@ -10,11 +10,12 @@
 (defn cell->style
   [{:keys [falling color] :as c}]
   (let [background (case color
-                     :green "green"
-                     :red "red"
-                     :blue "blue"
-                     :yellow "yellow"
-                     "gray")]
+                     ;; TODO extract colors into db
+                     :green "rgb(146,204,65)"
+                     :red "#FE493C" ;;"#B564D4"
+                     :blue "#209CEE" ;;#6ebff5
+                     :yellow "rgb(247,213,29)"
+                     "#323232")]
     {:background background}))
 
 ;; TODO dry up cell view?
@@ -22,8 +23,8 @@
   ([c] (cell c {}))
   ([{:keys [falling occupied x y] :as c} opts]
    (let [debug (:debug opts)
-         ;; debug true
-         width (if debug "120px" "20px")
+         debug true
+         width (if debug "260px" "20px")
          height (if debug "120px" "20px")]
     ^{:key (str x y)}
     [:div
