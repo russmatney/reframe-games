@@ -1,6 +1,5 @@
 (ns games.tetris.core
   (:require
-   [games.tetris.db :as tetris.db]
    [games.grid.core :as grid]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -15,27 +14,11 @@
   occupied."
   [{:keys [game-grid] :as db} cell]
   (and
-   (grid/within-bounds? game-grid cell)
-   (not (cell-occupied? db cell))))
+    (grid/within-bounds? game-grid cell)
+    (not (cell-occupied? db cell))))
 
-(defn- next-cells
-  "Supports can-add-next?
-  In danger of differing from `add-new-piece`...
-  "
-  [{:keys [entry-cell piece-queue]}]
-  ((first piece-queue) entry-cell))
-
-(defn can-add-next?
-  "Returns true if any of the cells for the next piece
-  are already occupied."
-  [{:keys [entry-cell] :as db}]
-  (->> (next-cells db)
-     (filter (fn [c] (cell-occupied? db c)))
-     (count)
-     (= 0)))
-
-(defn row-fully-occupied? [row f?]
-   (grid/true-for-row? row :occupied))
+(defn row-fully-occupied? [row]
+  (grid/true-for-row? row :occupied))
 
 (defn rows-to-clear
   "Returns true if there are rows to be removed from the board."
@@ -47,7 +30,7 @@
   cells."
   [db]
   (update db :game-grid
-    #(grid/remove-rows % row-fully-occupied?)))
+          #(grid/remove-rows % row-fully-occupied?)))
 
 (defn any-falling?
   "Returns true if there is a falling cell anywhere in the grid."
@@ -87,25 +70,25 @@
   "
   [{:keys [game-grid] :as db} direction]
   (let [falling-cells (get-falling-cells db)
-        move-f #(grid/move-cell-coords % direction)
+        move-f        #(grid/move-cell-coords % direction)
 
         updated-grid
         (grid/move-cells game-grid
-            {:move-f move-f
-             :can-move? #(cell-open? db %)
-             :cells falling-cells})
+                         {:move-f    move-f
+                          :can-move? #(cell-open? db %)
+                          :cells     falling-cells})
 
         db (assoc db :game-grid updated-grid)
 
         should-lock-cells?
         (and
-         ;; down-only
-         (= direction :down)
-         ;; any falling cells?
-         falling-cells
-         ;; any falling cells that can't move down?
-         ;; i.e. with occupied cells below them
-         (seq (remove #(cell-open? db (move-f %)) falling-cells)))]
+          ;; down-only
+          (= direction :down)
+          ;; any falling cells?
+          falling-cells
+          ;; any falling cells that can't move down?
+          ;; i.e. with occupied cells below them
+          (seq (remove #(cell-open? db (move-f %)) falling-cells)))]
 
     (if should-lock-cells?
       ;; mark all cells :occupied, remove :falling
@@ -125,24 +108,6 @@
 ;; Rotating pieces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn rotate-diff
-  "x1 = y0
-  y1 = -x0"
-  [{:keys [x y] :as cell}]
-  {:x y
-   :y (* -1 x)})
-
-(defn calc-diff [anchor-cell cell]
-  {:x (- (:x anchor-cell) (:x cell))
-   :y (- (:y anchor-cell) (:y cell))})
-
-(defn apply-diff [anchor-cell cell]
-  {:x (+ (:x anchor-cell) (:x cell))
-   :y (+ (:y anchor-cell) (:y cell))})
-
-(defn calc-rotate-target [anchor-cell cell]
-  (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))
-
 (defn rotate-piece
   "Rotates a falling piece in-place.
   This requires one falling cell to be an 'anchor'.
@@ -154,9 +119,9 @@
   pieces, fallback moves are attempted, moving the pieces one two spaces to the
   left or right before attempting the rotate. This results in the 'bumping' away
   from walls when attempting to rotate on the edge of the grid."
-  [{:keys [game-grid] :as db}]
+  [db]
   (let [falling-cells (get-falling-cells db)
-        anchor-cell (first (filter :anchor falling-cells))]
+        anchor-cell   (first (filter :anchor falling-cells))]
 
     (if-not anchor-cell
       ;; no anchor-cell, do nothing
@@ -164,37 +129,37 @@
       (update db :game-grid
               (fn [grid]
                 (grid/move-cells
-                 grid
-                 {:move-f #(calc-rotate-target anchor-cell %)
-                  :fallback-moves
-                  [{:additional-cells [anchor-cell]
-                    :fallback-move-f (fn [c]
-                                       (as-> c c
-                                         (grid/move-cell-coords c :right)
-                                         (calc-rotate-target
-                                          (update anchor-cell :x inc) c)))}
-                   {:additional-cells [anchor-cell]
-                    :fallback-move-f (fn [c]
-                                       (as-> c c
-                                         (grid/move-cell-coords c :left)
-                                         (calc-rotate-target
-                                          (update anchor-cell :x dec) c)))}
-                   {:additional-cells [anchor-cell]
-                    :fallback-move-f (fn [c]
-                                       (as-> c c
-                                         (grid/move-cell-coords c :right)
-                                         (grid/move-cell-coords c :right)
-                                         (calc-rotate-target
-                                          (update anchor-cell :x #(+ % 2)) c)))}
-                   {:additional-cells [anchor-cell]
-                    :fallback-move-f (fn [c]
-                                       (as-> c c
-                                         (grid/move-cell-coords c :left)
-                                         (grid/move-cell-coords c :left)
-                                         (calc-rotate-target
-                                          (update anchor-cell :x #(- % 2)) c)))}]
-                  :can-move? #(cell-open? db %)
-                  :cells (remove :anchor falling-cells)}))))))
+                  grid
+                  {:move-f    #(grid/calc-rotate-target anchor-cell %)
+                   :fallback-moves
+                   [{:additional-cells [anchor-cell]
+                     :fallback-move-f  (fn [c]
+                                         (as-> c c
+                                           (grid/move-cell-coords c :right)
+                                           (grid/calc-rotate-target
+                                             (update anchor-cell :x inc) c)))}
+                    {:additional-cells [anchor-cell]
+                     :fallback-move-f  (fn [c]
+                                         (as-> c c
+                                           (grid/move-cell-coords c :left)
+                                           (grid/calc-rotate-target
+                                             (update anchor-cell :x dec) c)))}
+                    {:additional-cells [anchor-cell]
+                     :fallback-move-f  (fn [c]
+                                         (as-> c c
+                                           (grid/move-cell-coords c :right)
+                                           (grid/move-cell-coords c :right)
+                                           (grid/calc-rotate-target
+                                             (update anchor-cell :x #(+ % 2)) c)))}
+                    {:additional-cells [anchor-cell]
+                     :fallback-move-f  (fn [c]
+                                         (as-> c c
+                                           (grid/move-cell-coords c :left)
+                                           (grid/move-cell-coords c :left)
+                                           (grid/calc-rotate-target
+                                             (update anchor-cell :x #(- % 2)) c)))}]
+                   :can-move? #(cell-open? db %)
+                   :cells     (remove :anchor falling-cells)}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adding new pieces
@@ -219,33 +184,33 @@
   "Adds a new cell to the grid.
   Does not care if there is room to add it!
   Depends on the `new-piece-coord`."
-  [{:keys [entry-cell game-grid piece-queue] :as db}]
+  [{:keys [entry-cell piece-queue min-queue-size] :as db}]
   (let [next-three (take 3 (drop 1 piece-queue))
         make-cells (first piece-queue)]
     (-> db
-      (update :piece-queue
-              (fn [q]
-                (let [q (drop 1 q)]
-                  (if (< (count q) 7) ;; TODO refactor to read q size
-                    (concat q (next-bag db))
-                    q))))
+        (update :piece-queue
+                (fn [q]
+                  (let [q (drop 1 q)]
+                    (if (< (count q) min-queue-size) ;; TODO refactor to read q size
+                      (concat q (next-bag db))
+                      q))))
 
-      (assoc :falling-shape-fn make-cells)
+        (assoc :falling-shape-fn make-cells)
 
-      (update :game-grid
-             (fn [g]
-               (grid/add-cells g
-                              {:entry-cell entry-cell
-                               :update-cell #(assoc % :falling true)
-                               :make-cells make-cells})))
+        (update :game-grid
+                (fn [g]
+                  (grid/add-cells g
+                                  {:entry-cell  entry-cell
+                                   :update-cell #(assoc % :falling true)
+                                   :make-cells  make-cells})))
 
-      (update :preview-grids
-             (fn [gs]
-               (let [[g1 g2 g3] gs
-                     [p1 p2 p3] next-three]
-                 [(add-preview-piece g1 p1)
-                  (add-preview-piece g2 p2)
-                  (add-preview-piece g3 p3)]))))))
+        (update :preview-grids
+                (fn [gs]
+                  (let [[g1 g2 g3] gs
+                        [p1 p2 p3] next-three]
+                    [(add-preview-piece g1 p1)
+                     (add-preview-piece g2 p2)
+                     (add-preview-piece g3 p3)]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Removing Pieces (for hold/swap feature)
@@ -267,21 +232,25 @@
   the original rows are included in the row-count-score multipled by the current
   level.
   "
-  [{:keys [score-per-row-clear level rows-in-combo
-           last-combo-piece-num pieces-played] :as db}]
-  (let [rows-cleared (count (rows-to-clear db))
-        carry-combo? (= pieces-played (+ last-combo-piece-num 1))
-        row-count-score (if carry-combo?
-                          (+ rows-cleared rows-in-combo)
-                          rows-cleared)
+  [{:keys [score-per-row-clear
+           level
+           rows-in-combo
+           last-combo-piece-num
+           pieces-played]
+    :as   db}]
+  (let [rows-cleared          (count (rows-to-clear db))
+        carry-combo?          (= pieces-played (+ last-combo-piece-num 1))
+        row-count-score       (if carry-combo?
+                                (+ rows-cleared rows-in-combo)
+                                rows-cleared)
         updated-rows-in-combo (if carry-combo?
                                 row-count-score
                                 rows-cleared)]
     (-> db
-      (update :score #(+ % (* score-per-row-clear row-count-score level)))
-      (assoc :rows-in-combo updated-rows-in-combo)
-      (assoc :last-combo-piece-num pieces-played)
-      (update :rows-cleared #(+ % rows-cleared)))))
+        (update :score #(+ % (* score-per-row-clear row-count-score level)))
+        (assoc :rows-in-combo updated-rows-in-combo)
+        (assoc :last-combo-piece-num pieces-played)
+        (update :rows-cleared #(+ % rows-cleared)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions
@@ -292,8 +261,8 @@
     ;; clear pieces, update db and return
     (> (count (rows-to-clear db)) 0)
     (-> db
-      (update-score)
-      (clear-full-rows))
+        (update-score)
+        (clear-full-rows))
 
     ;; game is over, update db and return
     (gameover? db) (assoc db :gameover? true)
@@ -308,5 +277,5 @@
     (add-new-piece db)
 
     ;; do nothing
-    true db))
+    :else db))
 

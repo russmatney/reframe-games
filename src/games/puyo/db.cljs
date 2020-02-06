@@ -8,8 +8,8 @@
 
 (def colors
   [:red
-   :green
-   :yellow
+   ;; :green
+   ;; :yellow
    :blue])
 
 (defn assign-color [c]
@@ -55,19 +55,49 @@
                 :event [:games.puyo.events/set-view :game]}})
 
 (def initial-db
-  {:game-grid
+  { ;; game (matrix)
+   :game-grid
    (grid/build-grid {:height       10
                      :width        8
                      :phantom-rows 2})
    ;; TODO move entry-cell into grid.
-   :entry-cell     {:x 0 :y -1}
+   :entry-cell {:x 0 :y -1}
+
+   ;; game logic
+   :group-size   4 ;; number of puyos in a group to be removed
+   :tick-timeout 100
+   :paused?      false
+   :gameover?    false
+
+   ;; queue
    :piece-queue    (repeat 5 entry-cell->puyo)
    :min-queue-size 5
-   :group-size     4 ;; number of puyos in a group to be removed
-   :tick-timeout   500
-   :paused?        false
-   :gameover?      false
-   :controls       initial-controls})
+   :preview-grids
+   [(grid/build-grid {:height 2 :width 4})
+    (grid/build-grid {:height 2 :width 4})
+    (grid/build-grid {:height 2 :width 4})]
 
+   ;; controls
+   :controls initial-controls
+
+   ;; timer
+   :time      0
+   :timer-inc 100
+
+   ;; hold/swap
+   :falling-shape-fn nil
+   :held-shape-fn    nil
+   :held-grid        (grid/build-grid {:height 2 :width 4})
+   :hold-lock        false
+
+   ;; level/score
+   :level                 1
+   :groups-per-level      5
+   :groups-cleared        0
+   :pieces-played         0
+   :score                 0
+   :score-per-group-clear 10
+   :groups-in-combo       0
+   :last-combo-piece-num  nil})
 
 

@@ -66,8 +66,15 @@ zip -r reframe-games.zip public
 #+END_SRC
 * Mean-bean Machine clone
 **** V1
-- [ ] break build process apart to support multiple apps
-- [ ] build game engine
+***** [X] engine basics
+***** [ ] break build process apart to support multiple apps
+***** [ ] controls: hold
+***** [ ] controls: no movement after initial contact
+***** [ ] score calculated
+***** [ ] presentation: hold
+***** [ ] presentation: queue
+***** [ ] presentation: score
+***** [ ] presentation: controls
 * Contributing
 My intention for this repository is to build some things from scratch on my
 own - selfishly, I'm somewhat closed-minded to contributions.

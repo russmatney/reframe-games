@@ -1,7 +1,6 @@
 (ns games.grid.core
   (:require
-   [clojure.set :as set]
-   [clojure.walk :as walk]))
+   [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid, row, and cell creation
@@ -13,14 +12,14 @@
   "
   [{:keys [phantom-rows]} grid]
   (vec
-   (map-indexed
-    (fn [y row]
-     (vec
-      (map-indexed
-       (fn [x cell]
-        (assoc cell :y (- y phantom-rows) :x x))
-       row)))
-    grid)))
+    (map-indexed
+      (fn [y row]
+        (vec
+          (map-indexed
+            (fn [x cell]
+              (assoc cell :y (- y phantom-rows) :x x))
+            row)))
+      grid)))
 
 (defn build-row
   "Used to create initial rows as well as new ones after rows are removed."
@@ -224,10 +223,36 @@
       (let [fallback-moves (drop 1 fallback-moves)]
         (as-> db db
           (move-cells
-           db
-           (-> move-opts
-               (update :cells #(concat % additional-cells))
-               (assoc :move-f fallback-move-f)
-               (assoc :fallback-moves fallback-moves)))))
+            db
+            (-> move-opts
+                (update :cells #(concat % additional-cells))
+                (assoc :move-f fallback-move-f)
+                (assoc :fallback-moves fallback-moves)))))
 
-      true db)))
+      :else db)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell rotation helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- rotate-diff
+  "x1 = y0
+  y1 = -x0"
+  [{:keys [x y]}]
+  {:x y
+   :y (* -1 x)})
+
+(defn- calc-diff [anchor-cell cell]
+  {:x (- (:x anchor-cell) (:x cell))
+   :y (- (:y anchor-cell) (:y cell))})
+
+(defn- apply-diff [anchor-cell cell]
+  {:x (+ (:x anchor-cell) (:x cell))
+   :y (+ (:y anchor-cell) (:y cell))})
+
+(defn calc-rotate-target
+  "Rotates the passed `cell` about the `anchor-cell` clockwise.
+  Returns a target cell as a map with :x and :y keys for `cell`'s new
+  coordinates."
+  [anchor-cell cell]
+  (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))

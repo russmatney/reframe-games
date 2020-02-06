@@ -12,9 +12,6 @@
 (defn cell-occupied? [{:keys [game-grid]} cell]
   (:occupied (grid/get-cell game-grid cell)))
 
-(defn cell-falling? [{:keys [game-grid]} cell]
-  (:falling (grid/get-cell game-grid cell)))
-
 (defn cell-open?
   "Returns true if the indicated cell is within the grid's bounds AND not
   occupied."
@@ -55,56 +52,6 @@
 ;; Piece movement
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn rotate-diff
-  "x1 = y0
-  y1 = -x0"
-  [{:keys [x y] :as cell}]
-  {:x y
-   :y (* -1 x)})
-
-(defn calc-diff [anchor-cell cell]
-  {:x (- (:x anchor-cell) (:x cell))
-   :y (- (:y anchor-cell) (:y cell))})
-
-(defn apply-diff [anchor-cell cell]
-  {:x (+ (:x anchor-cell) (:x cell))
-   :y (+ (:y anchor-cell) (:y cell))})
-
-(defn calc-rotate-target [anchor-cell cell]
-  (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))
-
-;; TODO dry up?
-;; TODO think about swapping colors vs 'rotating', especially in narrow
-;; situations
-(defn rotate-piece
-  [{:keys [game-grid] :as db}]
-  (let [falling-cells (get-falling-cells db)
-        anchor-cell   (first (filter :anchor falling-cells))]
-
-    (if-not anchor-cell
-      ;; no anchor-cell, do nothing
-      db
-      (update db :game-grid
-              (fn [grid]
-                (grid/move-cells
-                  grid
-                  {:move-f    #(calc-rotate-target anchor-cell %)
-                   :fallback-moves
-                   [{:additional-cells [anchor-cell]
-                     :fallback-move-f  (fn [c]
-                                         (as-> c c
-                                           (grid/move-cell-coords c :right)
-                                           (calc-rotate-target
-                                             (update anchor-cell :x inc) c)))}
-                    {:additional-cells [anchor-cell]
-                     :fallback-move-f  (fn [c]
-                                         (as-> c c
-                                           (grid/move-cell-coords c :left)
-                                           (calc-rotate-target
-                                             (update anchor-cell :x dec) c)))}]
-                   :can-move? #(cell-open? db %)
-                   :cells     (remove :anchor falling-cells)}))))))
-
 (defn move-piece
   [{:keys [game-grid] :as db} direction]
   (let [falling-cells (get-falling-cells db)
@@ -138,14 +85,45 @@
                   (if (not (cell-open? d (move-f cell)))
                     (mark-cell-occupied d cell)
                     d))
-                db falling-cells))
-      ;; this also indicates that the pieces has been played, so we increment
-      ;; (update db :pieces-played inc)
-      ;; remove the hold-lock to allow another hold to happen
-      ;; (assoc db :hold-lock false))
+                db falling-cells)
+        ;; this also indicates that the pieces has been played, so we increment
+        (update db :pieces-played inc)
+        ;; remove the hold-lock to allow another hold to happen
+        (assoc db :hold-lock false))
 
       ;; otherwise just return the db
       db)))
+
+;; TODO think about swapping colors vs 'rotating', especially in narrow
+;; situations
+(defn rotate-piece
+  [db]
+  (let [falling-cells (get-falling-cells db)
+        anchor-cell   (first (filter :anchor falling-cells))]
+
+    (if-not anchor-cell
+      ;; no anchor-cell, do nothing
+      db
+      (update db :game-grid
+              (fn [grid]
+                (grid/move-cells
+                  grid
+                  {:move-f    #(grid/calc-rotate-target anchor-cell %)
+                   :fallback-moves
+                   [{:additional-cells [anchor-cell]
+                     :fallback-move-f  (fn [c]
+                                         (as-> c c
+                                           (grid/move-cell-coords c :right)
+                                           (grid/calc-rotate-target
+                                             (update anchor-cell :x inc) c)))}
+                    {:additional-cells [anchor-cell]
+                     :fallback-move-f  (fn [c]
+                                         (as-> c c
+                                           (grid/move-cell-coords c :left)
+                                           (grid/calc-rotate-target
+                                             (update anchor-cell :x dec) c)))}]
+                   :can-move? #(cell-open? db %)
+                   :cells     (remove :anchor falling-cells)}))))))
 
 (defn clear-falling-cells
   "Supports the 'hold/swap' mechanic."

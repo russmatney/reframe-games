@@ -115,26 +115,42 @@
                 :event [:games.tetris.events/set-view :game]}})
 
 (def initial-db
-  {:game-grid
+  {;; game matrix
+   :game-grid
    (grid/build-grid {:height       20
                      :width        10
                      :phantom-rows 4})
-   :entry-cell           {:x 5 :y -1}
+   :entry-cell {:x 5 :y -1}
+
+   ;; game logic
+   :tick-timeout 500
+   :paused?      false
+   :gameover?    false
+   :current-view :game
+
+   ;; queue
+   :piece-queue       (shuffle allowed-shape-fns)
+   :min-queue-size    5
+   :allowed-shape-fns allowed-shape-fns
    :preview-grids
    [(grid/build-grid {:height 2 :width 4})
     (grid/build-grid {:height 2 :width 4})
     (grid/build-grid {:height 2 :width 4})]
-   :piece-queue          (shuffle allowed-shape-fns)
-   :max-queue-size       5
-   :allowed-shape-fns    allowed-shape-fns
-   :falling-shape-fn     nil
-   :held-shape-fn        nil
-   :held-grid            (grid/build-grid {:height 2 :width 4})
-   :hold-lock            false
-   :ticks                0
-   :tick-timeout         500
-   :time                 0
-   :timer-inc            100
+
+   ;; controls
+   :controls initial-controls
+
+   ;; hold/swap
+   :falling-shape-fn nil
+   :held-shape-fn    nil
+   :held-grid        (grid/build-grid {:height 2 :width 4})
+   :hold-lock        false
+
+   ;; timer
+   :time      0
+   :timer-inc 100
+
+   ;; level/score
    :level                1
    :rows-per-level       5
    :rows-cleared         0
@@ -143,8 +159,5 @@
    :score-per-row-clear  10
    :rows-in-combo        0
    :last-combo-piece-num nil
-   :paused?              false
-   :gameover?            false
-   :current-view         :game
-   :controls             initial-controls})
+   })
 

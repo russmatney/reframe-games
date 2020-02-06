@@ -33,10 +33,10 @@
 
   ;; TODO break the builds apart
   ;; start tetris
-  (rf/dispatch-sync [::tetris.events/start-game])
+  ;; (rf/dispatch-sync [::tetris.events/start-game])
 
   ;; start puyo
-  ;; (rf/dispatch-sync [::puyo.events/start-game])
+  (rf/dispatch-sync [::puyo.events/start-game])
   )
 
 

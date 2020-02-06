@@ -6,6 +6,22 @@
    [games.controls.events :as controls.events]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Current view
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(rf/reg-event-fx
+  ::set-view
+  (fn [{:keys [db]} [_ new-view]]
+    (let [should-pause? (or (= new-view :controls)
+                            (= new-view :about))]
+      (cond->
+          {:db (assoc-in db [::puyo.db/db :current-view] new-view)}
+
+        should-pause?
+        (assoc :dispatch [::pause-game])))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -14,17 +30,49 @@
   (fn [{:keys [db]} _]
     {:db         (assoc db ::puyo.db/db puyo.db/initial-db)
      :dispatch-n [[::set-controls]
-                  [::game-tick]]}))
+                  [::game-tick]
+                  [::game-timer]]}))
+
+(defn should-advance-level?
+  [{:keys [level groups-per-level groups-cleared]}]
+  (>= groups-cleared (* level groups-per-level)))
+
+(defn advance-level
+  "Each level updates the step timeout to 90% of the current speed."
+  [db]
+  (-> db
+      (update :level inc)
+      (update :tick-timeout #(.floor js/Math (* % 0.9)))))
 
 (rf/reg-event-fx
   ::game-tick
   (fn [{:keys [db]}]
-    (let [{:keys [tick-timeout] :as puyo-db} (::puyo.db/db db)
-          puyo-db                            (puyo/step puyo-db)]
-      {:db      (assoc db ::puyo.db/db puyo-db)
-       :timeout {:id    ::tick
-                 :event [::game-tick]
-                 :time  tick-timeout}})))
+    (let [{:keys [gameover?] :as puyo-db} (::puyo.db/db db)
+          puyo-db                         (puyo/step puyo-db)
+
+          {:keys [tick-timeout] :as puyo-db}
+          (if (should-advance-level? puyo-db)
+            (advance-level puyo-db)
+            puyo-db)]
+
+      ;; TODO consider a gameover event model instead
+      (if gameover?
+        {:clear-timeouts [{:id ::tick}
+                          {:id ::game-timer}]}
+        {:db      (assoc db ::puyo.db/db puyo-db)
+         :timeout {:id    ::tick
+                   :event [::game-tick]
+                   :time  tick-timeout}}))))
+
+(rf/reg-event-fx
+  ::game-timer
+  (fn [{:keys [db]}]
+    (let [{:keys [timer-inc]} (::puyo.db/db db)]
+      {:db (update-in db [::puyo.db/db :time] #(+ % timer-inc))
+       :timeout
+       {:id    ::game-timer
+        :event [::game-timer]
+        :time  timer-inc}})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Set Controls
@@ -137,18 +185,18 @@
   (fn [{:keys [db]} _ _]
     (let [game-in-view? true ;;(= :game (get-in db [::puyo.db/db :current-view]))
           updated-db    (assoc-in db [::puyo.db/db :paused?] false)]
-      (if game-in-view?
+      (when game-in-view?
         {:db         updated-db
-         :dispatch-n [[::game-tick]]}))))
-                     ;;[::inc-game-timer]]}))))
+         :dispatch-n [[::game-tick]
+                      [::game-timer]]}))))
 
 (rf/reg-event-fx
- ::toggle-pause
- (fn [{:keys [db]} _ _]
-   (let [paused (-> db ::puyo.db/db :paused?)]
-     (if-not (-> db ::puyo.db/db :gameover?)
-       (if paused
-         ;; unpause
-         {:dispatch [::resume-game]}
-         ;; pause
-         {:dispatch [::pause-game]})))))
+  ::toggle-pause
+  (fn [{:keys [db]} _ _]
+    (let [paused (-> db ::puyo.db/db :paused?)]
+      (if-not (-> db ::puyo.db/db :gameover?)
+        (if paused
+          ;; unpause
+          {:dispatch [::resume-game]}
+          ;; pause
+          {:dispatch [::pause-game]})))))
