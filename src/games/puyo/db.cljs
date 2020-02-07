@@ -53,16 +53,15 @@
                 :keys  (set ["g"])
                 :event [:games.puyo.events/set-view :game]}})
 
-(def show-grid (grid/build-grid {:height 2 :width 1 :entry-cell {:x 0 :y -1}}))
+(def show-grid (grid/build-grid {:height 2 :width 1 :entry-cell {:x 0 :y 1}}))
 
 (def initial-db
   { ;; game (matrix)
    :game-grid
    (grid/build-grid {:height       10
                      :width        8
-                     :phantom-rows 2})
-   ;; TODO move entry-cell into grid.
-   :entry-cell {:x 0 :y -1}
+                     :phantom-rows 2
+                     :entry-cell   {:x 0 :y -1}})
 
    ;; game logic
    :current-view      :game

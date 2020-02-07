@@ -36,7 +36,8 @@
   (-> opts
       (assoc :grid
              (reset-cell-labels opts
-                                (take (+ height phantom-rows) (repeat (build-row opts)))))))
+                                (take (+ height phantom-rows)
+                                      (repeat (build-row opts)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Row manipulation
@@ -61,24 +62,12 @@
 (defn remove-rows
   "Removes rows that return true for the passed `row-predicate`"
   [{:keys [grid height phantom-rows] :as db} row-predicate]
-  (let [cleared-grid (remove row-predicate grid)
-        rows-to-add (- (+ height phantom-rows) (count cleared-grid))
-        new-rows (take rows-to-add (repeat (build-row db)))
+  (let [cleared-grid       (remove row-predicate grid)
+        rows-to-add        (- (+ height phantom-rows) (count cleared-grid))
+        new-rows           (take rows-to-add (repeat (build-row db)))
         grid-with-new-rows (concat new-rows cleared-grid)
-        updated-grid (reset-cell-labels db grid-with-new-rows)]
+        updated-grid       (reset-cell-labels db grid-with-new-rows)]
     (assoc db :grid updated-grid)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cell Predicates
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn within-bounds?
-  "Returns true if the passed cell coords is within the edges of the grid."
-  [{:keys [height width] :as db} {:keys [x y]}]
-  (and
-   (> height y)
-   (> width x)
-   (>= x 0)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell Prop Updates
@@ -88,24 +77,24 @@
   "Applies the passed function to the cell at the specified coords."
   [{:keys [grid phantom-rows] :as db} {:keys [x y]} f]
   (let [updated (update-in grid [(+ phantom-rows y) x] f)]
-      (assoc db :grid updated)))
+    (assoc db :grid updated)))
 
 (defn update-cells
   "Applies the passed function to the cells that return true for pred."
   [db pred f]
   (update db :grid
-   (fn [g]
-    (into []
-     (map
-       (fn [row]
-         (into []
-          (map
-           (fn [cell]
-             (if (pred cell)
-               (f cell)
-               cell))
-           row)))
-       g)))))
+          (fn [g]
+            (into []
+                  (map
+                    (fn [row]
+                      (into []
+                            (map
+                              (fn [cell]
+                                (if (pred cell)
+                                  (f cell)
+                                  cell))
+                              row)))
+                    g)))))
 
 (defn overwrite-cell
   "Copies all props from `cell` to `target`.
@@ -115,14 +104,14 @@
   Some thoughts after reading:
   not sure why a merge here, vs clearing and setting the passed props.
   "
-  [{:keys [grid] :as db} {:keys [cell target]}]
+  [db {:keys [cell target]}]
   (let [props (dissoc cell :x :y)]
     (update-cell db target
                  (fn [target]
                    (merge
-                    props
-                    {:x (:x target)
-                     :y (:y target)})))))
+                     props
+                     {:x (:x target)
+                      :y (:y target)})))))
 
 (defn clear-cell-props
   "Removes non-coordinate flags from cells."
@@ -134,7 +123,7 @@
 
 (defn add-cells
   "Adds the passed cells to the passed grid"
-  [db {:keys [make-cells update-cell entry-cell]}]
+  [{:keys [entry-cell] :as db} {:keys [make-cells update-cell]}]
   (let [update-f (or update-cell (fn [c] c))
         cells    (make-cells entry-cell)
         cells    (map update-f cells)]
@@ -157,6 +146,7 @@
   (filter pred (flatten grid)))
 
 (defn any-cell?
+  "Returns a seq of all the cells for which the passed predicate is true"
   [db pred]
   (seq (get-cells db pred)))
 
@@ -173,6 +163,23 @@
   [{:keys [x y]}] {:x x :y y})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell/Grid Predicates
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn within-bounds?
+  "Returns true if the passed cell coords is within the edges of the grid."
+  [{:keys [height width]} {:keys [x y]}]
+  (and
+    (> height y)
+    (> width x)
+    (>= x 0)))
+
+(defn entry-cell-is?
+  "Returns true if the passed predicate is true of the entry-cell."
+  [{:keys [entry-cell] :as db} pred]
+  (pred (get-cell db entry-cell)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell 'Movement'
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -182,25 +189,25 @@
   [{:keys [x y]} direction]
   (let [x-diff (case direction :left -1 :right 1 0)
         y-diff (case direction :down 1 :up -1 0)]
-     {:x (+ x x-diff)
-      :y (+ y y-diff)}))
+    {:x (+ x x-diff)
+     :y (+ y y-diff)}))
 
 (defn- calc-move-cells
-  [db {:keys [cells move-f can-move?] :as move-opts}]
+  [db {:keys [cells move-f can-move?]}]
   (let [cells-and-targets
-        (map (fn [c] {:cell (get-cell db c)
+        (map (fn [c] {:cell   (get-cell db c)
                       :target (move-f c)})
              cells)
-        targets (map :target cells-and-targets)
-        cells-to-move (set (map cell->coords cells))
-        target-coords (set (map cell->coords targets))
+        targets        (map :target cells-and-targets)
+        cells-to-move  (set (map cell->coords cells))
+        target-coords  (set (map cell->coords targets))
         cells-to-clear (set/difference cells-to-move target-coords)
-        all-can-move? (not (seq (remove can-move? targets)))]
+        all-can-move?  (not (seq (remove can-move? targets)))]
 
     {:cells-and-targets cells-and-targets
-     :targets targets
-     :cells-to-clear cells-to-clear
-     :all-can-move? all-can-move?}))
+     :targets           targets
+     :cells-to-clear    cells-to-clear
+     :all-can-move?     all-can-move?}))
 
 (defn move-cells
   "Moves a group of passed `cells` according to `move-f`.
@@ -211,8 +218,8 @@
   clearing props on cells that have been abandoned, and being smart about not
   clearing cells that are being moved into.
   "
-  [db {:keys [cells move-f fallback-moves] :as move-opts}]
-  (let [{:keys [cells-and-targets targets cells-to-clear all-can-move?]}
+  [db {:keys [fallback-moves] :as move-opts}]
+  (let [{:keys [cells-and-targets cells-to-clear all-can-move?]}
         (calc-move-cells db move-opts)
         {:keys [fallback-move-f additional-cells]} (first fallback-moves)]
     (cond

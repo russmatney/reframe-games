@@ -67,14 +67,21 @@ zip -r reframe-games.zip public
 * Mean-bean Machine clone
 **** V1
 ***** [X] engine basics
-***** [ ] break build process apart to support multiple apps
-***** [ ] controls: hold
-***** [ ] controls: no movement after initial contact
-***** [ ] score calculated
-***** [ ] presentation: hold
-***** [ ] presentation: queue
-***** [ ] presentation: score
-***** [ ] presentation: controls
+***** [X] controls: hold
+***** [X] controls: no movement after initial contact
+***** [X] score calculated
+***** [X] presentation: hold
+***** [X] presentation: queue
+***** [X] presentation: score
+***** [X] presentation: controls
+* General clean up
+**** [X] move entrypoints into grids
+**** [ ] break build process apart to support multiple apps
+**** [ ] clean up 'widget' api
+**** [ ] dry up timers and pause helpers
+**** [ ] dry up db events with helper cofx for sub dbs
+**** [ ] add models/model generators and unit-tests
+likely with malli
 * Contributing
 My intention for this repository is to build some things from scratch on my
 own - selfishly, I'm somewhat closed-minded to contributions.
