@@ -112,7 +112,11 @@
                 :event [:games.tetris.events/set-view :about]}
    :game       {:label "Return to game"
                 :keys  (set ["g"])
-                :event [:games.tetris.events/set-view :game]}})
+                :event [:games.tetris.events/set-view :game]}
+   ;; TODO does not apply to only-tetris build
+   :exit       {:label "Exit to main menu"
+                :keys  (set ["x"])
+                :event [:games.events/deselect-game]}})
 
 (def initial-db
   {;; game matrix

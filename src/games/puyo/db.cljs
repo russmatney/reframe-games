@@ -51,7 +51,11 @@
                 :event [:games.puyo.events/set-view :about]}
    :game       {:label "Return to game"
                 :keys  (set ["g"])
-                :event [:games.puyo.events/set-view :game]}})
+                :event [:games.puyo.events/set-view :game]}
+   ;; TODO does not apply to only-puyo build
+   :exit       {:label "Exit to main menu"
+                :keys  (set ["x"])
+                :event [:games.events/deselect-game]}})
 
 (def show-grid (grid/build-grid {:height 2 :width 1 :entry-cell {:x 0 :y 1}}))
 

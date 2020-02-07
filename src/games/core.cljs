@@ -7,7 +7,7 @@
    [games.controls.events :as controls.events]
    [re-frame.core :as rf]))
 
-(goog-define GAME false)
+(goog-define GAME "all")
 
 (defn dev-setup []
   (enable-console-print!)
@@ -34,5 +34,5 @@
   (let [game (case GAME
                "tetris" :tetris
                "puyo"   :puyo
-               nil      nil)]
+               "all"    nil)]
     (rf/dispatch-sync [::events/select-game game])))
