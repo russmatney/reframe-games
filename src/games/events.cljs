@@ -1,17 +1,17 @@
 (ns games.events
- (:require
-  [reagent.core :as reagent]
-  [re-frame.core :as rf]
-  [games.tetris.db :as tetris.db]
-  [games.tetris.core :as tetris]
-  [games.tetris.events :as tetris.events]
-  [games.db :as db]
-  [games.events.timeout]))
+  (:require
+   [re-frame.core :as rf]
+   [games.db :as db]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rf/reg-event-db
- ::init-db
- (fn [db] db/initial-db))
+  ::init-db
+  (fn [_] db/initial-db))
+
+(rf/reg-event-db
+  ::select-game
+  (fn [db [_ game]]
+    (assoc db :selected-game game)))

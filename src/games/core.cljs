@@ -4,10 +4,9 @@
    [games.views :as views]
    [games.events :as events]
    [games.controls.events :as controls.events]
-   [games.tetris.events :as tetris.events]
-   [games.puyo.events :as puyo.events]
-   [re-frame.core :as rf]
-   [re-pressed.core :as rp]))
+   [re-frame.core :as rf]))
+
+(goog-define GAME false)
 
 (defn dev-setup []
   (enable-console-print!)
@@ -31,15 +30,8 @@
   ;; setup controls
   (rf/dispatch-sync [::controls.events/init])
 
-  ;; TODO break the builds apart
-  ;; start tetris
-  ;; (rf/dispatch-sync [::tetris.events/start-game])
-
-  ;; start puyo
-  (rf/dispatch-sync [::puyo.events/start-game])
-  )
-
-
-(comment
-  (rf/dispatch-sync [::tetris.events/pause-game])
-  (rf/dispatch-sync [::tetris.events/game-tick]))
+  (let [game (case GAME
+               "tetris" :tetris
+               "puyo"   :puyo
+               nil      nil)]
+    (rf/dispatch-sync [::events/select-game game])))

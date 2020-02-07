@@ -10,13 +10,35 @@
 
  :nrepl {:port 2988}
 
- :builds {:app
-          {:target     :browser
-           :modules    {:main {:entries [games.core]}}
-           :output-dir "public/js/compiled"
-           :asset-path "/js/compiled"
+ :builds {
+          :app
+          {:target          :browser
+           :modules         {:main {:entries [games.core]}}
+           :output-dir      "public/js/compiled"
+           :asset-path      "/js/compiled"
+           :closure-defines {games.core/GAME "all"}
+           :devtools        {:http-root   "public"
+                             :http-port   2989
+                             :loader-mode :eval
+                             :after-load  games.core/mount-root}}
 
-           :devtools {:http-root "public"
-                      :http-port 2989
-                      :loader-mode :eval
-                      :after-load games.core/mount-root}}}}
+          :tetris {:target          :browser
+                   :modules         {:main {:entries [games.core]}}
+                   :output-dir      "public/tetris/js/compiled"
+                   :asset-path      "/js/compiled"
+                   :closure-defines {games.core/GAME "tetris"}
+                   :devtools        {:http-root   "public"
+                                     :http-port   2989
+                                     :loader-mode :eval
+                                     :after-load  games.core/mount-root}}
+
+          :puyo {:target          :browser
+                 :modules         {:main {:entries [games.core]}}
+                 :output-dir      "public/puyo/js/compiled"
+                 :asset-path      "/js/compiled"
+                 :closure-defines {games.core/GAME puyo}
+                 :devtools        {:http-root   "public"
+                                   :http-port   2989
+                                   :loader-mode :eval
+                                   :after-load  games.core/mount-root}}
+          }}
