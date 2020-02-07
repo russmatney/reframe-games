@@ -61,7 +61,7 @@
    (grid/build-grid {:height       10
                      :width        8
                      :phantom-rows 2
-                     :entry-cell   {:x 0 :y -1}})
+                     :entry-cell   {:x 4 :y -1}})
 
    ;; game logic
    :current-view      :game
@@ -70,6 +70,7 @@
    :paused?           false
    :gameover?         false
    :waiting-for-fall? false
+   :pieces-played     0
 
    ;; queue
    :piece-queue    (repeatedly 5 build-piece-fn)
@@ -89,11 +90,13 @@
    :held-grid        show-grid
    :hold-lock        false
 
+   ;; modes
+   :spin-the-bottle? true
+
    ;; level/score
    :level                 1
    :groups-per-level      5
    :groups-cleared        0
-   :pieces-played         0
    :score                 0
    :score-per-group-clear 10
    :groups-in-combo       0

@@ -104,8 +104,6 @@
 
       all-cells-blocked?
       (->
-        ;; this also indicates that the pieces has been played, so we increment
-        (update :pieces-played inc)
         ;; remove the hold-lock to allow another hold to happen
         (assoc :hold-lock false)
         ;; flag that all have fallen
@@ -169,6 +167,9 @@
   (let [next-three (take 3 (drop 1 piece-queue))
         make-cells (first piece-queue)]
     (-> db
+        ;; this also indicates that the pieces has been played, so we increment
+        (update :pieces-played inc)
+
         (update :piece-queue
                 (fn [q]
                   (let [q (drop 1 q)]

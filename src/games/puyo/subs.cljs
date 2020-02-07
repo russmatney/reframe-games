@@ -2,14 +2,16 @@
   (:require
    [re-frame.core :as rf]
    [games.puyo.db :as puyo.db]
-   [games.grid.core :as grid]
-   [games.puyo.core :as puyo]))
+   [games.grid.core :as grid]))
 
 
 (rf/reg-sub
   ::puyo-db
-  (fn [db]
-    (::puyo.db/db db)))
+  (fn [db evt]
+    ;; is there a multi-arity subscription helper?
+    (case (count evt)
+      1 (::puyo.db/db db)
+      2 (let [[_ k] evt] (-> db ::puyo.db/db k)))))
 
 (rf/reg-sub
   ::current-view

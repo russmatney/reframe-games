@@ -82,6 +82,11 @@ zip -r reframe-games.zip public
 **** [ ] dry up db events with helper cofx for sub dbs
 **** [ ] add models/model generators and unit-tests
 likely with malli
+**** [ ] dry up views into grid/views namespace
+likely with malli
+**** [ ] locked-falls should be instant-falls
+**** [ ] manually-down should be instant-down
+**** [ ] display directional controls more prominently
 * Contributing
 My intention for this repository is to build some things from scratch on my
 own - selfishly, I'm somewhat closed-minded to contributions.

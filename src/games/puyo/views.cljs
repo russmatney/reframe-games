@@ -13,13 +13,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn cell->style
-  [{:keys [color]}]
+  [{:keys [color x y]}]
   (let [background (case color
-                     :green  "rgb(146,204,65)"
+                     :green  "#92CC41"
                      :red    "#FE493C" ;;"#B564D4"
                      :blue   "#209CEE" ;;#6ebff5
-                     :yellow "rgb(247,213,29)"
-                     "transparent")]
+                     :yellow "#F7D51D"
+                     (str "rgba(100, 200, 200, " (- 1 (/ y 10)) ")"))]
     {:background background}))
 
 (defn cell
@@ -45,19 +45,42 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn spin-the-bottle [{:keys [spin-sub grid-data pieces-sub]}]
+  (let [spin?         @(rf/subscribe spin-sub)
+        pieces-played (or
+                        @(rf/subscribe pieces-sub)
+                        0)
+        reverse-x?    (even? pieces-played)
+        reverse-y?    (even? pieces-played)]
+    {:grid-data (if (and spin? reverse-y?)
+                  (reverse grid-data)
+                  grid-data)
+     :row-fn    (if spin?
+                  (fn [row]
+                    (if reverse-x? (reverse row) row))
+                  identity)}))
 
 (defn matrix
   "Returns the rows of cells."
   []
-  (let [grid-data @(rf/subscribe [::puyo.subs/game-grid])]
+  (let [grid-data @(rf/subscribe [::puyo.subs/game-grid])
+
+        {:keys [grid-data row-fn]}
+        (spin-the-bottle {:spin-sub   [::puyo.subs/puyo-db :spin-the-bottle?]
+                          :pieces-sub [::puyo.subs/puyo-db :pieces-played]
+                          :grid-data  grid-data})]
+
     (for [[i row] (map-indexed vector grid-data)]
       ^{:key (str i)}
       [:div
        {:style
         {:display "flex"}}
        ;;:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
-       (for [cell-state row]
+       (for [cell-state (row-fn row)]
          (cell cell-state))])))
+
+(comment
+  (mod 0 4))
 
 (defn center-panel []
   (let [gameover? @(rf/subscribe [::puyo.subs/gameover?])
