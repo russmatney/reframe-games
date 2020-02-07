@@ -104,6 +104,7 @@
         [:h3
          {:style {:margin-bottom "1rem"}}
          "Game Over."])
+      ^{:key "matrix"}
       [matrix]
       (when gameover?
         ^{:key "rest."}

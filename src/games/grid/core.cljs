@@ -1,6 +1,7 @@
 (ns games.grid.core
   (:require
-   [clojure.set :as set]))
+   [clojure.set :as set]
+   [clojure.walk :as walk]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid, row, and cell creation
@@ -161,6 +162,79 @@
   Essentially drops the props.
   Used to compare sets of cells."
   [{:keys [x y]}] {:x x :y y})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell Transforms
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn deeper-y?
+  [{y0 :y} {y1 :y}]
+  (> y0 y1))
+
+(defn ->deepest-by-x
+  "Transforms a list of cells into a map of each x and the 'deepest' cell for
+  that x in the given list.
+
+  [{:x 1 :y 2}
+   {:x 1 :y 1}
+   {:x 2 :y 1}]
+  =>
+  {1 {:x 1 :y 2}
+   2 {:x 2 :y 1}}
+  "
+  [cells]
+  (let [cols            (vals (group-by :x cells))
+        deepest-per-col (map #(first (sort deeper-y? %))
+                             cols)]
+    (->>
+      deepest-per-col
+      (group-by :x)
+      (map (fn [[k v]] [k (first v)]))
+      (into {}))))
+
+(defn- adjacent?
+  "True if the cells are neighboring cells.
+  Determined by having the same x and y +/- 1, or same y and x +/- 1.
+  "
+  [c0 c1]
+  (let [{x0 :x y0 :y} c0
+        {x1 :x y1 :y} c1]
+    (or (and (= x0 x1)
+             (or
+               (= y0 (+ y1 1))
+               (= y0 (- y1 1))))
+        (and (= y0 y1)
+             (or
+               (= x0 (+ x1 1))
+               (= x0 (- x1 1)))))))
+
+(defn group-adjacent-cells
+  "Takes a collection of cells, returns a list of cells grouped by adjacency.
+  See `adjacent?`."
+  [cells]
+  ;; iterate over cells
+  ;; first cell - create set, add all adjacent cells from group
+  ;; next cell - if in first cell, add all adjacent to that group
+  ;;    else, add all adjacent to new set
+  ;; iterate
+  (reduce
+    (fn [groups cell]
+      (let [in-a-set?      (seq (filter #(contains? % cell) groups))
+            adjacent-cells (set (filter #(adjacent? % cell) cells))]
+        (if in-a-set?
+          ;; in a set, so walk and update group in-place
+          ;; probably a better way to do this kind of in-place update
+          (walk/walk
+            (fn [group]
+              (if (contains? group cell)
+                (set/union group adjacent-cells)
+                group))
+            identity
+            groups)
+          ;; otherwise, add a new set to groups
+          (conj groups (conj adjacent-cells cell)))))
+    []
+    cells))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell/Grid Predicates

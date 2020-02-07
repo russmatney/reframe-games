@@ -2,7 +2,6 @@
   (:require
    [games.puyo.db :as puyo.db]
    [games.grid.core :as grid]
-   [clojure.walk :as walk]
    [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -198,57 +197,13 @@
                      (add-preview-piece g2 p2)
                      (add-preview-piece g3 p3)]))))))
 
-(defn- adjacent?
-  "True if the cells are neighboring cells.
-  Determined by having the same x and y +/- 1, or same y and x +/- 1.
-  "
-  [c0 c1]
-  (let [{x0 :x y0 :y} c0
-        {x1 :x y1 :y} c1]
-    (or (and (= x0 x1)
-             (or
-               (= y0 (+ y1 1))
-               (= y0 (- y1 1))))
-        (and (= y0 y1)
-             (or
-               (= x0 (+ x1 1))
-               (= x0 (- x1 1)))))))
-
-;; TODO move to grid api?
-(defn- group-adjacent-cells
-  "Takes a collection of cells, returns a list of cells grouped by adjacency.
-  See `adjacent?`."
-  [cells]
-  ;; iterate over cells
-  ;; first cell - create set, add all adjacent cells from group
-  ;; next cell - if in first cell, add all adjacent to that group
-  ;;    else, add all adjacent to new set
-  ;; iterate
-  (reduce
-    (fn [groups cell]
-      (let [in-a-set?      (seq (filter #(contains? % cell) groups))
-            adjacent-cells (set (filter #(adjacent? % cell) cells))]
-        (if in-a-set?
-          ;; in a set, so walk and update group in-place
-          ;; probably a better way to do this kind of in-place update
-          (walk/walk
-            (fn [group]
-              (if (contains? group cell)
-                (set/union group adjacent-cells)
-                group))
-            identity
-            groups)
-          ;; otherwise, add a new set to groups
-          (conj groups (conj adjacent-cells cell)))))
-    []
-    cells))
 
 (defn groups-to-clear
   "Returns true if there are any groups of 4 or more adjacent same-color cells."
   [{:keys [game-grid group-size]}]
   (let [puyos        (grid/get-cells game-grid :occupied)
         color-groups (vals (group-by :color puyos))
-        groups       (mapcat group-adjacent-cells color-groups)]
+        groups       (mapcat grid/group-adjacent-cells color-groups)]
     (filter (fn [group] (<= group-size (count group))) groups)))
 
 (defn update-score
@@ -296,26 +251,10 @@
       ;; prevent other fallers from being user-movable
       (assoc :fall-lock true)))
 
-(defn deeper-y?
-  [{y0 :y} {y1 :y}]
-  (> y0 y1))
-
-;; TODO grid helper?
-(defn ->deepest-by-x
-  [cells]
-  (let [cols            (vals (group-by :x cells))
-        deepest-per-col (map #(first (sort deeper-y? %))
-                             cols)]
-    (->>
-      deepest-per-col
-      (group-by :x)
-      (map (fn [[k v]] [k (first v)]))
-      (into {}))))
-
 (defn update-fallers
   "Updates cells that have had a cell below removed."
   [db groups]
-  (let [deepest-by-x (->deepest-by-x (reduce set/union groups))
+  (let [deepest-by-x (grid/->deepest-by-x (reduce set/union groups))
         should-update?
         (fn [{:keys [color x y]}]
           (let [deep-y (:y (get deepest-by-x x))]
