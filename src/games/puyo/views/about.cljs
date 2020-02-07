@@ -13,9 +13,9 @@
     "About"]
    [:p
     "This game was created for itch.io's "
-    [:a {:href "https://itch.io/jam/finally-finish-something-2020"}
-     "Finally Finish Something 2020"]
-    " Game Jam."]
+    [:a {:href "https://itch.io/jam/my-first-game-jam-winter-2020"}
+     "My First Game Jam - Winter 2020"]
+    "."]
    [:p
     "The code is open source and available on github at "
     [:a {:href "https://github.com/russmatney/reframe-games"}
