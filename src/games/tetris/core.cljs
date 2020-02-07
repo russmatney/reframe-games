@@ -173,18 +173,17 @@
   (shuffle allowed-shape-fns))
 
 (defn add-preview-piece [grid piece]
-   (-> grid
-     (grid/build-grid)
-     (grid/add-cells
-       {:entry-cell {:x 1 :y 1}
-        :update-cell #(assoc % :preview true)
-        :make-cells piece})))
+  (-> grid
+      (grid/build-grid)
+      (grid/add-cells
+        {:update-cell #(assoc % :preview true)
+         :make-cells  piece})))
 
 (defn add-new-piece
   "Adds a new cell to the grid.
   Does not care if there is room to add it!
   Depends on the `new-piece-coord`."
-  [{:keys [entry-cell piece-queue min-queue-size] :as db}]
+  [{:keys [piece-queue min-queue-size] :as db}]
   (let [next-three (take 3 (drop 1 piece-queue))
         make-cells (first piece-queue)]
     (-> db
@@ -200,8 +199,7 @@
         (update :game-grid
                 (fn [g]
                   (grid/add-cells g
-                                  {:entry-cell  entry-cell
-                                   :update-cell #(assoc % :falling true)
+                                  {:update-cell #(assoc % :falling true)
                                    :make-cells  make-cells})))
 
         (update :preview-grids

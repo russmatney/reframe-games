@@ -57,7 +57,9 @@
                 :keys  (set ["x"])
                 :event [:games.events/deselect-game]}})
 
-(def show-grid (grid/build-grid {:height 2 :width 1 :entry-cell {:x 0 :y 1}}))
+(def piece-grid (grid/build-grid {:height     2
+                                  :width      1
+                                  :entry-cell {:x 0 :y 1}}))
 
 (def initial-db
   { ;; game (matrix)
@@ -79,7 +81,7 @@
    ;; queue
    :piece-queue    (repeatedly 5 build-piece-fn)
    :min-queue-size 5
-   :preview-grids  (repeat 3 show-grid)
+   :preview-grids  (repeat 3 piece-grid)
 
    ;; controls
    :controls initial-controls
@@ -91,7 +93,7 @@
    ;; hold/swap
    :falling-shape-fn nil
    :held-shape-fn    nil
-   :held-grid        show-grid
+   :held-grid        piece-grid
    :hold-lock        false
 
    ;; modes

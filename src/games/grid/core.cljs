@@ -127,9 +127,10 @@
 (defn add-cells
   "Adds the passed cells to the passed grid"
   [{:keys [entry-cell] :as db} {:keys [make-cells update-cell]}]
-  (let [update-f (or update-cell (fn [c] c))
-        cells    (make-cells entry-cell)
-        cells    (map update-f cells)]
+  (let [entry-cell (or entry-cell {:x 0 :y 0})
+        update-f   (or update-cell (fn [c] c))
+        cells      (make-cells entry-cell)
+        cells      (map update-f cells)]
     (reduce
       (fn [db {:keys [x y] :as cell}]
         (overwrite-cell db {:cell cell :target {:x x :y y}}))

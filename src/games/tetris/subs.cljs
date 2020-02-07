@@ -2,8 +2,7 @@
   (:require
    [re-frame.core :as rf]
    [games.tetris.db :as tetris.db]
-   [games.grid.core :as grid]
-   [games.tetris.core :as tetris]))
+   [games.grid.core :as grid]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -11,19 +10,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rf/reg-sub
- ::tetris-db
- (fn [db]
-   (::tetris.db/db db)))
+  ::tetris-db
+  (fn [db]
+    (::tetris.db/db db)))
 
 (rf/reg-sub
- ::paused?
- :<- [::tetris-db]
- :paused?)
+  ::paused?
+  :<- [::tetris-db]
+  :paused?)
 
 (rf/reg-sub
- ::gameover?
- :<- [::tetris-db]
- :gameover?)
+  ::gameover?
+  :<- [::tetris-db]
+  :gameover?)
 
 (rf/reg-sub
   ::current-view
@@ -35,66 +34,62 @@
   ::game-grid
   :<- [::tetris-db]
   (fn [{:keys [game-grid]}]
-    ;; TODO fix
-    (grid/only-positive-rows (:grid game-grid))))
+    (grid/only-positive-rows game-grid)))
 
 (rf/reg-sub
- ::preview-grids
- :<- [::tetris-db]
- (fn [db]
-   (map :grid (:preview-grids db))))
+  ::preview-grids
+  :<- [::tetris-db]
+  (fn [db]
+    (:preview-grids db)))
 
 (rf/reg-sub
- ::held-grid
- :<- [::tetris-db]
- (fn [{:keys [held-grid]}]
-   (:grid held-grid)))
+  ::held-grid
+  :<- [::tetris-db]
+  (fn [{:keys [held-grid]}]
+    held-grid))
 
 (rf/reg-sub
- ::any-held?
- :<- [::tetris-db]
- (fn [{:keys [held-shape-fn]}]
-   held-shape-fn))
+  ::any-held?
+  :<- [::tetris-db]
+  (fn [{:keys [held-shape-fn]}]
+    held-shape-fn))
 
 (rf/reg-sub
- ::score
- :<- [::tetris-db]
- (fn [db]
-   (:score db)))
+  ::score
+  :<- [::tetris-db]
+  (fn [db]
+    (:score db)))
 
 (rf/reg-sub
- ::time
- :<- [::tetris-db]
- (fn [db]
-   (:time db)))
+  ::time
+  :<- [::tetris-db]
+  (fn [db]
+    (:time db)))
 
 (rf/reg-sub
- ::level
- :<- [::tetris-db]
- (fn [db]
-   (:level db)))
-
-;; a hacky here, shouldn't be creating things on the fly in subs...
-(rf/reg-sub
- ::allowed-piece-grids
- :<- [::tetris-db]
- (fn [db]
-   (map (fn [shape-fn]
-          (:grid (tetris/add-preview-piece {:height 5 :width 5} shape-fn)))
-        (:allowed-shape-fns db))))
+  ::level
+  :<- [::tetris-db]
+  (fn [db]
+    (:level db)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rf/reg-sub
- ::controls
- :<- [::tetris-db]
- (fn [db]
-   (-> db :controls)))
+  ::controls
+  :<- [::tetris-db]
+  (fn [db]
+    (-> db :controls)))
 
 (rf/reg-sub
   ::keys-for
   :<- [::controls]
   (fn [controls [_ keys-for]]
     (-> controls keys-for :keys)))
+
+(rf/reg-sub
+  ::event-for
+  :<- [::controls]
+  (fn [controls [_ event-for]]
+    (-> controls event-for :event)))

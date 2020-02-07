@@ -118,13 +118,17 @@
                 :keys  (set ["x"])
                 :event [:games.events/deselect-game]}})
 
+(def piece-grid (grid/build-grid {:height     2
+                                  :width      4
+                                  :entry-cell {:x 1 :y 1}}))
+
 (def initial-db
   {;; game matrix
    :game-grid
    (grid/build-grid {:height       20
                      :width        10
-                     :phantom-rows 4})
-   :entry-cell {:x 5 :y -1}
+                     :phantom-rows 4
+                     :entry-cell   {:x 5 :y -1}})
 
    ;; game logic
    :tick-timeout 500
@@ -136,10 +140,7 @@
    :piece-queue       (shuffle allowed-shape-fns)
    :min-queue-size    5
    :allowed-shape-fns allowed-shape-fns
-   :preview-grids
-   [(grid/build-grid {:height 2 :width 4})
-    (grid/build-grid {:height 2 :width 4})
-    (grid/build-grid {:height 2 :width 4})]
+   :preview-grids     (repeat 3 piece-grid)
 
    ;; controls
    :controls initial-controls
@@ -147,7 +148,7 @@
    ;; hold/swap
    :falling-shape-fn nil
    :held-shape-fn    nil
-   :held-grid        (grid/build-grid {:height 2 :width 4})
+   :held-grid        piece-grid
    :hold-lock        false
 
    ;; timer
