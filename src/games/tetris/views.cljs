@@ -3,7 +3,7 @@
    [re-frame.core :as rf]
    [games.tetris.subs :as tetris.subs]
    [games.tetris.events :as tetris.events]
-   [games.tetris.views.components :refer [widget display-label]]
+   [games.views.components :refer [widget display-label]]
    [games.tetris.views.controls :as controls]
    [games.tetris.views.about :as about]
    [games.views.util :as util]))

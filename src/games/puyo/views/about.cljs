@@ -1,7 +1,6 @@
-(ns games.tetris.views.about
+(ns games.puyo.views.about
   (:require
-   [games.tetris.events :as tetris.events]
-   [games.views.components :refer [widget display-label]]))
+   [games.views.components :refer [widget]]))
 
 (defn about
   []
@@ -37,7 +36,3 @@
     :children
     [^{:key "child"}
      [about]]}])
-
-(comment
-  (rf/dispatch [::tetris.events/set-view :about])
-  (rf/dispatch [::tetris.events/set-view :game]))

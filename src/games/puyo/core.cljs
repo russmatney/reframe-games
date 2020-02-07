@@ -65,7 +65,9 @@
 
         db (assoc db :game-grid updated-grid)
 
-        any-blocked-cells?
+        blocked-cells (seq (remove #(cell-open? db (move-f %)) falling-cells))
+
+        all-cells-blocked?
         (and
           ;; down-only
           (= direction :down)
@@ -73,26 +75,41 @@
           falling-cells
           ;; any falling cells that can't move down?
           ;; i.e. with occupied cells below them
-          (seq (remove #(cell-open? db (move-f %)) falling-cells)))]
+          (= (count falling-cells) (count blocked-cells)))
 
-    ;; TODO do not allow movement after first break or after cells are removed
-    ;; TODO 'falling' pieces above other falling pieces lock a step later...
-    (if any-blocked-cells?
-      ;; mark blocked cells :occupied, remove :falling
-      ;; Effectively a 'piece-played' event
-      (as-> db db
-        (reduce (fn [d cell]
-                  (if (not (cell-open? d (move-f cell)))
-                    (mark-cell-occupied d cell)
-                    d))
-                db falling-cells)
+        any-cells-blocked?
+        (and
+          ;; down-only
+          (= direction :down)
+          ;; any falling cells?
+          falling-cells
+          ;; any falling cells that can't move down?
+          ;; i.e. with occupied cells below them
+          blocked-cells)]
+
+    (cond-> db
+      any-cells-blocked?
+      (as-> db
+          ;; mark blocked cells occupied
+          (reduce (fn [d cell]
+                    (if (not (cell-open? d (move-f cell)))
+                      (mark-cell-occupied d cell)
+                      d))
+                  db falling-cells)
+
+        ;; prevent holds while pieces remain
+        (assoc db :hold-lock true)
+        ;; flag that there may be more to fall
+        (assoc db :fall-lock true))
+
+      all-cells-blocked?
+      (->
         ;; this also indicates that the pieces has been played, so we increment
-        (update db :pieces-played inc)
+        (update :pieces-played inc)
         ;; remove the hold-lock to allow another hold to happen
-        (assoc db :hold-lock false))
-
-      ;; otherwise just return the db
-      db)))
+        (assoc :hold-lock false)
+        ;; flag that all have fallen
+        (assoc :fall-lock false)))))
 
 ;; TODO think about swapping colors vs 'rotating', especially in narrow
 ;; situations
@@ -131,16 +148,27 @@
   (update db :game-grid #(grid/clear-cells % :falling)))
 
 (defn next-bag
-  ;; TODO balance colors reasonably
-  [db]
-  (repeat 5 puyo.db/entry-cell->puyo))
+  "'bag' terminology carried over from tetris."
+  [_]
+  (repeatedly 5 puyo.db/build-piece-fn))
+
+(defn add-preview-piece
+  "Rebuilds a passed preview grid and adds the passed piece (func) to it."
+  [grid piece]
+  (-> grid
+      (grid/build-grid)
+      (grid/add-cells
+        {:entry-cell  {:x 0 :y 1}
+         :update-cell #(assoc % :preview true)
+         :make-cells  piece})))
 
 (defn add-new-piece
   "Adds a new cell to the grid.
   Does not care if there is room to add it!
   Depends on the `new-piece-coord`."
-  [{:keys [entry-cell game-grid piece-queue min-queue-size] :as db}]
-  (let [make-cells (first piece-queue)]
+  [{:keys [entry-cell piece-queue min-queue-size] :as db}]
+  (let [next-three (take 3 (drop 1 piece-queue))
+        make-cells (first piece-queue)]
     (-> db
         (update :piece-queue
                 (fn [q]
@@ -149,17 +177,27 @@
                       (concat q (next-bag db))
                       q))))
 
+        ;; update the current falling fn
         (assoc :falling-shape-fn make-cells)
 
+        ;; should never prevent movement on a new piece
+        (assoc :fall-lock false)
+
+        ;; add the cells to the matrix!
         (update :game-grid
                 (fn [g]
                   (grid/add-cells g
                                   {:entry-cell  entry-cell
                                    :update-cell #(assoc % :falling true)
-                                   :make-cells  make-cells}))))))
+                                   :make-cells  make-cells})))
 
-(defn add-preview-piece [db shape-fn]
-  db)
+        (update :preview-grids
+                (fn [gs]
+                  (let [[g1 g2 g3] gs
+                        [p1 p2 p3] next-three]
+                    [(add-preview-piece g1 p1)
+                     (add-preview-piece g2 p2)
+                     (add-preview-piece g3 p3)]))))))
 
 (defn- adjacent?
   "True if the cells are neighboring cells.
@@ -208,7 +246,7 @@
 
 (defn groups-to-clear
   "Returns true if there are any groups of 4 or more adjacent same-color cells."
-  [{:keys [game-grid group-size] :as db}]
+  [{:keys [game-grid group-size]}]
   (let [puyos        (grid/get-cells game-grid :occupied)
         color-groups (vals (group-by :color puyos))
         groups       (mapcat group-adjacent-cells color-groups)]
@@ -220,13 +258,20 @@
 (defn clear-groups
   "Clears groups that are have reached the group-size."
   [db groups]
-  (update db :game-grid
-          (fn [grid]
-            (grid/update-cells
-              grid
-              (fn [cell]
-                (seq (filter #(contains? % cell) groups)))
-              #(dissoc % :occupied :color :anchor)))))
+  (-> db
+      (update :game-grid
+              (fn [grid]
+                (grid/update-cells
+                  grid
+                  (fn [cell]
+                    (seq (filter #(contains? % cell) groups)))
+                  #(dissoc % :occupied :color :anchor))))
+
+      ;; prevent other fallers from being held
+      (assoc :hold-lock true)
+
+      ;; prevent other fallers from being user-movable
+      (assoc :fall-lock true)))
 
 (defn deeper-y?
   [{y0 :y} {y1 :y}]
@@ -288,5 +333,5 @@
       (add-new-piece db)
 
       ;; do nothing
-      true db)))
+      :else db)))
 

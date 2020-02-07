@@ -191,7 +191,7 @@
         (update :piece-queue
                 (fn [q]
                   (let [q (drop 1 q)]
-                    (if (< (count q) min-queue-size) ;; TODO refactor to read q size
+                    (if (< (count q) min-queue-size)
                       (concat q (next-bag db))
                       q))))
 

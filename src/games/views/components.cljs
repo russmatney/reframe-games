@@ -1,5 +1,4 @@
-(ns games.tetris.views.components)
-
+(ns games.views.components)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

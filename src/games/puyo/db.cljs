@@ -8,17 +8,16 @@
 
 (def colors
   [:red
-   ;; :green
-   ;; :yellow
+   :green
+   :yellow
    :blue])
 
-(defn assign-color [c]
-  (merge c {:color (rand-nth colors)}))
-
-(defn entry-cell->puyo [{x :x y :y}]
-  (let [cells [{:x x :y y :anchor true}
-               {:x x :y (- y 1)}]]
-    (map assign-color cells)))
+(defn build-piece-fn []
+  (let [colorA (rand-nth colors)
+        colorB (rand-nth colors)]
+    (fn [{x :x y :y}]
+      [{:x x :y y :anchor true :color colorA}
+       {:x x :y (- y 1) :color colorB}])))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,6 +53,8 @@
                 :keys  (set ["g"])
                 :event [:games.puyo.events/set-view :game]}})
 
+(def show-grid (grid/build-grid {:height 2 :width 1 :entry-cell {:x 0 :y -1}}))
+
 (def initial-db
   { ;; game (matrix)
    :game-grid
@@ -64,18 +65,17 @@
    :entry-cell {:x 0 :y -1}
 
    ;; game logic
-   :group-size   4 ;; number of puyos in a group to be removed
-   :tick-timeout 100
-   :paused?      false
-   :gameover?    false
+   :current-view      :game
+   :group-size        4 ;; number of puyos in a group to be removed
+   :tick-timeout      300
+   :paused?           false
+   :gameover?         false
+   :waiting-for-fall? false
 
    ;; queue
-   :piece-queue    (repeat 5 entry-cell->puyo)
+   :piece-queue    (repeatedly 5 build-piece-fn)
    :min-queue-size 5
-   :preview-grids
-   [(grid/build-grid {:height 2 :width 4})
-    (grid/build-grid {:height 2 :width 4})
-    (grid/build-grid {:height 2 :width 4})]
+   :preview-grids  (repeat 3 show-grid)
 
    ;; controls
    :controls initial-controls
@@ -87,7 +87,7 @@
    ;; hold/swap
    :falling-shape-fn nil
    :held-shape-fn    nil
-   :held-grid        (grid/build-grid {:height 2 :width 4})
+   :held-grid        show-grid
    :hold-lock        false
 
    ;; level/score

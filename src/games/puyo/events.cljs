@@ -87,30 +87,26 @@
 ;; Move/Rotate piece
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO dry up move logic?
-(rf/reg-event-fx
+(defn can-player-move?
+  "Returns true if the game should accept player movement input."
+  [{:keys [paused? fall-lock]}]
+  (and
+    (not paused?)
+    (not fall-lock)))
+
+(rf/reg-event-db
   ::move-piece
-  (fn [{:keys [db]} [_ direction]]
-    (let [paused? (-> db ::puyo.db/db :paused?)]
-      {:db
-       (if paused? db
-           (update db
-                   ::puyo.db/db
-                   (fn [t-db]
-                     (puyo/move-piece t-db direction))))})))
+  (fn [db [_ direction]]
+    (if (can-player-move? (-> db ::puyo.db/db))
+      (update db ::puyo.db/db #(puyo/move-piece % direction))
+      db)))
 
-
-;; TODO dry up rotate logic?
-(rf/reg-event-fx
+(rf/reg-event-db
   ::rotate-piece
-  (fn [{:keys [db]} _ _]
-    (let [paused? (-> db ::puyo.db/db :paused?)]
-      {:db
-       (if paused? db
-           (update db
-                   ::puyo.db/db
-                   (fn [t-db]
-                     (puyo/rotate-piece t-db))))})))
+  (fn [db _]
+    (if (can-player-move? (-> db ::puyo.db/db))
+      (update db ::puyo.db/db #(puyo/rotate-piece %))
+      db)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Hold/Swap

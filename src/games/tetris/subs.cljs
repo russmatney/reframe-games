@@ -2,6 +2,7 @@
   (:require
    [re-frame.core :as rf]
    [games.tetris.db :as tetris.db]
+   [games.grid.core :as grid]
    [games.tetris.core :as tetris]))
 
 
@@ -25,20 +26,16 @@
  :gameover?)
 
 (rf/reg-sub
- ::current-view
- :<- [::tetris-db]
- (fn [db]
-   (or (:current-view db) :game)))
-
-(defn positive-rows
-  [grid]
-  (filter (fn [row] (<= 0 (-> row (first) :y))) grid))
+  ::current-view
+  :<- [::tetris-db]
+  (fn [db]
+    (or (:current-view db) :game)))
 
 (rf/reg-sub
- ::game-grid
- :<- [::tetris-db]
- (fn [{:keys [game-grid]}]
-   (positive-rows (:grid game-grid))))
+  ::game-grid
+  :<- [::tetris-db]
+  (fn [{:keys [game-grid]}]
+    (grid/positive-rows (:grid game-grid))))
 
 (rf/reg-sub
  ::preview-grids

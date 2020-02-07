@@ -34,13 +34,17 @@
   "
   [{:keys [height phantom-rows] :as opts}]
   (-> opts
-    (assoc :grid
-      (reset-cell-labels opts
-        (take (+ height phantom-rows) (repeat (build-row opts)))))))
+      (assoc :grid
+             (reset-cell-labels opts
+                                (take (+ height phantom-rows) (repeat (build-row opts)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Row manipulation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn positive-rows
+  [grid]
+  (filter (fn [row] (<= 0 (-> row (first) :y))) grid))
 
 (defn select-rows
   "Returns true if any row satisfies the passed row predicate."
@@ -132,13 +136,13 @@
   "Adds the passed cells to the passed grid"
   [db {:keys [make-cells update-cell entry-cell]}]
   (let [update-f (or update-cell (fn [c] c))
-        cells (make-cells entry-cell)
-        cells (map update-cell cells)]
+        cells    (make-cells entry-cell)
+        cells    (map update-f cells)]
     (reduce
-       (fn [db {:keys [x y] :as cell}]
-         (overwrite-cell db {:cell cell :target {:x x :y y}}))
-       db
-       cells)))
+      (fn [db {:keys [x y] :as cell}]
+        (overwrite-cell db {:cell cell :target {:x x :y y}}))
+      db
+      cells)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell Fetching and Deleting

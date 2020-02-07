@@ -1,9 +1,8 @@
-(ns games.tetris.views.controls
+(ns games.puyo.views.controls
   (:require
    [clojure.string :as string]
    [re-frame.core :as rf]
-   [games.tetris.subs :as tetris.subs]
-   [games.tetris.events :as tetris.events]
+   [games.puyo.subs :as puyo.subs]
    [games.views.components :refer [widget]]))
 
 (defn display-control [[control {:keys [keys event label]}]]
@@ -17,7 +16,7 @@
                [:p (string/join "," keys)]]}])
 
 (defn view []
-  (let [controls @(rf/subscribe [::tetris.subs/controls])]
+  (let [controls @(rf/subscribe [::puyo.subs/controls])]
     [:div
      {:style
       {:display        "flex"
@@ -31,7 +30,3 @@
        :label "Controls"}]
      (for [control controls]
        (display-control control))]))
-
-(comment
-  (rf/dispatch [::tetris.events/set-view :controls])
-  (rf/dispatch [::tetris.events/set-view :game]))
