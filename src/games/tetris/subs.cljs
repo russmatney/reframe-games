@@ -35,7 +35,8 @@
   ::game-grid
   :<- [::tetris-db]
   (fn [{:keys [game-grid]}]
-    (grid/positive-rows (:grid game-grid))))
+    ;; TODO fix
+    (grid/only-positive-rows (:grid game-grid))))
 
 (rf/reg-sub
  ::preview-grids

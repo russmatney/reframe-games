@@ -76,17 +76,17 @@ zip -r reframe-games.zip public
 ***** [X] presentation: controls
 * General clean up
 **** [X] move entrypoints into grids
+**** [X] clean up 'widget' api
+**** [X] dry up views into grid/views namespace
 **** [ ] break build process apart to support multiple apps
-**** [ ] clean up 'widget' api
 **** [ ] dry up timers and pause helpers
 **** [ ] dry up db events with helper cofx for sub dbs
 **** [ ] add models/model generators and unit-tests
 likely with malli
-**** [ ] dry up views into grid/views namespace
-likely with malli
 **** [ ] locked-falls should be instant-falls
-**** [ ] manually-down should be instant-down
+**** [ ] manual-down should be instant-down
 **** [ ] display directional controls more prominently
+redo controls view, maybe just show when paused
 * Contributing
 My intention for this repository is to build some things from scratch on my
 own - selfishly, I'm somewhat closed-minded to contributions.

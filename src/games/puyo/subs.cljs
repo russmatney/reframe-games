@@ -27,19 +27,19 @@
   ::game-grid
   :<- [::puyo-db]
   (fn [{:keys [game-grid]}]
-    (grid/positive-rows (:grid game-grid))))
+    (grid/only-positive-rows game-grid)))
 
 (rf/reg-sub
   ::preview-grids
   :<- [::puyo-db]
   (fn [db]
-    (map :grid (:preview-grids db))))
+    (:preview-grids db)))
 
 (rf/reg-sub
   ::held-grid
   :<- [::puyo-db]
   (fn [{:keys [held-grid]}]
-    (:grid held-grid)))
+    held-grid))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Logic
@@ -94,3 +94,9 @@
   :<- [::controls]
   (fn [controls [_ keys-for]]
     (-> controls keys-for :keys)))
+
+(rf/reg-sub
+  ::event-for
+  :<- [::controls]
+  (fn [controls [_ for]]
+    (-> controls for :event)))

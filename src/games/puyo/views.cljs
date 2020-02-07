@@ -2,93 +2,62 @@
   (:require
    [re-frame.core :as rf]
    [games.views.components :refer [widget]]
+   [games.views.util :as util]
+   [games.controls.db :as controls.db]
+   [games.controls.views :as controls.views]
+   [games.grid.core :as grid]
+   [games.grid.views :as grid.views]
    [games.puyo.events :as puyo.events]
    [games.puyo.subs :as puyo.subs]
-   [games.puyo.views.controls :as controls]
-   [games.puyo.views.about :as about]
-   [games.views.util :as util]))
+   [games.puyo.views.about :as about]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn cell->style
-  [{:keys [color x y]}]
-  (let [background (case color
-                     :green  "#92CC41"
-                     :red    "#FE493C" ;;"#B564D4"
-                     :blue   "#209CEE" ;;#6ebff5
-                     :yellow "#F7D51D"
-                     (str "rgba(100, 100, 100, " (- 1 (/ y 10)) ")"))]
-    {:background background}))
+(def green "#92CC41")
+(def red "#FE493C") ;;"#B564D4"
+(def blue "#209CEE") ;;#6ebff5
+(def yellow "#F7D51D")
 
-(defn cell
-  ([c] (cell c {}))
-  ([{:keys [x y] :as c} opts]
-   (let [debug  (:debug opts)
-         style  (or (:style opts) {})
-         width  (if debug "260px" "40px")
-         height (if debug "120px" "40px")]
-     ^{:key (str x y)}
-     [:div
-      {:style
-       (merge
-         {:max-width  width
-          :max-height height
-          :width      width
-          :height     height
-          :border     "#484848 solid 1px"}
-         style
-         (cell->style c))}
-      (if debug (str c) "")])))
+(def color->piece-color
+  {:green  green
+   :red    red
+   :blue   blue
+   :yellow yellow})
+
+(defn cell->piece-color
+  [c]
+  (-> c :color (color->piece-color)))
+
+(defn cell->background
+  [{:keys [x y]}]
+  (str "rgba(" (* x 20) ", 100, " (* x 20) ", " (- 1 (/ y 10)) ")"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn spin-the-bottle [{:keys [spin-sub grid-data pieces-sub]}]
-  (let [spin?         @(rf/subscribe spin-sub)
-        pieces-played (or
-                        @(rf/subscribe pieces-sub)
-                        0)
-        reverse-x?    (even? pieces-played)
-        reverse-y?    (even? pieces-played)]
-    {:grid-data (if (and spin? reverse-y?)
-                  (reverse grid-data)
-                  grid-data)
-     :row-fn    (if spin?
-                  (fn [row]
-                    (if reverse-x? (reverse row) row))
-                  identity)}))
 
-(defn matrix
-  "Returns the rows of cells."
-  []
-  (let [grid-data @(rf/subscribe [::puyo.subs/game-grid])
+(defn matrix []
+  (let [grid          @(rf/subscribe [::puyo.subs/game-grid])
+        spin?         @(rf/subscribe [::puyo.subs/puyo-db :spin-the-bottle?])
+        pieces-played @(rf/subscribe [::puyo.subs/puyo-db :pieces-played])
 
-        {:keys [grid-data row-fn]}
-        (spin-the-bottle {:spin-sub   [::puyo.subs/puyo-db :spin-the-bottle?]
-                          :pieces-sub [::puyo.subs/puyo-db :pieces-played]
-                          :grid-data  grid-data})]
+        grid
+        (cond-> grid
+          spin?
+          (grid/spin {:reverse-y? (contains? #{1 2 3} (mod pieces-played 6))
+                      :reverse-x? (contains? #{2 3 4} (mod pieces-played 6))}))]
+    [grid.views/matrix grid {:cell->style
+                             (fn [{:keys [color] :as c}]
+                               (if color
+                                 {:background (cell->piece-color c)}
+                                 {:background (cell->background c)}
+                                 ))}]))
 
-    [:div.matrix
-     {:style
-      {:display         "flex"
-       :text-align      "center"
-       :align-items     "center"
-       :flex-direction  "column"
-       :justify-content "center"
-       :flex            "1"}}
-     (for [[i row] (map-indexed vector grid-data)]
-       ^{:key (str i)}
-       [:div
-        {:style
-         {:display "flex"}}
-        ;;:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
-        (for [cell-state (row-fn row)]
-          (cell cell-state))])]))
-
-(comment
-  (mod 0 4))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Center Panel
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn center-panel []
   (let [gameover? @(rf/subscribe [::puyo.subs/gameover?])]
@@ -97,13 +66,10 @@
       {:display "flex"
        :flex    "1"}}
      [widget
-      {:style
-       {:flex "1"}}
+      {:style {:flex "1"}}
       (when gameover?
         ^{:key "go"}
-        [:h3
-         {:style {:margin-bottom "1rem"}}
-         "Game Over."])
+        [:h3 {:style {:margin-bottom "1rem"}} "Game Over."])
       ^{:key "matrix"}
       [matrix]
       (when gameover?
@@ -116,6 +82,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Left panel
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn left-panel []
   (let [score   @(rf/subscribe [::puyo.subs/score])
@@ -130,98 +97,74 @@
        :flex-direction "column"}}
      [widget
       {:on-click #(rf/dispatch [::puyo.events/toggle-pause])
-       :style
-       {:flex "1"}
+       :style    {:flex "1"}
        :label    (if paused? "Paused" "Time")
        :value    time}]
      [widget
-      {:style
-       {:flex "1"}
-       :label "Level" :value level}]
+      {:style {:flex "1"}
+       :label "Level"
+       :value level}]
      [widget
-      {:style
-       {:flex "1"}
-       :label "Score" :value score}]]))
+      {:style {:flex "1"}
+       :label "Score"
+       :value score}]]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Piece Queue
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn piece-queue []
+  (let [preview-grids @(rf/subscribe [::puyo.subs/preview-grids])]
+    (grid.views/piece-list
+      {:label       "Queue"
+       :piece-grids preview-grids
+       :cell->style (fn [c] {:background (cell->piece-color c)})})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Held Piece
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn hold-string []
+  (let [any-held? @(rf/subscribe [::puyo.subs/any-held?])
+        hold-keys @(rf/subscribe [::puyo.subs/keys-for :hold])
+        hold-key  (first hold-keys)]
+    (str (if any-held? "Swap (" "Hold (") hold-key ")")))
+
+(defn held-piece []
+  (let [held-grid @(rf/subscribe [::puyo.subs/held-grid])]
+    (grid.views/piece-list
+      {:label       (hold-string)
+       :piece-grids [held-grid]
+       :cell->style
+       (fn [{:keys [color] :as c}]
+         (if color
+           {:background (cell->piece-color c)}
+           {:background "transparent"}))})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Controls-mini
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn controls-mini []
+  [widget
+   {:style
+    {:padding "0.9rem"
+     :flex    "1"}}
+   (doall
+     (for [ctr [:pause :controls :about :rotate]]
+       (let [label (controls.db/control->label ctr)
+             event @(rf/subscribe [::puyo.subs/event-for ctr])
+             keys  @(rf/subscribe [::puyo.subs/keys-for ctr])]
+         (when (and keys event)
+           ^{:key label}
+           [:p
+            {:style    {:margin-bottom "0.3rem"}
+             :on-click #(rf/dispatch event)}
+            (str label " (" (first keys) ")")]))))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Right panel
-
-(defn piece-preview [grid-data]
-  [:div
-   (for [[i row] (map-indexed vector grid-data)]
-     ^{:key (str i)}
-     [:div
-      {:style {:display "flex"}}
-      (for [cell-state row]
-        (cell cell-state {:style {:background "transparent"}
-                          :debug false}))])])
-
-(defn piece-preview-list
-  ([] (piece-preview-list {}))
-  ([{:keys [label piece-grids]}]
-   [widget
-    {:label label
-     :style
-     {:flex       "1"
-      :text-align "center"}}
-    (for [[i g] (map-indexed vector piece-grids)]
-      ^{:key (str i)}
-      [:div
-       {:style
-        {:display         "flex"
-         :justify-content "center"
-         :margin-bottom   "12px"}}
-       ;;:border "1px solid red"}}
-       [piece-preview g]])]))
-
-(defn piece-previews []
-  (let [preview-grids @(rf/subscribe [::puyo.subs/preview-grids])]
-    (piece-preview-list {:label       "Queue"
-                         :piece-grids preview-grids})))
-
-(defn held-piece []
-  (let [held-grid   @(rf/subscribe [::puyo.subs/held-grid])
-        any-held?   @(rf/subscribe [::puyo.subs/any-held?])
-        hold-keys   @(rf/subscribe [::puyo.subs/keys-for :hold])
-        hold-key    (first hold-keys)
-        hold-string (str (if any-held? "Swap (" "Hold (") hold-key ")")]
-    (piece-preview-list {:label       hold-string
-                         :piece-grids [held-grid]})))
-
-
-(defn controls-and-about []
-  (let [pause-keys    @(rf/subscribe [::puyo.subs/keys-for :pause])
-        pause-key     (first pause-keys)
-        controls-keys @(rf/subscribe [::puyo.subs/keys-for :controls])
-        controls-key  (first controls-keys)
-        about-keys    @(rf/subscribe [::puyo.subs/keys-for :about])
-        about-key     (first about-keys)
-        rotate-keys   @(rf/subscribe [::puyo.subs/keys-for :rotate])
-        rotate-key    (first rotate-keys)]
-    [widget
-     {:style
-      {:padding "0.9rem"
-       :flex    "1"}}
-     ^{:key "rotate"}
-     [:p
-      {:style    {:margin-bottom "0.3rem"}
-       :on-click #(rf/dispatch [::puyo.events/rotate-piece])}
-      (str "Rotate (" rotate-key ")")]
-     ^{:key "pause"}
-     [:p
-      {:style    {:margin-bottom "0.3rem"}
-       :on-click #(rf/dispatch [::puyo.events/toggle-pause])}
-      (str "Pause (" pause-key ")")]
-     ^{:key "controls"}
-     [:p
-      {:style    {:margin-bottom "0.3rem"}
-       :on-click #(rf/dispatch [::puyo.events/set-view :controls])}
-      (str "Controls (" controls-key ")")]
-     ^{:key "about"}
-     [:p
-      {:style    {:margin-bottom "0.3rem"}
-       :on-click #(rf/dispatch [::puyo.events/set-view :about])}
-      (str "About (" about-key ")")]]))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn right-panel []
   [:div
@@ -229,43 +172,42 @@
     {:display        "flex"
      :flex           "1"
      :flex-direction "column"}}
-   [piece-previews]
+   [piece-queue]
    [held-piece]
-   [controls-and-about]])
+   [controls-mini]])
+
+(defn game-view []
+  [:div
+   {:style
+    {:height  "100%"
+     :width   "100%"
+     :display "flex"}}
+   [left-panel]
+   [center-panel]
+   [right-panel]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Main page component
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def background-color "#441086")
+(def background-style
+  (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
+       linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px"))
 
 (defn page []
-  (let [current-view @(rf/subscribe [::puyo.subs/current-view])
-        comps
-        (case current-view
-          :controls
-          [^{:key "controls"}
-           [controls/view]]
-
-          :about
-          [^{:key "about"}
-           [about/view]]
-
-          :game
-          [^{:key "left"}
-           [left-panel]
-           ^{:key "center"}
-           [center-panel]
-           ^{:key "right"}
-           [right-panel]])]
+  (let [controls     @(rf/subscribe [::puyo.subs/controls])
+        current-view @(rf/subscribe [::puyo.subs/current-view])]
     [:div
      {:style
       {:height           "100vh"
        :width            "100vw"
        :display          "flex"
-       :background
-       (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
-       linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px")
+       :background       background-style
        :background-color background-color
        :background-size  "64px 128px"
        :padding          "24px"}}
-     (for [c comps] c)]))
+     (case current-view
+       :controls [controls.views/view controls]
+       :about    [about/view]
+       :game     [game-view])]))

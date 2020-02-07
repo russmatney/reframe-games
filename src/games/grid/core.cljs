@@ -44,9 +44,11 @@
 ;; Row manipulation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn positive-rows
-  [grid]
-  (filter (fn [row] (<= 0 (-> row (first) :y))) grid))
+(defn only-positive-rows
+  [db]
+  (update db :grid
+          (fn [grid]
+            (filter (fn [row] (<= 0 (-> row (first) :y))) grid))))
 
 (defn select-rows
   "Returns true if any row satisfies the passed row predicate."
@@ -341,3 +343,15 @@
   coordinates."
   [anchor-cell cell]
   (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Grid rotation helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn spin
+  "Reverses the grid in the x or y direction, returning a rotated grid."
+  [db {:keys [reverse-x? reverse-y?]}]
+  (update db :grid
+          (fn [grid]
+            (map (fn [row] (if reverse-x? (reverse row) row))
+                 (if reverse-y? (reverse grid) grid)))))
