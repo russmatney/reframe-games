@@ -19,7 +19,7 @@
                      :red    "#FE493C" ;;"#B564D4"
                      :blue   "#209CEE" ;;#6ebff5
                      :yellow "#F7D51D"
-                     (str "rgba(100, 200, 200, " (- 1 (/ y 10)) ")"))]
+                     (str "rgba(100, 100, 100, " (- 1 (/ y 10)) ")"))]
     {:background background}))
 
 (defn cell
@@ -27,8 +27,8 @@
   ([{:keys [x y] :as c} opts]
    (let [debug  (:debug opts)
          style  (or (:style opts) {})
-         width  (if debug "260px" "20px")
-         height (if debug "120px" "20px")]
+         width  (if debug "260px" "40px")
+         height (if debug "120px" "40px")]
      ^{:key (str x y)}
      [:div
       {:style
@@ -70,43 +70,48 @@
                           :pieces-sub [::puyo.subs/puyo-db :pieces-played]
                           :grid-data  grid-data})]
 
-    (for [[i row] (map-indexed vector grid-data)]
-      ^{:key (str i)}
-      [:div
-       {:style
-        {:display "flex"}}
-       ;;:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
-       (for [cell-state (row-fn row)]
-         (cell cell-state))])))
+    [:div.matrix
+     {:style
+      {:display         "flex"
+       :text-align      "center"
+       :align-items     "center"
+       :flex-direction  "column"
+       :justify-content "center"
+       :flex            "1"}}
+     (for [[i row] (map-indexed vector grid-data)]
+       ^{:key (str i)}
+       [:div
+        {:style
+         {:display "flex"}}
+        ;;:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
+        (for [cell-state (row-fn row)]
+          (cell cell-state))])]))
 
 (comment
   (mod 0 4))
 
 (defn center-panel []
-  (let [gameover? @(rf/subscribe [::puyo.subs/gameover?])
-        children
-        (if gameover?
-          (concat
-            [^{:key "go"}
-             [:h3
-              {:style {:margin-bottom "1rem"}}
-              "Game Over."]]
-            (matrix)
-            [^{:key "rest."}
-             [:p
-              {:style    {:margin-top "1rem"}
-               :on-click #(rf/dispatch [::puyo.events/start-game])}
-              "Click here to restart."]])
-          (matrix))]
+  (let [gameover? @(rf/subscribe [::puyo.subs/gameover?])]
     [:div.center-panel
      {:style
       {:display "flex"
        :flex    "1"}}
      [widget
       {:style
-       {:flex "1"}
-       :children
-       children}]]))
+       {:flex "1"}}
+      (when gameover?
+        ^{:key "go"}
+        [:h3
+         {:style {:margin-bottom "1rem"}}
+         "Game Over."])
+      [matrix]
+      (when gameover?
+        ^{:key "rest."}
+        [:p
+         {:style    {:margin-top "1rem"}
+          :on-click #(rf/dispatch [::puyo.events/start-game])}
+         "Click here to restart."])
+      ]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Left panel
@@ -157,17 +162,16 @@
     {:label label
      :style
      {:flex       "1"
-      :text-align "center"}
-     :children
-     (for [[i g] (map-indexed vector piece-grids)]
-       ^{:key (str i)}
-       [:div
-        {:style
-         {:display         "flex"
-          :justify-content "center"
-          :margin-bottom   "12px"}}
-        ;;:border "1px solid red"}}
-        (piece-preview g)])}]))
+      :text-align "center"}}
+    (for [[i g] (map-indexed vector piece-grids)]
+      ^{:key (str i)}
+      [:div
+       {:style
+        {:display         "flex"
+         :justify-content "center"
+         :margin-bottom   "12px"}}
+       ;;:border "1px solid red"}}
+       [piece-preview g]])]))
 
 (defn piece-previews []
   (let [preview-grids @(rf/subscribe [::puyo.subs/preview-grids])]
@@ -196,28 +200,27 @@
     [widget
      {:style
       {:padding "0.9rem"
-       :flex    "1"}
-      :children
-      [^{:key "rotate"}
-       [:p
-        {:style    {:margin-bottom "0.3rem"}
-         :on-click #(rf/dispatch [::puyo.events/rotate-piece])}
-        (str "Rotate (" rotate-key ")")]
-       ^{:key "pause"}
-       [:p
-        {:style    {:margin-bottom "0.3rem"}
-         :on-click #(rf/dispatch [::puyo.events/toggle-pause])}
-        (str "Pause (" pause-key ")")]
-       ^{:key "controls"}
-       [:p
-        {:style    {:margin-bottom "0.3rem"}
-         :on-click #(rf/dispatch [::puyo.events/set-view :controls])}
-        (str "Controls (" controls-key ")")]
-       ^{:key "about"}
-       [:p
-        {:style    {:margin-bottom "0.3rem"}
-         :on-click #(rf/dispatch [::puyo.events/set-view :about])}
-        (str "About (" about-key ")")]]}]))
+       :flex    "1"}}
+     ^{:key "rotate"}
+     [:p
+      {:style    {:margin-bottom "0.3rem"}
+       :on-click #(rf/dispatch [::puyo.events/rotate-piece])}
+      (str "Rotate (" rotate-key ")")]
+     ^{:key "pause"}
+     [:p
+      {:style    {:margin-bottom "0.3rem"}
+       :on-click #(rf/dispatch [::puyo.events/toggle-pause])}
+      (str "Pause (" pause-key ")")]
+     ^{:key "controls"}
+     [:p
+      {:style    {:margin-bottom "0.3rem"}
+       :on-click #(rf/dispatch [::puyo.events/set-view :controls])}
+      (str "Controls (" controls-key ")")]
+     ^{:key "about"}
+     [:p
+      {:style    {:margin-bottom "0.3rem"}
+       :on-click #(rf/dispatch [::puyo.events/set-view :about])}
+      (str "About (" about-key ")")]]))
 
 (defn right-panel []
   [:div

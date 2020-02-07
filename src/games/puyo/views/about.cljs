@@ -32,7 +32,6 @@
 (defn view []
   [widget
    {:style
-    {:width "100%"}
-    :children
-    [^{:key "child"}
-     [about]]}])
+    {:width "100%"}}
+   ^{:key "child"}
+   [about]])

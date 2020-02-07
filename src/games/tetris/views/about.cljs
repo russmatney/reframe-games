@@ -33,11 +33,6 @@
 (defn view []
   [widget
    {:style
-    {:width "100%"}
-    :children
-    [^{:key "child"}
-     [about]]}])
-
-(comment
-  (rf/dispatch [::tetris.events/set-view :about])
-  (rf/dispatch [::tetris.events/set-view :game]))
+    {:width "100%"}}
+   ^{:key "child"}
+   [about]])

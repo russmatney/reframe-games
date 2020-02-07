@@ -59,7 +59,7 @@
   { ;; game (matrix)
    :game-grid
    (grid/build-grid {:height       10
-                     :width        8
+                     :width        10
                      :phantom-rows 2
                      :entry-cell   {:x 4 :y -1}})
 

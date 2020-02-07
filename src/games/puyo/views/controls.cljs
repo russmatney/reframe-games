@@ -11,9 +11,9 @@
    {:on-click #(rf/dispatch event)
     :style
     {:flex "1 0 25%"}
-    :label    label
-    :children [^{:key (str keys)}
-               [:p (string/join "," keys)]]}])
+    :label    label}
+   ^{:key (str keys)}
+   [:p (string/join "," keys)]])
 
 (defn view []
   (let [controls @(rf/subscribe [::puyo.subs/controls])]

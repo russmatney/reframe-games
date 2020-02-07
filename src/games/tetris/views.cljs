@@ -66,60 +66,56 @@
   []
   (let [grid-data @(rf/subscribe [::tetris.subs/game-grid])]
     (for [[i row] (map-indexed vector grid-data)]
-       ^{:key (str i)}
-       [:div
-        {:style
-         {:display "flex"}}
-          ;;:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
-        (for [cell-state row]
+      ^{:key (str i)}
+      [:div
+       {:style
+        {:display "flex"}}
+       ;;:transform "rotateX(0deg) rotateY(0deg) rotateZ(0deg)"}}
+       (for [cell-state row]
          (cell cell-state))])))
 
 (defn center-panel []
-  (let [gameover? @(rf/subscribe [::tetris.subs/gameover?])
-        children
-        (if gameover?
-          (concat
-           [^{:key "go"}
-            [:h3
-             {:style {:margin-bottom "1rem"}}
-             "Game Over."]]
-           (matrix)
-           [^{:key "rest."}
-            [:p
-             {:style {:margin-top "1rem"}
-              :on-click #(rf/dispatch [::tetris.events/start-game])}
-             "Click here to restart."]])
-          (matrix))]
+  (let [gameover? @(rf/subscribe [::tetris.subs/gameover?])]
     [:div.center-panel
      {:style
       {:display "flex"
-       :flex "1"}}
+       :flex    "1"}}
      [widget
-       {:style
-        {:flex "1"}
-        :children
-        children}]]))
+      {:style
+       {:flex "1"}}
+      (when gameover?
+        ^{:key "go"}
+        [:h3
+         {:style {:margin-bottom "1rem"}}
+         "Game Over."])
+      [matrix]
+      (when gameover?
+        ^{:key "rest."}
+        [:p
+         {:style    {:margin-top "1rem"}
+          :on-click #(rf/dispatch [::tetris.events/start-game])}
+         "Click here to restart."])]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Left panel
 
 (defn left-panel []
-  (let [score @(rf/subscribe [::tetris.subs/score])
-        t @(rf/subscribe [::tetris.subs/time])
-        level @(rf/subscribe [::tetris.subs/level])
+  (let [score   @(rf/subscribe [::tetris.subs/score])
+        t       @(rf/subscribe [::tetris.subs/time])
+        level   @(rf/subscribe [::tetris.subs/level])
         paused? @(rf/subscribe [::tetris.subs/paused?])
-        time (str (util/with-precision 1 (/ t 1000)) "s")]
+        time    (str (util/with-precision 1 (/ t 1000)) "s")]
     [:div.left-panel
      {:style
-      {:display "flex"
-       :flex "1"
+      {:display        "flex"
+       :flex           "1"
        :flex-direction "column"}}
      [widget
       {:on-click #(rf/dispatch [::tetris.events/toggle-pause])
        :style
        {:flex "1"}
-       :label (if paused? "Paused" "Time")
-       :value time}]
+       :label    (if paused? "Paused" "Time")
+       :value    time}]
      [widget
       {:style
        {:flex "1"}
@@ -147,18 +143,17 @@
    [widget
     {:label label
      :style
-     {:flex "1"
-      :text-align "center"}
-     :children
-     (for [[i g] (map-indexed vector piece-grids)]
-       ^{:key (str i)}
-       [:div
-        {:style
-         {:display "flex"
-          :justify-content "center"
-          :margin-bottom "12px"}}
-          ;;:border "1px solid red"}}
-        (piece-preview g)])}]))
+     {:flex       "1"
+      :text-align "center"}}
+    (for [[i g] (map-indexed vector piece-grids)]
+      ^{:key (str i)}
+      [:div
+       {:style
+        {:display         "flex"
+         :justify-content "center"
+         :margin-bottom   "12px"}}
+       ;;:border "1px solid red"}}
+       (piece-preview g)])]))
 
 (defn piece-previews []
   (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids])]
@@ -181,39 +176,42 @@
 
 
 (defn controls-and-about []
-  (let [pause-keys @(rf/subscribe [::tetris.subs/keys-for :pause])
-        pause-key (first pause-keys)
+  (let [pause-keys    @(rf/subscribe [::tetris.subs/keys-for :pause])
+        pause-key     (first pause-keys)
         controls-keys @(rf/subscribe [::tetris.subs/keys-for :controls])
-        controls-key (first controls-keys)
-        about-keys @(rf/subscribe [::tetris.subs/keys-for :about])
-        about-key (first about-keys)
-        rotate-keys @(rf/subscribe [::tetris.subs/keys-for :rotate])
-        rotate-key (first rotate-keys)]
+        controls-key  (first controls-keys)
+        about-keys    @(rf/subscribe [::tetris.subs/keys-for :about])
+        about-key     (first about-keys)
+        rotate-keys   @(rf/subscribe [::tetris.subs/keys-for :rotate])
+        rotate-key    (first rotate-keys)]
     [widget
      {:style
       {:padding "0.9rem"
-       :flex "1"}
-      :children
-      [^{:key "rotate"}
-       [:p
-        {:style {:margin-bottom "0.3rem"}
-         :on-click #(rf/dispatch [::tetris.events/rotate-piece])}
-        (str "Rotate (" rotate-key ")")]
-       ^{:key "pause"}
-       [:p
-        {:style {:margin-bottom "0.3rem"}
-         :on-click #(rf/dispatch [::tetris.events/toggle-pause])}
-        (str "Pause (" pause-key ")")]
-       ^{:key "controls"}
-       [:p
-        {:style {:margin-bottom "0.3rem"}
-         :on-click #(rf/dispatch [::tetris.events/set-view :controls])}
-        (str "Controls (" controls-key ")")]
-       ^{:key "about"}
-       [:p
-        {:style {:margin-bottom "0.3rem"}
-         :on-click #(rf/dispatch [::tetris.events/set-view :about])}
-        (str "About (" about-key ")")]]}]))
+       :flex    "1"}}
+
+     ^{:key "rotate"}
+     [:p
+      {:style    {:margin-bottom "0.3rem"}
+       :on-click #(rf/dispatch [::tetris.events/rotate-piece])}
+      (str "Rotate (" rotate-key ")")]
+
+     ^{:key "pause"}
+     [:p
+      {:style    {:margin-bottom "0.3rem"}
+       :on-click #(rf/dispatch [::tetris.events/toggle-pause])}
+      (str "Pause (" pause-key ")")]
+
+     ^{:key "controls"}
+     [:p
+      {:style    {:margin-bottom "0.3rem"}
+       :on-click #(rf/dispatch [::tetris.events/set-view :controls])}
+      (str "Controls (" controls-key ")")]
+
+     ^{:key "about"}
+     [:p
+      {:style    {:margin-bottom "0.3rem"}
+       :on-click #(rf/dispatch [::tetris.events/set-view :about])}
+      (str "About (" about-key ")")]]))
 
 (defn right-panel []
   [:div
