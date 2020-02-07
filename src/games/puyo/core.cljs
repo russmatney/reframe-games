@@ -252,8 +252,32 @@
         groups       (mapcat group-adjacent-cells color-groups)]
     (filter (fn [group] (<= group-size (count group))) groups)))
 
-(defn update-score [db]
-  db)
+(defn update-score
+  "Score is a function of the number of groups cleared and the level.
+  Combos function by double-counting previously cleared groups.
+  Ex: if groups are cleared by piece n, and another group is cleared by piece n + 1,
+  the original groups are included in the group-count-score multipled by the current
+  level.
+  "
+  [{:keys [score-per-group-clear
+           level
+           groups-in-combo
+           last-combo-piece-num
+           pieces-played]
+    :as   db}]
+  (let [groups-cleared          (count (groups-to-clear db))
+        carry-combo?            (= pieces-played (+ last-combo-piece-num 1))
+        group-count-score       (if carry-combo?
+                                  (+ groups-cleared groups-in-combo)
+                                  groups-cleared)
+        updated-groups-in-combo (if carry-combo?
+                                  group-count-score
+                                  groups-cleared)]
+    (-> db
+        (update :score #(+ % (* score-per-group-clear group-count-score level)))
+        (assoc :groups-in-combo updated-groups-in-combo)
+        (assoc :last-combo-piece-num pieces-played)
+        (update :groups-cleared #(+ % groups-cleared)))))
 
 (defn clear-groups
   "Clears groups that are have reached the group-size."
