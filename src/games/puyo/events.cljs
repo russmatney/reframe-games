@@ -113,9 +113,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO dry up hold/swap logic?
-(rf/reg-event-fx
+(rf/reg-event-db
   ::hold-and-swap-piece
-  (fn [{:keys [db]} _ _]
+  (fn [db _]
     ;; if there is a hold, move current hold to front of queue
     ;; remove current falling piece from board, move it to hold
     (let [puyo-db       (::puyo.db/db db)
@@ -158,7 +158,7 @@
               falling-shape
               (assoc :hold-lock true)))]
 
-      {:db (assoc db ::puyo.db/db puyo-db)})))
+      (assoc db ::puyo.db/db puyo-db))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

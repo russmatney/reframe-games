@@ -82,42 +82,35 @@
       {:dispatch [::controls.events/set controls]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Move piece
+;; Move/Rotate piece
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rf/reg-event-fx
+(defn can-player-move?
+  "Returns true if the game should accept player movement input."
+  [{:keys [paused?]}]
+  (not paused?))
+
+(rf/reg-event-db
   ::move-piece
-  (fn [{:keys [db]} [_ direction]]
-    (let [paused? (-> db ::tetris.db/db :paused?)]
-      {:db
-       (if paused? db
-           (update db
-                   ::tetris.db/db
-                   (fn [t-db]
-                     (tetris/move-piece t-db direction))))})))
+  (fn [db [_ direction]]
+    (if (can-player-move? (-> db ::tetris.db/db))
+      (update db ::tetris.db/db #(tetris/move-piece % direction))
+      db)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Rotate piece
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(rf/reg-event-fx
+(rf/reg-event-db
   ::rotate-piece
-  (fn [{:keys [db]} _ _]
-    (let [paused? (-> db ::tetris.db/db :paused?)]
-      {:db
-       (if paused? db
-           (update db
-                   ::tetris.db/db
-                   (fn [t-db]
-                     (tetris/rotate-piece t-db))))})))
+  (fn [db _]
+    (if (can-player-move? (-> db ::tetris.db/db))
+      (update db ::tetris.db/db #(tetris/rotate-piece %))
+      db)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Hold/Swap
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rf/reg-event-fx
+(rf/reg-event-db
   ::hold-and-swap-piece
-  (fn [{:keys [db]} _ _]
+  (fn [db _]
     ;; if there is a hold, move current hold to front of queue
     ;; remove current falling piece from board, move it to hold
     (let [tet-db        (::tetris.db/db db)
@@ -161,7 +154,7 @@
               (assoc :hold-lock true)))]
 
 
-      {:db (assoc db ::tetris.db/db tet-db)})))
+      (assoc db ::tetris.db/db tet-db))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

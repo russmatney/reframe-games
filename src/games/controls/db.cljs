@@ -20,7 +20,8 @@
    "k"     {:keyCode 75}
    "l"     {:keyCode 76}
    "s"     {:keyCode 83}
-   "w"     {:keyCode 87}})
+   "w"     {:keyCode 87}
+   "x"     {:keyCode 88}})
 
 (def supported-keys (set (keys key-label->re-pressed-key)))
 
