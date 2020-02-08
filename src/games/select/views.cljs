@@ -7,17 +7,6 @@
 
 ;; TODO display controls/about here
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Main page component
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def background-color "#441086")
-(def background-style
-  {:background
-   (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
-       linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px")
-   :background-size  "64px 128px"
-   :background-color background-color})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data
@@ -39,20 +28,20 @@
 
 (defn selection
   [{:keys [label on-click component]}]
-  [:div.select-view
-   {:on-click on-click
-    :style
-    {:background "coral"
-     :flex       "1"}}
-   [:div
-    [:h1 label]
+  [widget
+   {:label label
+    :style {:flex "1"}}
+   [:div.select-view
+    {:on-click on-click
+     :style
+     {:background "coral"
+      :flex       "1"}}
     component]])
 
 (defn selections []
   [:div
    {:style
     {:width   "100%"
-     :height  "100%"
      :display "flex"}}
    (for [game games]
      (selection game))])
@@ -62,14 +51,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn header []
-  [:p
-   {:style
-    {:background "coral"}}
-   "Select game:"])
+  [widget {:label "Select a game"}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Page
+;; Main page component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def background-color "#441086")
+(def background-style
+  {:background
+   (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
+       linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px")
+   :background-size  "64px 128px"
+   :background-color background-color})
 
 (defn page []
   [:div
@@ -82,8 +76,6 @@
        :padding "24px"}
       )}
    [:div
-    {:style
-     {:height "100%"
-      :width  "100%"}}
+    {:style {:height "100%" :width "100%"}}
     [header]
     [selections]]])
