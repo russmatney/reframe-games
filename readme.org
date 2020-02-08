@@ -78,7 +78,8 @@ zip -r reframe-games.zip public
 **** [X] move entrypoints into grids
 **** [X] clean up 'widget' api
 **** [X] dry up views into grid/views namespace
-**** [ ] break build process apart to support multiple apps
+**** [X] break build process apart to support multiple apps
+**** [ ] impl home page
 **** [ ] dry up timers and pause helpers
 **** [ ] dry up db events with helper cofx for sub dbs
 **** [ ] add models/model generators and unit-tests

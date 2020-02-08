@@ -15,7 +15,7 @@
   [controls-db]
   (into []
         (map
-          (fn [[control {:keys [event keys]}]]
+          (fn [[_ {:keys [event keys]}]]
             (into []
                   (cons
                     event
@@ -37,7 +37,7 @@
 
 (rf/reg-event-fx
   ::set
-  (fn [{:keys [db]} [_ controls-db]]
+  (fn [_ [_ controls-db]]
     (let [event-keys (controls->rp-event-keys controls-db)
           all-keys   (controls->rp-all-keys controls-db)]
       {:dispatch

@@ -16,12 +16,24 @@
    "f"     {:keyCode 70}
    "g"     {:keyCode 71}
    "h"     {:keyCode 72}
+   "i"     {:keyCode 73}
    "j"     {:keyCode 74}
    "k"     {:keyCode 75}
    "l"     {:keyCode 76}
+   "m"     {:keyCode 77}
+   "n"     {:keyCode 78}
+   "o"     {:keyCode 79}
+   "p"     {:keyCode 80}
+   "q"     {:keyCode 81}
+   "r"     {:keyCode 82}
    "s"     {:keyCode 83}
+   "t"     {:keyCode 84}
+   "u"     {:keyCode 85}
+   "v"     {:keyCode 86}
    "w"     {:keyCode 87}
-   "x"     {:keyCode 88}})
+   "x"     {:keyCode 88}
+   "y"     {:keyCode 89}
+   "z"     {:keyCode 90}})
 
 (def supported-keys (set (keys key-label->re-pressed-key)))
 
