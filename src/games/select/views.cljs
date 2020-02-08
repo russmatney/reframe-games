@@ -38,20 +38,40 @@
       :flex       "1"}}
     component]])
 
-(defn selections []
+(defn selections
+  []
   [:div
    {:style
     {:width   "100%"
+     :flex    "1"
      :display "flex"}}
    (for [game games]
      (selection game))])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Expectations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn expectations
+  "TODO fade-in effect, maybe on the widget api?"
+  []
+  [widget
+   {
+    :style   {:flex "1"}
+    :label   "Expectations"
+    :subhead [:ul
+              [:li "Move with mouse*, arrow keys, wasd, or vim bindings"]
+              [:li "Enter, Click, or Score to choose."]
+              [:li "*Mouse not yet implemented*"]]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Header
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn header []
-  [widget {:label "Select a game"}])
+  [widget
+   {:style {}
+    :label "Select a game"}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Main page component
@@ -72,10 +92,13 @@
       background-style
       {:height  "100vh"
        :width   "100vw"
-       :display "flex"
        :padding "24px"}
       )}
    [:div
-    {:style {:height "100%" :width "100%"}}
+    {:style {:display        "flex"
+             :flex-direction "column"
+             :height         "100%"
+             :width          "100%"}}
     [header]
+    [expectations]
     [selections]]])

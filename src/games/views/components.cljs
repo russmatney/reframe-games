@@ -2,7 +2,8 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Shared Utils
+;; Label
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn display-label
   [label]
@@ -11,10 +12,22 @@
     {:opacity "0.9"}}
    label])
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Subhead
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;(defn display-subhead [subhead] subhead)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Widget
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn widget
-  ([{:keys [label value style] :as args} & children]
+  "A div with a 'vget-itude"
+  ([{:keys [label subhead value style] :as args} & children]
    (let [args (-> args ;; quick and dirty - could clean up
                   (dissoc :label)
+                  (dissoc :subhead)
                   (dissoc :value)
                   (dissoc :style))]
      [:div
@@ -31,6 +44,9 @@
         args)
 
       (when label [display-label label])
+
+      (when subhead subhead)
+
       (when value
         [:h2
          {:style {:margin-top "12px"
