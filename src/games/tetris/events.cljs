@@ -11,14 +11,14 @@
 
 (rf/reg-event-fx
   ::set-view
-  (fn [{:keys [db]} [_ new-view]]
+  (fn [{:keys [db]} [_ {:keys [name] :as game-opts} new-view]]
     (let [should-pause? (or (= new-view :controls)
                             (= new-view :about))]
       (cond->
-          {:db (assoc-in db [::tetris.db/db :current-view] new-view)}
+          {:db (assoc-in db [::tetris.db/db name :current-view] new-view)}
 
         should-pause?
-        (assoc :dispatch [::pause-game])))))
+        (assoc :dispatch [::pause-game game-opts])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
@@ -26,12 +26,12 @@
 
 (rf/reg-event-fx
   ::start-game
-  (fn [{:keys [db]} [_ game-opts]]
-    {:db         (assoc db ::tetris.db/db
-                        (tetris.db/initial-db game-opts))
-     :dispatch-n [[::set-controls]
-                  [::game-tick]
-                  [::game-timer]]}))
+  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
+    {:db         (assoc-in db [::tetris.db/db name]
+                           (tetris.db/initial-db game-opts))
+     :dispatch-n [[::set-controls game-opts]
+                  [::game-tick game-opts]
+                  [::game-timer game-opts]]}))
 
 (defn should-advance-level?
   [{:keys [level rows-per-level rows-cleared]}]
@@ -46,7 +46,7 @@
 
 (rf/reg-event-fx
   ::game-tick
-  (fn [{:keys [db]} {:keys [name] :as game-opts}]
+  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
     (let [{:keys [gameover?] :as tetris-db} (-> db ::tetris.db/db (get name))
           tetris-db                         (tetris/step tetris-db game-opts)
 
@@ -64,12 +64,12 @@
 
 (rf/reg-event-fx
   ::game-timer
-  (fn [{:keys [db]}]
-    (let [{:keys [timer-inc]} (::tetris.db/db db)]
+  (fn [{:keys [db]}  [_ {:keys [name] :as game-opts}]]
+    (let [{:keys [timer-inc]} (-> db ::tetris.db/db (get name))]
       {:db (update-in db [::tetris.db/db :time] #(+ % timer-inc))
        :timeout
        {:id    ::game-timer
-        :event [::game-timer]
+        :event [::game-timer game-opts]
         :time  timer-inc}})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -78,8 +78,8 @@
 
 (rf/reg-event-fx
   ::set-controls
-  (fn [{:keys [db]}]
-    (let [controls (-> db ::tetris.db/db :controls)]
+  (fn [{:keys [db]} {:keys [name]}]
+    (let [controls (-> db ::tetris.db/db (get name) :controls)]
       {:dispatch [::controls.events/set controls]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -93,16 +93,16 @@
 
 (rf/reg-event-db
   ::move-piece
-  (fn [db [_ direction]]
-    (if (can-player-move? (-> db ::tetris.db/db))
-      (update db ::tetris.db/db #(tetris/move-piece % direction))
+  (fn [db [_ name direction]]
+    (if (can-player-move? (-> db ::tetris.db/db (get name)))
+      (update-in db [::tetris.db/db name] #(tetris/move-piece % direction))
       db)))
 
 (rf/reg-event-db
   ::rotate-piece
-  (fn [db _]
-    (if (can-player-move? (-> db ::tetris.db/db))
-      (update db ::tetris.db/db #(tetris/rotate-piece %))
+  (fn [db [_ name]]
+    (if (can-player-move? (-> db ::tetris.db/db (get name)))
+      (update-in db [::tetris.db/db name] #(tetris/rotate-piece %))
       db)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -111,10 +111,10 @@
 
 (rf/reg-event-db
   ::hold-and-swap-piece
-  (fn [db _]
+  (fn [db [_ name]]
     ;; if there is a hold, move current hold to front of queue
     ;; remove current falling piece from board, move it to hold
-    (let [tet-db        (::tetris.db/db db)
+    (let [tet-db        (-> db ::tetris.db/db (get name))
           held          (:held-shape-fn tet-db)
           falling-shape (:falling-shape-fn tet-db)
           hold-lock     (:hold-lock tet-db)
@@ -154,8 +154,7 @@
               falling-shape
               (assoc :hold-lock true)))]
 
-
-      (assoc db ::tetris.db/db tet-db))))
+      (assoc-in db [::tetris.db/db name] tet-db))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -165,8 +164,8 @@
 ;; pauses, ignoring whatever the current state is
 (rf/reg-event-fx
   ::pause-game
-  (fn [{:keys [db]} _ _]
-    (let [updated-db (assoc-in db [::tetris.db/db :paused?] true)]
+  (fn [{:keys [db]} [_ {:keys [name]}]]
+    (let [updated-db (assoc-in db [::tetris.db/db name :paused?] true)]
       {:db             updated-db
        :clear-timeouts [{:id ::tick}
                         {:id ::game-timer}]})))
@@ -174,21 +173,21 @@
 ;; resumes the game
 (rf/reg-event-fx
   ::resume-game
-  (fn [{:keys [db]} _ _]
-    (let [game-in-view? (= :game (get-in db [::tetris.db/db :current-view]))
-          updated-db    (assoc-in db [::tetris.db/db :paused?] false)]
+  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
+    (let [game-in-view? (= :game (get-in db [::tetris.db/db name :current-view]))
+          updated-db    (assoc-in db [::tetris.db/db name :paused?] false)]
       (when game-in-view?
         {:db         updated-db
-         :dispatch-n [[::game-tick]
-                      [::game-timer]]}))))
+         :dispatch-n [[::game-tick game-opts]
+                      [::game-timer game-opts]]}))))
 
 (rf/reg-event-fx
   ::toggle-pause
-  (fn [{:keys [db]} _ _]
-    (let [paused (-> db ::tetris.db/db :paused?)]
-      (if-not (-> db ::tetris.db/db :gameover?)
+  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
+    (let [paused (-> db ::tetris.db/db (get name) :paused?)]
+      (if-not (-> db ::tetris.db/db (get name) :gameover?)
         (if paused
           ;; unpause
-          {:dispatch [::resume-game]}
+          {:dispatch [::resume-game game-opts]}
           ;; pause
-          {:dispatch [::pause-game]})))))
+          {:dispatch [::pause-game game-opts]})))))

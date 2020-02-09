@@ -17,7 +17,7 @@
 (defn matrix
   "Returns the rows of cells."
   ([] [matrix {:name :default}])
-  ([{:keys [name] :as db}]
+  ([{:keys [name]}]
    (let [grid @(rf/subscribe [::tetris.subs/game-grid name])]
      (grid.views/matrix grid {:cell->style :style}))))
 

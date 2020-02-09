@@ -177,8 +177,6 @@
   ::pause-game
   (fn [{:keys [db]} [_ {:keys [name]}]]
     (let [updated-db (assoc-in db [::puyo.db/db name :paused?] true)]
-      (println "pause-game")
-      (println name)
       {:db             updated-db
        :clear-timeouts [{:id ::tick}
                         {:id ::game-timer}]})))

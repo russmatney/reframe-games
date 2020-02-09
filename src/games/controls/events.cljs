@@ -35,6 +35,8 @@
             (map controls.db/key-label->re-pressed-key keys))
           controls-db)))
 
+
+;; TODO update to support multiple events from seperate key bindings
 (rf/reg-event-fx
   ::set
   (fn [_ [_ controls-db]]

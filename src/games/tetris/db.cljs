@@ -85,34 +85,35 @@
 ;; Initial DB
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def initial-controls
+(defn initial-controls
+  [{:keys [name] :as game-opts}]
   {:move-left  {:label "Move Left"
                 :keys  (set ["left" "h" "a"])
-                :event [:games.tetris.events/move-piece :left]}
+                :event [:games.tetris.events/move-piece name :left]}
    :move-down  {:label "Move Down"
                 :keys  (set ["down" "j" "s"])
-                :event [:games.tetris.events/move-piece :down]}
+                :event [:games.tetris.events/move-piece name :down]}
    :move-right {:label "Move Right"
                 :keys  (set ["right" "l" "d"])
-                :event [:games.tetris.events/move-piece :right]}
+                :event [:games.tetris.events/move-piece name :right]}
    :hold       {:label "Hold"
                 :keys  (set ["space"])
-                :event [:games.tetris.events/hold-and-swap-piece]}
+                :event [:games.tetris.events/hold-and-swap-piece name]}
    :rotate     {:label "Rotate Piece"
                 :keys  (set ["up" "k" "w"])
-                :event [:games.tetris.events/rotate-piece]}
+                :event [:games.tetris.events/rotate-piece name]}
    :pause      {:label "Pause"
                 :keys  (set ["enter"])
-                :event [:games.tetris.events/toggle-pause]}
+                :event [:games.tetris.events/toggle-pause game-opts]}
    :controls   {:label "Controls"
                 :keys  (set ["c"])
-                :event [:games.tetris.events/set-view :controls]}
+                :event [:games.tetris.events/set-view game-opts :controls]}
    :about      {:label "About"
                 :keys  (set ["b"])
-                :event [:games.tetris.events/set-view :about]}
+                :event [:games.tetris.events/set-view game-opts :about]}
    :game       {:label "Return to game"
                 :keys  (set ["g"])
-                :event [:games.tetris.events/set-view :game]}
+                :event [:games.tetris.events/set-view game-opts :game]}
    ;; TODO does not apply to only-tetris build
    :exit       {:label "Exit to main menu"
                 :keys  (set ["x"])
@@ -127,7 +128,8 @@
   ([] (initial-db {:name :default}))
 
   ([{:keys [name grid] :as game-opts}]
-   {:name name
+   {:name      name
+    :game-opts game-opts
 
     ;; game matrix
     :game-grid
@@ -152,7 +154,7 @@
     :preview-grids     (repeat 3 piece-grid)
 
     ;; controls
-    :controls initial-controls
+    :controls (initial-controls game-opts)
 
     ;; hold/swap
     :falling-shape-fn nil

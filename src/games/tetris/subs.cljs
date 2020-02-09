@@ -11,8 +11,10 @@
 
 (rf/reg-sub
   ::tetris-db
-  (fn [db]
-    (::tetris.db/db db)))
+  (fn [db evt]
+    (case (count evt)
+      1 (-> db ::tetris.db/db :default)
+      2 (let [[_e n] evt] (-> db ::tetris.db/db (get n))))))
 
 (rf/reg-sub
   ::paused?

@@ -16,10 +16,14 @@
 (def selectable-games
   [{:label     "Tetris"
     :on-click  #(rf/dispatch [::events/select-game :tetris])
-    :component [tetris.views/mini-game {:tick-timeout 500}]}
+    :component [tetris.views/mini-game
+                {:grid         {:height 4 :width 5 :entry-cell {:x 2 :y -1}}
+                 :tick-timeout 500}]}
    {:label     "Puyo"
     :on-click  #(rf/dispatch [::events/select-game :puyo])
-    :component [puyo.views/mini-game {:tick-timeout 500}]}])
+    :component [puyo.views/mini-game
+                {:grid         {:height 4 :width 4 :entry-cell {:x 2 :y -1}}
+                 :tick-timeout 500}]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Selections

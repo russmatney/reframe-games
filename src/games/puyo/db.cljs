@@ -46,13 +46,13 @@
                 :event [:games.puyo.events/toggle-pause game-opts]}
    :controls   {:label "Controls"
                 :keys  (set ["c"])
-                :event [:games.puyo.events/set-view :controls]}
+                :event [:games.puyo.events/set-view game-opts :controls]}
    :about      {:label "About"
                 :keys  (set ["b"])
-                :event [:games.puyo.events/set-view :about]}
+                :event [:games.puyo.events/set-view game-opts :about]}
    :game       {:label "Return to game"
                 :keys  (set ["g"])
-                :event [:games.puyo.events/set-view :game]}
+                :event [:games.puyo.events/set-view game-opts :game]}
    ;; TODO does not apply to only-puyo build
    :exit       {:label "Exit to main menu"
                 :keys  (set ["x"])
