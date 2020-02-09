@@ -80,7 +80,7 @@
       :paused?           false
       :gameover?         false
       :waiting-for-fall? false
-      :pieces-played     0
+      :current-piece-num 0
 
       ;; queue
       :piece-queue    (repeatedly 5 build-piece-fn)

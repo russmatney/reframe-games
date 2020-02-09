@@ -149,7 +149,13 @@
 
               ;; indicate that a piece was held to prevent double-holds
               falling-shape
-              (assoc :hold-lock true)))]
+              (assoc :hold-lock true)
+
+              ;; TODO handle this better!
+              ;; decrement current-piece-num (it's about be re-inc in add-new-piece)
+              ;; NOTE that current-piece-num excludes holds to supports combos
+              falling-shape
+              (update :current-piece-num dec)))]
 
       (assoc-in db [::puyo.db/db name] puyo-db))))
 

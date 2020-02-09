@@ -161,41 +161,45 @@
 (defn add-new-piece
   "Adds a new cell to the grid.
   Does not care if there is room to add it!
-  Depends on the `new-piece-coord`."
+  Depends on the `new-piece-coord`.
+
+  Note that this does not always indicate a 'new' piece, as the swap mechanic
+  prepends the piece-queue to add held pieces back.
+  "
   [{:keys [piece-queue min-queue-size] :as db}]
   (let [next-three (take 3 (drop 1 piece-queue))
         make-cells (first piece-queue)]
-    (-> db
-        ;; this also indicates that the pieces has been played, so we increment
-        (update :pieces-played inc)
+    (-> ;; this also indicates that the pieces has been played, so we increment
+      db
+      (update :current-piece-num inc)
 
-        (update :piece-queue
-                (fn [q]
-                  (let [q (drop 1 q)]
-                    (if (< (count q) min-queue-size)
-                      (concat q (next-bag db))
-                      q))))
+      (update :piece-queue
+              (fn [q]
+                (let [q (drop 1 q)]
+                  (if (< (count q) min-queue-size)
+                    (concat q (next-bag db))
+                    q))))
 
-        ;; update the current falling fn
-        (assoc :falling-shape-fn make-cells)
+      ;; update the current falling fn
+      (assoc :falling-shape-fn make-cells)
 
-        ;; should never prevent movement on a new piece
-        (assoc :fall-lock false)
+      ;; should never prevent movement on a new piece
+      (assoc :fall-lock false)
 
-        ;; add the cells to the matrix!
-        (update :game-grid
-                (fn [g]
-                  (grid/add-cells g
-                                  {:update-cell #(assoc % :falling true)
-                                   :make-cells  make-cells})))
+      ;; add the cells to the matrix!
+      (update :game-grid
+              (fn [g]
+                (grid/add-cells g
+                                {:update-cell #(assoc % :falling true)
+                                 :make-cells  make-cells})))
 
-        (update :preview-grids
-                (fn [gs]
-                  (let [[g1 g2 g3] gs
-                        [p1 p2 p3] next-three]
-                    [(add-preview-piece g1 p1)
-                     (add-preview-piece g2 p2)
-                     (add-preview-piece g3 p3)]))))))
+      (update :preview-grids
+              (fn [gs]
+                (let [[g1 g2 g3] gs
+                      [p1 p2 p3] next-three]
+                  [(add-preview-piece g1 p1)
+                   (add-preview-piece g2 p2)
+                   (add-preview-piece g3 p3)]))))))
 
 
 (defn groups-to-clear
@@ -206,32 +210,32 @@
         groups       (mapcat grid/group-adjacent-cells color-groups)]
     (filter (fn [group] (<= group-size (count group))) groups)))
 
+;; TODO should depend on a piece-played event
 (defn update-score
   "Score is a function of the number of groups cleared and the level.
   Combos function by double-counting previously cleared groups.
   Ex: if groups are cleared by piece n, and another group is cleared by piece n + 1,
   the original groups are included in the group-count-score multipled by the current
   level.
+
+  ;; TODO update to take size of groups into account
   "
   [{:keys [score-per-group-clear
            level
            groups-in-combo
-           last-combo-piece-num
-           pieces-played]
+           last-combo-piece-num ;; TODO rename last-score-piece-num?
+           current-piece-num]
     :as   db}]
-  (let [groups-cleared          (count (groups-to-clear db))
-        carry-combo?            (= pieces-played (+ last-combo-piece-num 1))
-        group-count-score       (if carry-combo?
-                                  (+ groups-cleared groups-in-combo)
-                                  groups-cleared)
-        updated-groups-in-combo (if carry-combo?
-                                  group-count-score
-                                  groups-cleared)]
+  (let [groups-cleared  (count (groups-to-clear db))
+        carry-combo?    (= current-piece-num last-combo-piece-num)
+        groups-in-combo (if carry-combo?
+                          (+ groups-cleared groups-in-combo)
+                          groups-cleared)
+        addl-score      (* score-per-group-clear groups-in-combo level)]
     (-> db
-        (update :score #(+ % (* score-per-group-clear group-count-score level)))
-        (assoc :groups-in-combo updated-groups-in-combo)
-        (assoc :last-combo-piece-num pieces-played)
-        (update :groups-cleared #(+ % groups-cleared)))))
+        (update :score #(+ % addl-score))
+        (assoc :groups-in-combo groups-in-combo)
+        (assoc :last-combo-piece-num current-piece-num))))
 
 (defn clear-groups
   "Clears groups that are have reached the group-size."
