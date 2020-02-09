@@ -44,20 +44,7 @@
                 :event [:games.puyo.events/rotate-piece name]}
    :pause      {:label "Pause"
                 :keys  (set ["enter"])
-                :event [:games.puyo.events/toggle-pause game-opts]}
-   :controls   {:label "Controls"
-                :keys  (set ["c"])
-                :event [:games.puyo.events/set-view game-opts :controls]}
-   :about      {:label "About"
-                :keys  (set ["b"])
-                :event [:games.puyo.events/set-view game-opts :about]}
-   :game       {:label "Return to game"
-                :keys  (set ["g"])
-                :event [:games.puyo.events/set-view game-opts :game]}
-   ;; TODO does not apply to only-puyo build
-   :exit       {:label "Exit to main menu"
-                :keys  (set ["x"])
-                :event [:games.events/deselect-game]}})
+                :event [:games.puyo.events/toggle-pause game-opts]}})
 
 (def piece-grid (grid/build-grid {:height     2
                                   :width      1
@@ -88,7 +75,6 @@
           game-grid))
 
       ;; game logic
-      :current-view      :game
       :group-size        4 ;; number of puyos in a group to be removed
       :tick-timeout      tick-timeout
       :paused?           false

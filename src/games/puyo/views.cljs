@@ -4,12 +4,10 @@
    [games.views.components :refer [widget]]
    [games.views.util :as util]
    [games.controls.db :as controls.db]
-   [games.controls.views :as controls.views]
    [games.grid.core :as grid]
    [games.grid.views :as grid.views]
    [games.puyo.events :as puyo.events]
-   [games.puyo.subs :as puyo.subs]
-   [games.puyo.views.about :as about]))
+   [games.puyo.subs :as puyo.subs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell
@@ -230,7 +228,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def background-color "#441086")
-(def background-style
+(def background
   (str "linear-gradient(135deg, " background-color " 21px,
        black 22px, black 24px, transparent 24px, transparent 67px,
        black 67px, black 69px, transparent 69px),
@@ -247,21 +245,15 @@
 (defn page
   ([] (page {}))
   ([game-opts]
-   (let [{:keys [name] :as game-opts} (merge page-game-defaults game-opts)
-         controls                     @(rf/subscribe [::puyo.subs/controls name])
-         ;; current-view @(rf/subscribe [::puyo.subs/current-view])
-         current-view                 :game]
+   (let [game-opts (merge page-game-defaults game-opts)]
      (rf/dispatch [::puyo.events/start-game game-opts])
      [:div
       {:style
        {:height           "100vh"
         :width            "100vw"
         :display          "flex"
-        :background       background-style
+        :background       background
         :background-color background-color
         :background-size  "64px 128px"
         :padding          "24px"}}
-      (case current-view
-        :controls [controls.views/view controls]
-        :about    [about/view]
-        :game     [game-view game-opts])])))
+      [game-view game-opts]])))

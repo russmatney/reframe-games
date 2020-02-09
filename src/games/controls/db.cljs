@@ -37,6 +37,7 @@
 
 (def supported-keys (set (keys key-label->re-pressed-key)))
 
+;; TODO remove, write smarter descriptions
 (def control->label
   "Maps a control to a human label"
   {:move-left  "Move Left"
@@ -48,3 +49,23 @@
    :controls   "Controls"
    :about      "About"
    :game       "Back to Game"})
+
+(def global-controls
+  {:main     {:label "Main Menu"
+              :keys  (set ["m" "x"])
+              :event [:games.events/unset-view]}
+   :game     {:label "Return to game"
+              :keys  (set ["g"])
+              :event [:games.events/set-view :game]}
+   :controls {:label "Controls"
+              :keys  (set ["c"]) ;; TODO support '?' here and above
+              :event [:games.events/set-view :controls]}
+   :about    {:label "About"
+              :keys  (set ["b"])
+              :event [:games.events/set-view :about]}
+   :tetris   {:label "Play Tetris"
+              :keys  (set ["t"])
+              :event [:games.events/set-view :tetris]}
+   :puyo     {:label "Play Puyo-Puyo"
+              :keys  (set ["p"])
+              :event [:games.events/set-view :puyo]}})

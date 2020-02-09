@@ -4,8 +4,11 @@
 
 
 (rf/reg-sub
-  ::selected-game
+  ::current-view
   (fn [db _]
-    (:selected-game db)))
+    (:current-view db)))
 
-
+(rf/reg-sub
+  ::controls
+  (fn [db _]
+    (:controls db)))

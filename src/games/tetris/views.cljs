@@ -6,9 +6,7 @@
    [games.grid.views :as grid.views]
    [games.controls.db :as controls.db]
    [games.tetris.subs :as tetris.subs]
-   [games.tetris.events :as tetris.events]
-   [games.tetris.views.controls :as controls]
-   [games.tetris.views.about :as about]))
+   [games.tetris.events :as tetris.events]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid
@@ -184,25 +182,7 @@
   Expects to be started itself."
   ([] (page {}))
   ([game-opts]
-   (let [{:keys [name] :as game-opts} (merge page-game-defaults game-opts)
-         current-view                 @(rf/subscribe [::tetris.subs/current-view name])
-         comps
-         (case current-view
-           :controls
-           [^{:key "controls"}
-            [controls/view]]
-
-           :about
-           [^{:key "about"}
-            [about/view]]
-
-           :game
-           [^{:key "left"}
-            [left-panel]
-            ^{:key "center"}
-            [center-panel]
-            ^{:key "right"}
-            [right-panel]])]
+   (let [game-opts (merge page-game-defaults game-opts)]
      (rf/dispatch [::tetris.events/start-game game-opts])
      [:div
       {:style
@@ -215,4 +195,12 @@
         :background-color background-color
         :background-size  "64px 128px"
         :padding          "24px"}}
-      (for [c comps] c)])))
+
+      ^{:key "left"}
+      [left-panel]
+
+      ^{:key "center"}
+      [center-panel]
+
+      ^{:key "right"}
+      [right-panel]])))

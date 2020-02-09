@@ -6,7 +6,10 @@
 
 (rf/reg-event-fx
   ::init
-  (fn [_] {:dispatch [::rp/add-keyboard-event-listener "keydown"]}))
+  (fn [_]
+    {:dispatch-n
+     [[::rp/add-keyboard-event-listener "keydown"]
+      [::set]]}))
 
 (defn controls->rp-event-keys
   "Converts the passed controls-db into a
@@ -20,6 +23,7 @@
                   (cons
                     event
                     (map (fn [k]
+                           ;; print/throw if this is nil (unsupported key)
                            [(controls.db/key-label->re-pressed-key k)])
                          keys))))
           controls-db)))
@@ -37,12 +41,15 @@
 
 
 ;; TODO update to support multiple events from seperate key bindings
+;; to support sending keys to multiple keys at once
 (rf/reg-event-fx
   ::set
-  (fn [_ [_ controls-db]]
-    (let [event-keys (controls->rp-event-keys controls-db)
-          all-keys   (controls->rp-all-keys controls-db)]
-      {:dispatch
+  (fn [{:keys [db]} [_ controls-db]]
+    (let [controls-db (merge controls.db/global-controls (or controls-db {}))
+          event-keys  (controls->rp-event-keys controls-db)
+          all-keys    (controls->rp-all-keys controls-db)]
+      {:db (assoc db :controls controls-db)
+       :dispatch
        [::rp/set-keydown-rules
         {:event-keys           event-keys
          :prevent-default-keys all-keys}]})))

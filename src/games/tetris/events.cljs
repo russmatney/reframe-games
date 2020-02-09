@@ -6,21 +6,6 @@
    [games.controls.events :as controls.events]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Current view
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(rf/reg-event-fx
-  ::set-view
-  (fn [{:keys [db]} [_ {:keys [name] :as game-opts} new-view]]
-    (let [should-pause? (or (= new-view :controls)
-                            (= new-view :about))]
-      (cond->
-          {:db (assoc-in db [::tetris.db/db name :current-view] new-view)}
-
-        should-pause?
-        (assoc :dispatch [::pause-game game-opts])))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -176,12 +161,10 @@
 (rf/reg-event-fx
   ::resume-game
   (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
-    (let [game-in-view? (= :game (get-in db [::tetris.db/db name :current-view]))
-          updated-db    (assoc-in db [::tetris.db/db name :paused?] false)]
-      (when game-in-view?
-        {:db         updated-db
-         :dispatch-n [[::game-tick game-opts]
-                      [::game-timer game-opts]]}))))
+    (let [updated-db (assoc-in db [::tetris.db/db name :paused?] false)]
+      {:db         updated-db
+       :dispatch-n [[::game-tick game-opts]
+                    [::game-timer game-opts]]})))
 
 (rf/reg-event-fx
   ::toggle-pause

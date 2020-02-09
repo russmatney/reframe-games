@@ -104,20 +104,7 @@
                 :event [:games.tetris.events/rotate-piece name]}
    :pause      {:label "Pause"
                 :keys  (set ["enter"])
-                :event [:games.tetris.events/toggle-pause game-opts]}
-   :controls   {:label "Controls"
-                :keys  (set ["c"])
-                :event [:games.tetris.events/set-view game-opts :controls]}
-   :about      {:label "About"
-                :keys  (set ["b"])
-                :event [:games.tetris.events/set-view game-opts :about]}
-   :game       {:label "Return to game"
-                :keys  (set ["g"])
-                :event [:games.tetris.events/set-view game-opts :game]}
-   ;; TODO does not apply to only-tetris build
-   :exit       {:label "Exit to main menu"
-                :keys  (set ["x"])
-                :event [:games.events/deselect-game]}})
+                :event [:games.tetris.events/toggle-pause game-opts]}})
 
 (def piece-grid (grid/build-grid {:height     2
                                   :width      4
@@ -151,7 +138,6 @@
       :tick-timeout tick-timeout
       :paused?      false
       :gameover?    false
-      :current-view :game
 
       ;; queue
       :piece-queue       (shuffle allowed-shape-fns)

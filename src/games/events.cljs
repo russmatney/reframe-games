@@ -14,17 +14,17 @@
   (fn [_] (db/initial-db)))
 
 (rf/reg-event-fx
-  ::select-game
-  (fn [{:keys [db]} [_ game]]
-    {:db (assoc db :selected-game game)}))
+  ::set-view
+  (fn [{:keys [db]} [_ view]]
+    {:db (assoc db :current-view view)}))
 
 (rf/reg-event-fx
-  ::deselect-game
+  ::unset-view
   (fn [{:keys [db]} _]
-    (let [current-game (-> db :selected-game)]
-      (cond-> {:db (dissoc db :selected-game)}
-        current-game
+    (let [current-view (-> db :current-view)]
+      (cond-> {:db (dissoc db :current-view)}
+        (contains? #{:tetris :puyo} current-view)
         (assoc :dispatch
-               (case current-game
+               (case current-view
                  :tetris [::tetris.events/pause-game]
                  :puyo   [::puyo.events/pause-game]))))))

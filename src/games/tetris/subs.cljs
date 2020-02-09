@@ -27,12 +27,6 @@
   :gameover?)
 
 (rf/reg-sub
-  ::current-view
-  :<- [::tetris-db]
-  (fn [db]
-    (or (:current-view db) :game)))
-
-(rf/reg-sub
   ::game-grid
   :<- [::tetris-db]
   (fn [{:keys [game-grid]}]
