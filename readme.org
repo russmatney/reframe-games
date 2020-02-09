@@ -74,7 +74,6 @@ zip -r reframe-games.zip public
 ***** [X] presentation: queue
 ***** [X] presentation: score
 ***** [X] presentation: controls
-* jam deadline 02-09
 **** [ ] ship mvp
 ***** [X] highlight selected game with mouse
 add garden, herb, css live-reload
@@ -92,17 +91,8 @@ or shows about content
 ***** [X] gameover enabled in page, not in mini player
 ***** [X] ensure all puyo features (score?)
 ***** [X] expose controls, about views on main menu
-***** [ ] create and post game on itch!
-**** [ ] reach goals
-***** [ ] clear console errors
-***** [ ] (slightly) better controls layout
-***** [ ] selected game with keyboard controls
-***** [ ] input controls to both games on select page
-***** [ ] instant-fall feature
-***** [ ] incorporate spin feature
-***** [ ] show combos/rows-to-next-level
-***** [ ] faster tick-timeout while locked falls are happening
-* General clean up
+***** [ ] build and post update on itch!
+* misc todos
 **** [X] move entrypoints into grids
 **** [X] clean up 'widget' api
 **** [X] dry up views into grid/views namespace
@@ -121,6 +111,14 @@ redo controls view, maybe just show when paused
 **** [ ] unify cell color 'type' treatment
 **** [ ] no keys detected yet overlay with suggestions for clicking?
 **** [ ] support navigation? (back button?)
+**** [ ] clear console errors
+**** [ ] (slightly) better controls layout
+**** [ ] selected game with keyboard controls
+**** [ ] input controls to both games on select page
+**** [ ] instant-fall feature
+**** [ ] incorporate spin feature
+**** [ ] show combos/rows-to-next-level
+**** [ ] faster tick-timeout while locked falls are happening
 * Contributing
 My intention for this repository is to build some things from scratch on my
 own - selfishly, I'm somewhat closed-minded to contributions.
