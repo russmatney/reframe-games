@@ -18,17 +18,20 @@
 (defn matrix
   "Returns the rows of cells."
   ([] [matrix {:name :default}])
-  ([{:keys [name]}]
+  ([{:keys [name cell-style]}]
+   (println cell-style)
    (let [grid @(rf/subscribe [::tetris.subs/game-grid name])]
      (grid.views/matrix
        grid
        {:cell->style
         (fn [c]
-          (if (:style c)
-            (:style c)
-            {:background board-black}))}))))
+          (merge
+            (or cell-style {})
+            (if (:style c)
+              (:style c)
+              {:background board-black})))}))))
 
-(defn center-panel []
+(defn center-panel [game-opts]
   (let [gameover? @(rf/subscribe [::tetris.subs/gameover?])]
     [:div.center-panel
      {:style
@@ -43,7 +46,7 @@
          {:style {:margin-bottom "1rem"}}
          "Game Over."])
       ^{:key "matrix"}
-      [matrix]
+      [matrix game-opts]
       (when gameover?
         ^{:key "rest."}
         [:p
@@ -54,7 +57,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Left panel
 
-(defn left-panel []
+(defn left-panel [game-opts]
   (let [score   @(rf/subscribe [::tetris.subs/score])
         t       @(rf/subscribe [::tetris.subs/time])
         level   @(rf/subscribe [::tetris.subs/level])
@@ -84,10 +87,14 @@
 ;; Queue
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn piece-queue []
+(defn piece-queue [game-opts]
   (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids])]
     (grid.views/piece-list {:label       "Queue"
-                            :cell->style :style
+                            :cell->style
+                            (fn [c]
+                              (merge
+                                (or (:cell-style game-opts) {})
+                                (:style c)))
                             :piece-grids preview-grids})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -100,25 +107,29 @@
         hold-key  (first hold-keys)]
     (str (if any-held? "Swap (" "Hold (") hold-key ")")))
 
-(defn held-piece []
+(defn held-piece [game-opts]
   (let [held-grid @(rf/subscribe [::tetris.subs/held-grid])]
     (grid.views/piece-list
       {:label       (hold-string)
        :piece-grids [held-grid]
-       :cell->style :style})))
+       :cell->style
+       (fn [c]
+         (merge
+           (or (:cell-style game-opts) {})
+           (:style c)))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Right panel
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn right-panel []
+(defn right-panel [game-opts]
   [:div
    {:style
     {:display        "flex"
      :flex           "1"
      :flex-direction "column"}}
-   [piece-queue]
-   [held-piece]
+   [piece-queue game-opts]
+   [held-piece game-opts]
    [controls.views/mini
     {:controls [:pause :hold :rotate]}]])
 
@@ -153,10 +164,11 @@
 ;;:background "#5d08c7"
 
 (def page-game-defaults
-  {:name      :default
-   :game-grid {:entry-cell {:x 4 :y -1}
-               :height     16
-               :width      10}})
+  {:name       :default
+   :cell-style {:width "20px" :height "20px"}
+   :game-grid  {:entry-cell {:x 4 :y -1}
+                :height     16
+                :width      10}})
 
 (defn page
   "Intended for a full browser window
@@ -178,10 +190,10 @@
         :padding          "24px"}}
 
       ^{:key "left"}
-      [left-panel]
+      [left-panel game-opts]
 
       ^{:key "center"}
-      [center-panel]
+      [center-panel game-opts]
 
       ^{:key "right"}
-      [right-panel]])))
+      [right-panel game-opts]])))

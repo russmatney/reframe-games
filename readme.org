@@ -86,14 +86,14 @@ add garden, herb, css live-reload
 or shows about content
 ****** [X] make `about` a global event
 ****** [X] remove about from both games
-***** [ ] remove about link from game page (in favor of `exit`)
-***** [ ] ensure all puyo features (score?)
-***** [ ] set proper board sizes in all screens
+***** [X] remove about link from game page (in favor of `exit`)
 ***** [ ] set proper cell sizes in all screens
-***** [ ] create and post game on itch!
+***** [ ] set proper board sizes in all screens
 ***** [ ] (slightly) better controls layout
-***** [ ] expose controls link on main menu
+***** [ ] expose controls, about views on main menu
+***** [ ] ensure all puyo features (score?)
 ***** [ ] clear console errors
+***** [ ] create and post game on itch!
 **** [ ] reach goals
 ***** [ ] selected game with keyboard controls
 ***** [ ] input controls to both games on select page
