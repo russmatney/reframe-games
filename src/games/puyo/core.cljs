@@ -277,9 +277,11 @@
     (cond
       ;; game is over, update db and return
       (gameover? db)
-      (case (:gameover-response db)
-        :restart (puyo.db/initial-db)
-        nil      (assoc db :gameover? true))
+      (puyo.db/initial-db)
+      ;; (case (:gameover-response db)
+      ;;   ;; TODO this should be an event dispatched
+      ;;   :restart (puyo.db/initial-db)
+      ;;   nil      (assoc db :gameover? true))
 
       ;; a piece is falling, move it down
       (any-falling? db)

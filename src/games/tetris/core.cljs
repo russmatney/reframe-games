@@ -265,9 +265,11 @@
 
     ;; game is over, update db and return
     (gameover? db)
-    (case (:gameover-response db)
-      :restart (tetris.db/initial-db)
-      nil      (assoc db :gameover? true))
+    ;; TODO should be an event, or get opts from db
+    (tetris.db/initial-db)
+    ;; (case (:gameover-response db)
+    ;;   :restart (tetris.db/initial-db)
+    ;;   nil      (assoc db :gameover? true))
 
     ;; a piece is falling, move it down
     (any-falling? db)

@@ -43,7 +43,7 @@
                 :event [:games.puyo.events/rotate-piece name]}
    :pause      {:label "Pause"
                 :keys  (set ["enter"])
-                :event [:games.puyo.events/toggle-pause name]}
+                :event [:games.puyo.events/toggle-pause game-opts]}
    :controls   {:label "Controls"
                 :keys  (set ["c"])
                 :event [:games.puyo.events/set-view :controls]}
@@ -67,7 +67,6 @@
   ([] (initial-db {:name :default}))
 
   ([{:keys [name grid] :as game-opts}]
-   (print "creating puyo db: " name)
    {:name name
 
     ;; game (matrix)

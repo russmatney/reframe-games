@@ -60,36 +60,42 @@
 ;; Center Panel
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn center-panel []
-  (let [gameover? @(rf/subscribe [::puyo.subs/gameover?])]
+(defn gameover
+  []
+  ^{:key "go"}
+  [:h3 {:style {:margin-bottom "1rem"}} "Game Over."])
+
+(defn restart
+  [game-opts]
+  ^{:key "rest."}
+  [:p
+   {:style    {:margin-top "1rem"}
+    :on-click #(rf/dispatch [::puyo.events/start-game game-opts])}
+   "Click here to restart."])
+
+(defn center-panel [{:keys [name] :as game-opts}]
+  (let [gameover? @(rf/subscribe [::puyo.subs/gameover? name])]
     [:div.center-panel
      {:style
       {:display "flex"
        :flex    "1"}}
      [widget
       {:style {:flex "1"}}
-      (when gameover?
-        ^{:key "go"}
-        [:h3 {:style {:margin-bottom "1rem"}} "Game Over."])
-      ^{:key "matrix"}
-      [matrix]
-      (when gameover?
-        ^{:key "rest."}
-        [:p
-         {:style    {:margin-top "1rem"}
-          :on-click #(rf/dispatch [::puyo.events/start-game])}
-         "Click here to restart."])
-      ]]))
+      (when gameover? [gameover])
+
+      ^{:key "matrix"} [matrix]
+
+      (when gameover? [restart game-opts])]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Left panel
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn left-panel []
-  (let [score   @(rf/subscribe [::puyo.subs/score])
-        t       @(rf/subscribe [::puyo.subs/time])
-        level   @(rf/subscribe [::puyo.subs/level])
-        paused? @(rf/subscribe [::puyo.subs/paused?])
+(defn left-panel [{:keys [name]}]
+  (let [score   @(rf/subscribe [::puyo.subs/score name])
+        t       @(rf/subscribe [::puyo.subs/time name])
+        level   @(rf/subscribe [::puyo.subs/level name])
+        paused? @(rf/subscribe [::puyo.subs/paused? name])
         time    (str (util/with-precision 1 (/ t 1000)) "s")]
     [:div.left-panel
      {:style
@@ -97,7 +103,7 @@
        :flex           "1"
        :flex-direction "column"}}
      [widget
-      {:on-click #(rf/dispatch [::puyo.events/toggle-pause])
+      {:on-click #(rf/dispatch [::puyo.events/toggle-pause name])
        :style    {:flex "1"}
        :label    (if paused? "Paused" "Time")
        :value    time}]
@@ -114,8 +120,8 @@
 ;; Piece Queue
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn piece-queue []
-  (let [preview-grids @(rf/subscribe [::puyo.subs/preview-grids])]
+(defn piece-queue [{:keys [name]}]
+  (let [preview-grids @(rf/subscribe [::puyo.subs/preview-grids name])]
     (grid.views/piece-list
       {:label       "Queue"
        :piece-grids preview-grids
@@ -125,16 +131,16 @@
 ;; Held Piece
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn hold-string []
-  (let [any-held? @(rf/subscribe [::puyo.subs/any-held?])
-        hold-keys @(rf/subscribe [::puyo.subs/keys-for :hold])
+(defn hold-string [name]
+  (let [any-held? @(rf/subscribe [::puyo.subs/any-held? name])
+        hold-keys @(rf/subscribe [::puyo.subs/keys-for name :hold])
         hold-key  (first hold-keys)]
     (str (if any-held? "Swap (" "Hold (") hold-key ")")))
 
-(defn held-piece []
-  (let [held-grid @(rf/subscribe [::puyo.subs/held-grid])]
+(defn held-piece [{:keys [name]}]
+  (let [held-grid @(rf/subscribe [::puyo.subs/held-grid name])]
     (grid.views/piece-list
-      {:label       (hold-string)
+      {:label       (hold-string name)
        :piece-grids [held-grid]
        :cell->style
        (fn [{:keys [color] :as c}]
@@ -146,7 +152,7 @@
 ;; Controls-mini
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn controls-mini []
+(defn controls-mini [{:keys [name]}]
   [widget
    {:style
     {:padding "0.9rem"
@@ -154,8 +160,8 @@
    (doall
      (for [ctr [:pause :controls :about :rotate]]
        (let [label (controls.db/control->label ctr)
-             event @(rf/subscribe [::puyo.subs/event-for ctr])
-             keys  @(rf/subscribe [::puyo.subs/keys-for ctr])]
+             event @(rf/subscribe [::puyo.subs/event-for name ctr])
+             keys  @(rf/subscribe [::puyo.subs/keys-for name ctr])]
          (when (and keys event)
            ^{:key label}
            [:p
@@ -167,25 +173,29 @@
 ;; Right panel
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn right-panel []
+(defn right-panel [game-opts]
   [:div
    {:style
     {:display        "flex"
      :flex           "1"
      :flex-direction "column"}}
-   [piece-queue]
-   [held-piece]
-   [controls-mini]])
+   [piece-queue game-opts]
+   [held-piece game-opts]
+   [controls-mini game-opts]])
 
-(defn game-view []
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Page game wrapper
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn game-view [game-opts]
   [:div
    {:style
     {:height  "100%"
      :width   "100%"
      :display "flex"}}
-   [left-panel]
-   [center-panel]
-   [right-panel]])
+   [left-panel game-opts]
+   [center-panel game-opts]
+   [right-panel game-opts]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mini-game
@@ -223,19 +233,29 @@
        black 22px, black 24px, transparent 24px, transparent 67px,
        black 67px, black 69px, transparent 69px), 64px"))
 
-(defn page []
-  (let [controls     @(rf/subscribe [::puyo.subs/controls])
-        current-view @(rf/subscribe [::puyo.subs/current-view])]
-    [:div
-     {:style
-      {:height           "100vh"
-       :width            "100vw"
-       :display          "flex"
-       :background       background-style
-       :background-color background-color
-       :background-size  "64px 128px"
-       :padding          "24px"}}
-     (case current-view
-       :controls [controls.views/view controls]
-       :about    [about/view]
-       :game     [game-view])]))
+(def page-game-defaults
+  {:name :default
+   :grid {:entry-cell {:x 1 :y 0}
+          :height     8
+          :width      4}})
+
+(defn page
+  ([] (page {}))
+  ([game-opts]
+   (let [{:keys [name] :as game-opts} (merge page-game-defaults game-opts)
+         controls                     @(rf/subscribe [::puyo.subs/controls name])
+         ;; current-view @(rf/subscribe [::puyo.subs/current-view])
+         current-view                 :game]
+     [:div
+      {:style
+       {:height           "100vh"
+        :width            "100vw"
+        :display          "flex"
+        :background       background-style
+        :background-color background-color
+        :background-size  "64px 128px"
+        :padding          "24px"}}
+      (case current-view
+        :controls [controls.views/view controls]
+        :about    [about/view]
+        :game     [game-view game-opts])])))

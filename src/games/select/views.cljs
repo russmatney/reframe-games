@@ -6,7 +6,7 @@
    [games.puyo.views :as puyo.views]
    [games.views.components :refer [widget]]))
 
-;; TODO display controls/about here
+;; TODO display controls/about
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,11 +28,11 @@
 (defn selection
   [{:keys [label on-click component]}]
   [widget
-   {:label label
-    :style {:flex "1"}}
+   {:on-click on-click
+    :label    label
+    :style    {:flex "1"}}
    [:div.select-view
-    {:on-click on-click
-     :style
+    {:style
      {:flex "1"}}
     component]])
 

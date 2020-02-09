@@ -176,8 +176,10 @@
 ;; pauses, ignoring whatever the current state is
 (rf/reg-event-fx
   ::pause-game
-  (fn [{:keys [db]} [_ name]]
+  (fn [{:keys [db]} [_ {:keys [name]}]]
     (let [updated-db (assoc-in db [::puyo.db/db name :paused?] true)]
+      (println "pause-game")
+      (println name)
       {:db             updated-db
        :clear-timeouts [{:id ::tick}
                         {:id ::game-timer}]})))
@@ -185,21 +187,21 @@
 ;; resumes the game
 (rf/reg-event-fx
   ::resume-game
-  (fn [{:keys [db]} [_ name]]
+  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
     (let [game-in-view? true ;;(= :game (get-in db [::puyo.db/db :current-view]))
           updated-db    (assoc-in db [::puyo.db/db name :paused?] false)]
       (when game-in-view?
         {:db         updated-db
-         :dispatch-n [[::game-tick]
-                      [::game-timer]]}))))
+         :dispatch-n [[::game-tick game-opts]
+                      [::game-timer game-opts]]}))))
 
 (rf/reg-event-fx
   ::toggle-pause
-  (fn [{:keys [db]} [_ name]]
+  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
     (let [paused (-> db ::puyo.db/db (get name) :paused?)]
       (if-not (-> db ::puyo.db/db (get name) :gameover?)
         (if paused
           ;; unpause
-          {:dispatch [::resume-game]}
+          {:dispatch [::resume-game game-opts]}
           ;; pause
-          {:dispatch [::pause-game]})))))
+          {:dispatch [::pause-game game-opts]})))))
