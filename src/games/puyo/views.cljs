@@ -219,10 +219,10 @@
   Establishes sane defaults for a mini-player."
   ([] (mini-game {}))
   ([game-opts]
-   (let [opts (merge mini-game-defaults game-opts)]
-     (rf/dispatch [::puyo.events/start-game opts])
+   (let [game-opts (merge mini-game-defaults game-opts)]
+     (rf/dispatch [::puyo.events/start-game game-opts])
      [:div
-      [matrix opts]])))
+      [matrix game-opts]])))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -240,9 +240,9 @@
 
 (def page-game-defaults
   {:name      :default
-   :game-grid {:entry-cell {:x 1 :y 0}
-               :height     8
-               :width      4}})
+   :game-grid {:entry-cell {:x 3 :y -1}
+               :height     12
+               :width      8}})
 
 (defn page
   ([] (page {}))
@@ -251,6 +251,7 @@
          controls                     @(rf/subscribe [::puyo.subs/controls name])
          ;; current-view @(rf/subscribe [::puyo.subs/current-view])
          current-view                 :game]
+     (rf/dispatch [::puyo.events/start-game game-opts])
      [:div
       {:style
        {:height           "100vh"

@@ -79,21 +79,23 @@ zip -r reframe-games.zip public
 ***** [X] highlight selected game with mouse
 add garden, herb, css live-reload
 ***** [X] remove highlight from puyo background
-***** [ ] navigate back to select page from game page (x)
+***** [X] navigate back to select page from game page (x)
 ***** [ ] remove about link from game page (in favor of `exit`)
-***** [ ] select view links to shared about page
+***** [ ] link selection-view to about page
 or shows about content
+****** [ ] make `about` a global event
 ****** [ ] remove about from both games
 ***** [ ] ensure all puyo features (score?)
 ***** [ ] set proper board sizes in all screens
 ***** [ ] set proper cell sizes in all screens
-***** [ ] restore tetris controls
+***** [X] restore tetris controls
 **** [ ] reach goals
 ***** [ ] selected game with keyboard controls
 ***** [ ] input controls to both games on select page
 ***** [ ] instant-fall feature
 ***** [ ] incorporate spin feature
 ***** [ ] show combos/rows-to-next-level
+***** [ ] faster tick-timeout while locked falls are happening
 * General clean up
 **** [X] move entrypoints into grids
 **** [X] clean up 'widget' api
@@ -111,6 +113,7 @@ redo controls view, maybe just show when paused
 **** [ ] controls fire multiple events (from different sources)
 ***** [ ] control registration/deregistration
 **** [ ] unify cell color 'type' treatment
+**** [ ] no keys detected yet overlay with suggestions for clicking?
 * Contributing
 My intention for this repository is to build some things from scratch on my
 own - selfishly, I'm somewhat closed-minded to contributions.

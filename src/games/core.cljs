@@ -29,11 +29,4 @@
   (rf/dispatch-sync [::events/init-db])
 
   ;; setup controls
-  (rf/dispatch-sync [::controls.events/init])
-
-  (let [game (case GAME
-               "tetris" :tetris
-               "puyo"   :puyo
-               "all"    nil)]
-    (rf/dispatch-sync [::events/select-game game])
-    ))
+  (rf/dispatch-sync [::controls.events/init]))

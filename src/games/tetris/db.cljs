@@ -124,14 +124,15 @@
                                   :entry-cell {:x 1 :y 1}}))
 
 (def defaults
-  {:tick-timeout 500})
+  {:tick-timeout    500
+   :ignore-controls false})
 
 (defn initial-db
   "Creates an initial tetris game-state."
   ([] (initial-db {:name :default}))
 
   ([game-opts]
-   (let [{:keys [name game-grid tick-timeout] :as game-opts}
+   (let [{:keys [name game-grid tick-timeout ignore-controls] :as game-opts}
          (merge defaults game-opts)]
      {:name      name
       :game-opts game-opts
@@ -159,7 +160,8 @@
       :preview-grids     (repeat 3 piece-grid)
 
       ;; controls
-      :controls (initial-controls game-opts)
+      :controls        (initial-controls game-opts)
+      :ignore-controls ignore-controls
 
       ;; hold/swap
       :falling-shape-fn nil
@@ -169,7 +171,7 @@
 
       ;; timer
       :time      0
-      :timer-inc 100
+      :timer-inc 3000
 
       ;; level/score
       :level                1

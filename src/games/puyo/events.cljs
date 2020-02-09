@@ -82,12 +82,14 @@
 ;; Set Controls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO clean up ignore-controls
 (rf/reg-event-fx
   ::set-controls
-  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
-    {:dispatch
-     [::controls.events/set
-      (-> db ::puyo.db/db (get name) :controls)]}))
+  (fn [{:keys [db]} [_ {:keys [name ignore-controls]}]]
+    (when-not ignore-controls
+      {:dispatch
+       [::controls.events/set
+        (-> db ::puyo.db/db (get name) :controls)]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move/Rotate piece

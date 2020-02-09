@@ -66,7 +66,7 @@
   ::game-timer
   (fn [{:keys [db]}  [_ {:keys [name] :as game-opts}]]
     (let [{:keys [timer-inc]} (-> db ::tetris.db/db (get name))]
-      {:db (update-in db [::tetris.db/db :time] #(+ % timer-inc))
+      {:db (update-in db [::tetris.db/db name :time] #(+ % timer-inc))
        :timeout
        {:id    ::game-timer
         :event [::game-timer game-opts]
@@ -76,11 +76,13 @@
 ;; Set Controls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO clean up ignore-controls
 (rf/reg-event-fx
   ::set-controls
-  (fn [{:keys [db]} {:keys [name]}]
-    (let [controls (-> db ::tetris.db/db (get name) :controls)]
-      {:dispatch [::controls.events/set controls]})))
+  (fn [{:keys [db]} [_ {:keys [name ignore-controls] :as game-opts}]]
+    (when-not ignore-controls
+      (let [controls (-> db ::tetris.db/db (get name) :controls)]
+        {:dispatch [::controls.events/set controls]}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move/Rotate piece

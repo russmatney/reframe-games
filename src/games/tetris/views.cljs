@@ -161,10 +161,10 @@
   Establishes sane defaults for a mini-player."
   ([] (mini-game {}))
   ([game-opts]
-   (let [opts (merge mini-game-defaults game-opts)]
-     (rf/dispatch [::tetris.events/start-game opts])
+   (let [game-opts (merge mini-game-defaults game-opts)]
+     (rf/dispatch [::tetris.events/start-game game-opts])
      [:div
-      [matrix opts]])))
+      [matrix game-opts]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Main page component
@@ -173,13 +173,19 @@
 (def background-color "#441086")
 ;;:background "#5d08c7"
 
+(def page-game-defaults
+  {:name      :default
+   :game-grid {:entry-cell {:x 4 :y -1}
+               :height     16
+               :width      10}})
+
 (defn page
   "Intended for a full browser window
   Expects to be started itself."
-  ([]
-   (page {:name :default}))
-  ([{:keys [name] :as game-opts}]
-   (let [current-view @(rf/subscribe [::tetris.subs/current-view name])
+  ([] (page {}))
+  ([game-opts]
+   (let [{:keys [name] :as game-opts} (merge page-game-defaults game-opts)
+         current-view                 @(rf/subscribe [::tetris.subs/current-view name])
          comps
          (case current-view
            :controls
@@ -197,6 +203,7 @@
             [center-panel]
             ^{:key "right"}
             [right-panel]])]
+     (rf/dispatch [::tetris.events/start-game game-opts])
      [:div
       {:style
        {:height           "100vh"

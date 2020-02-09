@@ -64,14 +64,15 @@
                                   :entry-cell {:x 0 :y 1}}))
 
 (def defaults
-  {:tick-timeout 500})
+  {:tick-timeout    500
+   :ignore-controls false})
 
 (defn initial-db
   "Creates an initial puyo game state."
   ([] (initial-db {:name :default}))
 
   ([game-opts]
-   (let [{:keys [name game-grid tick-timeout] :as game-opts}
+   (let [{:keys [name game-grid tick-timeout ignore-controls] :as game-opts}
          (merge defaults game-opts)]
      {:name      name
       :game-opts game-opts
@@ -101,7 +102,8 @@
       :preview-grids  (repeat 3 piece-grid)
 
       ;; controls
-      :controls (initial-controls game-opts)
+      :controls        (initial-controls game-opts)
+      :ignore-controls ignore-controls
 
       ;; timer
       :time      0
