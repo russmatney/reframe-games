@@ -88,6 +88,7 @@ likely with malli
 **** [ ] manual-down should be instant-down
 **** [ ] display directional controls more prominently
 redo controls view, maybe just show when paused
+**** [ ] dry up @rf/subscribe usage with suggested subscribe macro `(<-sub! ::s/current-view])`?
 * Contributing
 My intention for this repository is to build some things from scratch on my
 own - selfishly, I'm somewhat closed-minded to contributions.

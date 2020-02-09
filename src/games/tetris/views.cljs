@@ -16,9 +16,10 @@
 
 (defn matrix
   "Returns the rows of cells."
-  []
-  (let [grid @(rf/subscribe [::tetris.subs/game-grid])]
-    (grid.views/matrix grid {:cell->style :style})))
+  ([] [matrix {:name :default}])
+  ([{:keys [name] :as db}]
+   (let [grid @(rf/subscribe [::tetris.subs/game-grid name])]
+     (grid.views/matrix grid {:cell->style :style}))))
 
 (defn center-panel []
   (let [gameover? @(rf/subscribe [::tetris.subs/gameover?])]
@@ -135,39 +136,68 @@
    [controls-mini]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Mini-player
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def mini-game-defaults
+  {:name :default
+   :grid {:entry-cell {:x 1 :y 0}
+          :height     8
+          :width      5}})
+
+
+(defn mini-game
+  "Intended as a div.
+  Starts itself.
+
+  Establishes sane defaults for a mini-player."
+  ([] (mini-game {}))
+  ([game-opts]
+   (let [opts (merge mini-game-defaults game-opts)]
+     (rf/dispatch [::tetris.events/start-game opts])
+     [:div
+      [matrix opts]])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Main page component
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def background-color "#441086")
-     ;;:background "#5d08c7"
+;;:background "#5d08c7"
 
-(defn page []
-  (let [current-view @(rf/subscribe [::tetris.subs/current-view])
-        comps
-        (case current-view
-          :controls
-          [^{:key "controls"}
-           [controls/view]]
+(defn page
+  "Intended for a full browser window
+  Expects to be started itself."
+  ([]
+   (page {:name :default}))
+  ([{:keys [name] :as game-opts}]
+   (let [current-view @(rf/subscribe [::tetris.subs/current-view name])
+         comps
+         (case current-view
+           :controls
+           [^{:key "controls"}
+            [controls/view]]
 
-          :about
-          [^{:key "about"}
-           [about/view]]
+           :about
+           [^{:key "about"}
+            [about/view]]
 
-          :game
-          [^{:key "left"}
-           [left-panel]
-           ^{:key "center"}
-           [center-panel]
-           ^{:key "right"}
-           [right-panel]])]
-    [:div
-     {:style
-      {:height           "100vh"
-       :width            "100vw"
-       :display          "flex"
-       :background
-       (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
+           :game
+           [^{:key "left"}
+            [left-panel]
+            ^{:key "center"}
+            [center-panel]
+            ^{:key "right"}
+            [right-panel]])]
+     [:div
+      {:style
+       {:height           "100vh"
+        :width            "100vw"
+        :display          "flex"
+        :background
+        (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
        linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px")
-       :background-color background-color
-       :background-size  "64px 128px"
-       :padding          "24px"}}
-     (for [c comps] c)]))
+        :background-color background-color
+        :background-size  "64px 128px"
+        :padding          "24px"}}
+      (for [c comps] c)])))

@@ -4,20 +4,26 @@
    [games.puyo.db :as puyo.db]
    [games.grid.core :as grid]))
 
+(defn ->puyo-db
+  ([db n]
+   (-> db ::puyo.db/db n))
+  ([db n k]
+   (-> db ::puyo.db/db n k)
+   ))
 
 (rf/reg-sub
   ::puyo-db
   (fn [db evt]
     ;; is there a multi-arity subscription helper?
     (case (count evt)
-      1 (::puyo.db/db db)
-      2 (let [[_ k] evt] (-> db ::puyo.db/db k)))))
+      2 (let [[_ k] evt] (-> db ::puyo.db/db :default k))
+      3 (let [[_ n k] evt] (-> db ::puyo.db/db n k)))))
 
 (rf/reg-sub
   ::current-view
-  :<- [::puyo-db]
-  (fn [db]
-    (or (:current-view db) :game)))
+  (fn [db [_ n]]
+    (or (->puyo-db db n :current-view)
+        :game)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grids
@@ -25,21 +31,22 @@
 
 (rf/reg-sub
   ::game-grid
-  :<- [::puyo-db]
-  (fn [{:keys [game-grid]}]
-    (grid/only-positive-rows game-grid)))
+  (fn [db [_ n]]
+    (-> db
+        (->puyo-db n :game-grid)
+        (grid/only-positive-rows))))
 
 (rf/reg-sub
   ::preview-grids
-  :<- [::puyo-db]
-  (fn [db]
-    (:preview-grids db)))
+  (fn [db [_ n]]
+    (-> db
+        (->puyo-db n :preview-grids))))
 
 (rf/reg-sub
   ::held-grid
-  :<- [::puyo-db]
-  (fn [{:keys [held-grid]}]
-    held-grid))
+  (fn [db [_ n]]
+    (-> db
+        (->puyo-db n :held-grid))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Logic
@@ -47,37 +54,39 @@
 
 (rf/reg-sub
   ::paused?
-  :<- [::puyo-db]
-  :paused?)
+  (fn [db [_ n]]
+    (-> db
+        (->puyo-db n :paused?))))
 
 (rf/reg-sub
   ::gameover?
-  :<- [::puyo-db]
-  :gameover?)
+  (fn [db [_ n]]
+    (-> db
+        (->puyo-db n :gameover?))))
 
 (rf/reg-sub
   ::any-held?
-  :<- [::puyo-db]
-  (fn [{:keys [held-shape-fn]}]
-    held-shape-fn))
+  (fn [db [_ n]]
+    (-> db
+        (->puyo-db n :held-shape-fn))))
 
 (rf/reg-sub
   ::score
-  :<- [::puyo-db]
-  (fn [db]
-    (:score db)))
+  (fn [db [_ n]]
+    (-> db
+        (->puyo-db n :score))))
 
 (rf/reg-sub
   ::time
-  :<- [::puyo-db]
-  (fn [db]
-    (:time db)))
+  (fn [db [_ n]]
+    (-> db
+        (->puyo-db n :time))))
 
 (rf/reg-sub
   ::level
-  :<- [::puyo-db]
-  (fn [db]
-    (:level db)))
+  (fn [db [_ n]]
+    (-> db
+        (->puyo-db n :level))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls
@@ -85,18 +94,22 @@
 
 (rf/reg-sub
   ::controls
-  :<- [::puyo-db]
-  (fn [db]
-    (-> db :controls)))
+  (fn [db [_ n]]
+    (-> db
+        (->puyo-db n :controls))))
 
 (rf/reg-sub
   ::keys-for
-  :<- [::controls]
-  (fn [controls [_ keys-for]]
-    (-> controls keys-for :keys)))
+  (fn [db [_ n for]]
+    (-> db
+        (->puyo-db n :controls)
+        for
+        :keys)))
 
 (rf/reg-sub
   ::event-for
-  :<- [::controls]
-  (fn [controls [_ for]]
-    (-> controls for :event)))
+  (fn [db [_ n for]]
+    (-> db
+        (->puyo-db n :controls)
+        for
+        :event)))

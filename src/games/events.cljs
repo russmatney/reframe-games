@@ -11,7 +11,7 @@
 
 (rf/reg-event-db
   ::init-db
-  (fn [_] db/initial-db))
+  (fn [_] (db/initial-db)))
 
 (rf/reg-event-fx
   ::select-game
@@ -20,9 +20,10 @@
       game
       (assoc :dispatch
              (case game
-               ;; TODO consider conditional resume-game, or start-or-resume event
-               :tetris [::tetris.events/start-game]
-               :puyo   [::puyo.events/start-game])))))
+               ;; TODO consider conditional resume-game,
+               ;; or start-or-resume event
+               :tetris [::tetris.events/start-game {:name :default}]
+               :puyo   [::puyo.events/start-game {:name :default}])))))
 
 (rf/reg-event-fx
   ::deselect-game

@@ -1,7 +1,14 @@
-(ns games.db)
+(ns games.db
+  (:require
+   [games.tetris.db :as tetris.db]
+   [games.puyo.db :as puyo.db]))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DB
 
-(def initial-db
-  {:selected-game nil})
+(defn initial-db
+  []
+  {::tetris.db/db {}
+   ::puyo.db/db   {}
+   :selected-game nil})

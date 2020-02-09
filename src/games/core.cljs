@@ -35,4 +35,5 @@
                "tetris" :tetris
                "puyo"   :puyo
                "all"    nil)]
-    (rf/dispatch-sync [::events/select-game game])))
+    ;; (rf/dispatch-sync [::events/select-game game])
+    ))

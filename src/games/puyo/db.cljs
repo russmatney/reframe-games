@@ -24,25 +24,26 @@
 ;; Initial DB
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def initial-controls
+(defn initial-controls
+  [{:keys [name] :as game-opts}]
   {:move-left  {:label "Move Left"
                 :keys  (set ["left" "h" "a"])
-                :event [:games.puyo.events/move-piece :left]}
+                :event [:games.puyo.events/move-piece name :left]}
    :move-down  {:label "Move Down"
                 :keys  (set ["down" "j" "s"])
-                :event [:games.puyo.events/move-piece :down]}
+                :event [:games.puyo.events/move-piece name :down]}
    :move-right {:label "Move Right"
                 :keys  (set ["right" "l" "d"])
-                :event [:games.puyo.events/move-piece :right]}
+                :event [:games.puyo.events/move-piece name :right]}
    :hold       {:label "Hold"
                 :keys  (set ["space"])
-                :event [:games.puyo.events/hold-and-swap-piece]}
+                :event [:games.puyo.events/hold-and-swap-piece name]}
    :rotate     {:label "Rotate Piece"
                 :keys  (set ["up" "k" "w"])
-                :event [:games.puyo.events/rotate-piece]}
+                :event [:games.puyo.events/rotate-piece name]}
    :pause      {:label "Pause"
                 :keys  (set ["enter"])
-                :event [:games.puyo.events/toggle-pause]}
+                :event [:games.puyo.events/toggle-pause name]}
    :controls   {:label "Controls"
                 :keys  (set ["c"])
                 :event [:games.puyo.events/set-view :controls]}
@@ -61,51 +62,62 @@
                                   :width      1
                                   :entry-cell {:x 0 :y 1}}))
 
-(def initial-db
-  { ;; game (matrix)
-   :game-grid
-   (grid/build-grid {:height       10
-                     :width        10
-                     :phantom-rows 2
-                     :entry-cell   {:x 4 :y -1}})
+(defn initial-db
+  "Creates an initial puyo game state."
+  ([] (initial-db {:name :default}))
 
-   ;; game logic
-   :current-view      :game
-   :group-size        4 ;; number of puyos in a group to be removed
-   :tick-timeout      300
-   :paused?           false
-   :gameover?         false
-   :waiting-for-fall? false
-   :pieces-played     0
+  ([{:keys [name grid] :as game-opts}]
+   (print "creating puyo db: " name)
+   {:name name
 
-   ;; queue
-   :piece-queue    (repeatedly 5 build-piece-fn)
-   :min-queue-size 5
-   :preview-grids  (repeat 3 piece-grid)
+    ;; game (matrix)
+    :game-grid
+    (grid/build-grid
+      (merge
+        {:height       10
+         :width        10
+         :phantom-rows 2
+         :entry-cell   {:x 4 :y -1}}
+        grid))
 
-   ;; controls
-   :controls initial-controls
+    ;; game logic
+    :current-view      :game
+    :group-size        4 ;; number of puyos in a group to be removed
+    :tick-timeout      300
+    :paused?           false
+    :gameover?         false
+    :waiting-for-fall? false
+    :pieces-played     0
 
-   ;; timer
-   :time      0
-   :timer-inc 100
+    ;; queue
+    :piece-queue    (repeatedly 5 build-piece-fn)
+    :min-queue-size 5
+    :preview-grids  (repeat 3 piece-grid)
 
-   ;; hold/swap
-   :falling-shape-fn nil
-   :held-shape-fn    nil
-   :held-grid        piece-grid
-   :hold-lock        false
+    ;; controls
+    :controls (initial-controls game-opts)
 
-   ;; modes
-   :spin-the-bottle? true
+    ;; timer
+    :time      0
+    :timer-inc 100
 
-   ;; level/score
-   :level                 1
-   :groups-per-level      5
-   :groups-cleared        0
-   :score                 0
-   :score-per-group-clear 10
-   :groups-in-combo       0
-   :last-combo-piece-num  nil})
+    ;; hold/swap
+    :falling-shape-fn nil
+    :held-shape-fn    nil
+    :held-grid        piece-grid
+    :hold-lock        false
+
+    ;; modes
+    :spin-the-bottle? false
+    :spin             false
+
+    ;; level/score
+    :level                 1
+    :groups-per-level      5
+    :groups-cleared        0
+    :score                 0
+    :score-per-group-clear 10
+    :groups-in-combo       0
+    :last-combo-piece-num  nil}))
 
 

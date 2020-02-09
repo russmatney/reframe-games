@@ -276,8 +276,10 @@
   (let [groups (groups-to-clear db)]
     (cond
       ;; game is over, update db and return
-      ;;(gameover? db) (assoc db :gameover? true)
-      (gameover? db) puyo.db/initial-db
+      (gameover? db)
+      (case (:gameover-response db)
+        :restart (puyo.db/initial-db)
+        nil      (assoc db :gameover? true))
 
       ;; a piece is falling, move it down
       (any-falling? db)

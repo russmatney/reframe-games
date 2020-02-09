@@ -122,47 +122,56 @@
                                   :width      4
                                   :entry-cell {:x 1 :y 1}}))
 
-(def initial-db
-  {;; game matrix
-   :game-grid
-   (grid/build-grid {:height       20
-                     :width        10
-                     :phantom-rows 4
-                     :entry-cell   {:x 5 :y -1}})
+(defn initial-db
+  "Creates an initial tetris game-state."
+  ([] (initial-db {:name :default}))
 
-   ;; game logic
-   :tick-timeout 500
-   :paused?      false
-   :gameover?    false
-   :current-view :game
+  ([{:keys [name grid] :as game-opts}]
+   {:name name
 
-   ;; queue
-   :piece-queue       (shuffle allowed-shape-fns)
-   :min-queue-size    5
-   :allowed-shape-fns allowed-shape-fns
-   :preview-grids     (repeat 3 piece-grid)
+    ;; game matrix
+    :game-grid
+    (grid/build-grid
+      (merge
+        {:height       10
+         :width        10
+         :phantom-rows 2
+         :entry-cell   {:x 5 :y -1}}
+        grid))
 
-   ;; controls
-   :controls initial-controls
+    ;; game logic
+    :tick-timeout 500
+    :paused?      false
+    :gameover?    false
+    :current-view :game
 
-   ;; hold/swap
-   :falling-shape-fn nil
-   :held-shape-fn    nil
-   :held-grid        piece-grid
-   :hold-lock        false
+    ;; queue
+    :piece-queue       (shuffle allowed-shape-fns)
+    :min-queue-size    5
+    :allowed-shape-fns allowed-shape-fns
+    :preview-grids     (repeat 3 piece-grid)
 
-   ;; timer
-   :time      0
-   :timer-inc 100
+    ;; controls
+    :controls initial-controls
 
-   ;; level/score
-   :level                1
-   :rows-per-level       5
-   :rows-cleared         0
-   :pieces-played        0
-   :score                0
-   :score-per-row-clear  10
-   :rows-in-combo        0
-   :last-combo-piece-num nil
-   })
+    ;; hold/swap
+    :falling-shape-fn nil
+    :held-shape-fn    nil
+    :held-grid        piece-grid
+    :hold-lock        false
+
+    ;; timer
+    :time      0
+    :timer-inc 100
+
+    ;; level/score
+    :level                1
+    :rows-per-level       5
+    :rows-cleared         0
+    :pieces-played        0
+    :score                0
+    :score-per-row-clear  10
+    :rows-in-combo        0
+    :last-combo-piece-num nil
+    }))
 

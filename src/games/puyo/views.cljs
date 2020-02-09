@@ -38,22 +38,23 @@
 ;; Grid
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn matrix []
-  (let [grid          @(rf/subscribe [::puyo.subs/game-grid])
-        spin?         @(rf/subscribe [::puyo.subs/puyo-db :spin-the-bottle?])
-        pieces-played @(rf/subscribe [::puyo.subs/puyo-db :pieces-played])
+(defn matrix
+  ([] [matrix {:name :default}])
+  ([{:keys [name]}]
+   (let [grid          @(rf/subscribe [::puyo.subs/game-grid name])
+         spin?         @(rf/subscribe [::puyo.subs/puyo-db name :spin-the-bottle?])
+         pieces-played @(rf/subscribe [::puyo.subs/puyo-db name :pieces-played])
 
-        grid
-        (cond-> grid
-          spin?
-          (grid/spin {:reverse-y? (contains? #{1 2 3} (mod pieces-played 6))
-                      :reverse-x? (contains? #{2 3 4} (mod pieces-played 6))}))]
-    [grid.views/matrix grid {:cell->style
-                             (fn [{:keys [color] :as c}]
-                               (if color
-                                 {:background (cell->piece-color c)}
-                                 {:background (cell->background c)}
-                                 ))}]))
+         grid
+         (cond-> grid
+           spin?
+           (grid/spin {:reverse-y? (contains? #{1 2 3} (mod pieces-played 6))
+                       :reverse-x? (contains? #{2 3 4} (mod pieces-played 6))}))]
+     [grid.views/matrix grid {:cell->style
+                              (fn [{:keys [color] :as c}]
+                                (if color
+                                  {:background (cell->piece-color c)}
+                                  {:background (cell->background c)}))}])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Center Panel
@@ -187,13 +188,40 @@
    [right-panel]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Main page component
+;; Mini-game
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def mini-game-defaults
+  {:name :default
+   :grid {:entry-cell {:x 1 :y 0}
+          :height     8
+          :width      4}})
+
+(defn mini-game
+  "Intended as a div.
+  Starts itself.
+
+  Establishes sane defaults for a mini-player."
+  ([] (mini-game {}))
+  ([game-opts]
+   (let [opts (merge mini-game-defaults game-opts)]
+     (rf/dispatch [::puyo.events/start-game opts])
+     [:div
+      [matrix opts]])))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Full Page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def background-color "#441086")
 (def background-style
-  (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
-       linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px"))
+  (str "linear-gradient(135deg, " background-color " 21px,
+       black 22px, black 24px, transparent 24px, transparent 67px,
+       black 67px, black 69px, transparent 69px),
+       linear-gradient(225deg, " background-color " 21px,
+       black 22px, black 24px, transparent 24px, transparent 67px,
+       black 67px, black 69px, transparent 69px), 64px"))
 
 (defn page []
   (let [controls     @(rf/subscribe [::puyo.subs/controls])

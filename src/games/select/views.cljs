@@ -2,7 +2,8 @@
   (:require
    [re-frame.core :as rf]
    [games.events :as events]
-   [games.subs :as subs]
+   [games.tetris.views :as tetris.views]
+   [games.puyo.views :as puyo.views]
    [games.views.components :refer [widget]]))
 
 ;; TODO display controls/about here
@@ -12,15 +13,13 @@
 ;; Data
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def games
+(def selectable-games
   [{:label     "Tetris"
     :on-click  #(rf/dispatch [::events/select-game :tetris])
-    :component [:div
-                [:p "tetris-game"]]}
+    :component [tetris.views/mini-game {:tick-timeout 500}]}
    {:label     "Puyo"
     :on-click  #(rf/dispatch [::events/select-game :puyo])
-    :component [:div
-                [:p "puyo-game"]]}])
+    :component [puyo.views/mini-game {:tick-timeout 500}]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Selections
@@ -34,8 +33,7 @@
    [:div.select-view
     {:on-click on-click
      :style
-     {:background "coral"
-      :flex       "1"}}
+     {:flex "1"}}
     component]])
 
 (defn selections
@@ -45,7 +43,7 @@
     {:width   "100%"
      :flex    "1"
      :display "flex"}}
-   (for [game games]
+   (for [game selectable-games]
      (selection game))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -26,8 +26,9 @@
 
 (rf/reg-event-fx
   ::start-game
-  (fn [{:keys [db]} _]
-    {:db         (assoc db ::tetris.db/db tetris.db/initial-db)
+  (fn [{:keys [db]} [_ game-opts]]
+    {:db         (assoc db ::tetris.db/db
+                        (tetris.db/initial-db game-opts))
      :dispatch-n [[::set-controls]
                   [::game-tick]
                   [::game-timer]]}))

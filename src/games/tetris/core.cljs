@@ -1,5 +1,6 @@
 (ns games.tetris.core
   (:require
+   [games.tetris.db :as tetris.db]
    [games.grid.core :as grid]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -263,8 +264,10 @@
         (clear-full-rows))
 
     ;; game is over, update db and return
-    (gameover? db) (assoc db :gameover? true)
-    ;;(gameover? db) tetris.db/initial-db
+    (gameover? db)
+    (case (:gameover-response db)
+      :restart (tetris.db/initial-db)
+      nil      (assoc db :gameover? true))
 
     ;; a piece is falling, move it down
     (any-falling? db)
