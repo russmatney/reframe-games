@@ -5,6 +5,10 @@
    [games.subs :as subs]
    [games.views.components :refer [widget]]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Page control display
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn display-control [[control {:keys [keys event label]}]]
   ^{:key control}
   [widget
@@ -15,6 +19,10 @@
    ^{:key (str keys)}
    [:p (string/join "," keys)]])
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Controls-page
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; TODO dry this up
 (def background-color "#441086")
 (def background
@@ -24,6 +32,7 @@
        linear-gradient(225deg, " background-color " 21px,
        black 22px, black 24px, transparent 24px, transparent 67px,
        black 67px, black 69px, transparent 69px), 64px"))
+
 
 ;; TODO create page component
 (defn page []
@@ -47,3 +56,24 @@
         :label "Controls"}]
       (for [control controls]
         (display-control control))]]))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Controls-mini
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn mini [{:keys [controls]}]
+  [widget
+   {:style
+    {:padding "0.9rem"
+     :flex    "1"}}
+   (doall
+     (for [ctr controls]
+       (let [{:keys [label event keys]}
+             @(rf/subscribe [::subs/controls-for ctr])]
+         (when (and keys event)
+           ^{:key label}
+           [:p
+            {:style    {:margin-bottom "0.3rem"}
+             :on-click #(rf/dispatch event)}
+            (str label " (" (first keys) ")")]))))])

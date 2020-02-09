@@ -8,7 +8,29 @@
   (fn [db _]
     (:current-view db)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Controls
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (rf/reg-sub
   ::controls
-  (fn [db _]
-    (:controls db)))
+  (fn [db]
+    (-> db :controls)))
+
+(rf/reg-sub
+  ::controls-for
+  :<- [::controls]
+  (fn [controls [_ for]]
+    (-> controls for)))
+
+(rf/reg-sub
+  ::keys-for
+  :<- [::controls]
+  (fn [controls [_ keys-for]]
+    (-> controls keys-for :keys)))
+
+(rf/reg-sub
+  ::event-for
+  :<- [::controls]
+  (fn [controls [_ event-for]]
+    (-> controls event-for :event)))

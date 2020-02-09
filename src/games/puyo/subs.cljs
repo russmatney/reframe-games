@@ -81,29 +81,3 @@
   (fn [db [_ n]]
     (-> db
         (->puyo-db n :level))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Controls
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(rf/reg-sub
-  ::controls
-  (fn [db [_ n]]
-    (-> db
-        (->puyo-db n :controls))))
-
-(rf/reg-sub
-  ::keys-for
-  (fn [db [_ n for]]
-    (-> db
-        (->puyo-db n :controls)
-        for
-        :keys)))
-
-(rf/reg-sub
-  ::event-for
-  (fn [db [_ n for]]
-    (-> db
-        (->puyo-db n :controls)
-        for
-        :event)))

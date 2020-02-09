@@ -93,6 +93,7 @@ or shows about content
 ***** [ ] create and post game on itch!
 ***** [ ] (slightly) better controls layout
 ***** [ ] expose controls link on main menu
+***** [ ] clear console errors
 **** [ ] reach goals
 ***** [ ] selected game with keyboard controls
 ***** [ ] input controls to both games on select page

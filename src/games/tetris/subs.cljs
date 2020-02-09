@@ -67,25 +67,3 @@
   :<- [::tetris-db]
   (fn [db]
     (:level db)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Controls
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(rf/reg-sub
-  ::controls
-  :<- [::tetris-db]
-  (fn [db]
-    (-> db :controls)))
-
-(rf/reg-sub
-  ::keys-for
-  :<- [::controls]
-  (fn [controls [_ keys-for]]
-    (-> controls keys-for :keys)))
-
-(rf/reg-sub
-  ::event-for
-  :<- [::controls]
-  (fn [controls [_ event-for]]
-    (-> controls event-for :event)))

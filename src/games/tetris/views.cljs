@@ -4,7 +4,8 @@
    [games.views.components :refer [widget]]
    [games.views.util :as util]
    [games.grid.views :as grid.views]
-   [games.controls.db :as controls.db]
+   [games.controls.views :as controls.views]
+   [games.subs :as subs]
    [games.tetris.subs :as tetris.subs]
    [games.tetris.events :as tetris.events]))
 
@@ -95,7 +96,7 @@
 
 (defn hold-string []
   (let [any-held? @(rf/subscribe [::tetris.subs/any-held?])
-        hold-keys @(rf/subscribe [::tetris.subs/keys-for :hold])
+        hold-keys @(rf/subscribe [::subs/keys-for :hold])
         hold-key  (first hold-keys)]
     (str (if any-held? "Swap (" "Hold (") hold-key ")")))
 
@@ -105,27 +106,6 @@
       {:label       (hold-string)
        :piece-grids [held-grid]
        :cell->style :style})))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Controls-mini
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn controls-mini []
-  [widget
-   {:style
-    {:padding "0.9rem"
-     :flex    "1"}}
-   (doall
-     (for [ctr [:pause :controls :about :rotate]]
-       (let [label (controls.db/control->label ctr)
-             event @(rf/subscribe [::tetris.subs/event-for ctr])
-             keys  @(rf/subscribe [::tetris.subs/keys-for ctr])]
-         (when (and keys event)
-           ^{:key label}
-           [:p
-            {:style    {:margin-bottom "0.3rem"}
-             :on-click #(rf/dispatch event)}
-            (str label " (" (first keys) ")")]))))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Right panel
@@ -139,7 +119,8 @@
      :flex-direction "column"}}
    [piece-queue]
    [held-piece]
-   [controls-mini]])
+   [controls.views/mini
+    {:controls [:pause :hold :rotate]}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mini-player

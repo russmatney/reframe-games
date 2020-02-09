@@ -3,10 +3,11 @@
    [re-frame.core :as rf]
    [games.views.components :refer [widget]]
    [games.views.util :as util]
-   [games.controls.db :as controls.db]
+   [games.controls.views :as controls.views]
    [games.grid.core :as grid]
    [games.grid.views :as grid.views]
    [games.puyo.events :as puyo.events]
+   [games.subs :as subs]
    [games.puyo.subs :as puyo.subs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -136,7 +137,7 @@
 
 (defn hold-string [name]
   (let [any-held? @(rf/subscribe [::puyo.subs/any-held? name])
-        hold-keys @(rf/subscribe [::puyo.subs/keys-for name :hold])
+        hold-keys @(rf/subscribe [::subs/keys-for :hold])
         hold-key  (first hold-keys)]
     (str (if any-held? "Swap (" "Hold (") hold-key ")")))
 
@@ -152,27 +153,6 @@
            {:background "transparent"}))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Controls-mini
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn controls-mini [{:keys [name]}]
-  [widget
-   {:style
-    {:padding "0.9rem"
-     :flex    "1"}}
-   (doall
-     (for [ctr [:pause :controls :about :rotate]]
-       (let [label (controls.db/control->label ctr)
-             event @(rf/subscribe [::puyo.subs/event-for name ctr])
-             keys  @(rf/subscribe [::puyo.subs/keys-for name ctr])]
-         (when (and keys event)
-           ^{:key label}
-           [:p
-            {:style    {:margin-bottom "0.3rem"}
-             :on-click #(rf/dispatch event)}
-            (str label " (" (first keys) ")")]))))])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Right panel
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -184,7 +164,8 @@
      :flex-direction "column"}}
    [piece-queue game-opts]
    [held-piece game-opts]
-   [controls-mini game-opts]])
+   [controls.views/mini
+    {:controls [:pause :hold :rotate]}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Page game wrapper
