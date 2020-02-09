@@ -255,7 +255,7 @@
 ;; Game tick/steps functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn step [db]
+(defn step [db game-opts]
   (cond
     ;; clear pieces, update db and return
     (> (count (rows-to-clear db)) 0)
@@ -266,7 +266,7 @@
     ;; game is over, update db and return
     (gameover? db)
     ;; TODO should be an event, or get opts from db
-    (tetris.db/initial-db)
+    (tetris.db/initial-db game-opts)
     ;; (case (:gameover-response db)
     ;;   :restart (tetris.db/initial-db)
     ;;   nil      (assoc db :gameover? true))

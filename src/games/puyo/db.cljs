@@ -67,7 +67,8 @@
   ([] (initial-db {:name :default}))
 
   ([{:keys [name grid] :as game-opts}]
-   {:name name
+   {:name      name
+    :game-opts game-opts
 
     ;; game (matrix)
     :game-grid

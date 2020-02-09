@@ -46,9 +46,9 @@
 
 (rf/reg-event-fx
   ::game-tick
-  (fn [{:keys [db]}]
-    (let [{:keys [gameover?] :as tetris-db} (::tetris.db/db db)
-          tetris-db                         (tetris/step tetris-db)
+  (fn [{:keys [db]} {:keys [name] :as game-opts}]
+    (let [{:keys [gameover?] :as tetris-db} (-> db ::tetris.db/db (get name))
+          tetris-db                         (tetris/step tetris-db game-opts)
 
           {:keys [tick-timeout] :as tetris-db}
           (if (should-advance-level? tetris-db)
@@ -57,9 +57,9 @@
       (if gameover?
         {:clear-timeouts [{:id ::tick}
                           {:id ::game-timer}]}
-        {:db      (assoc db ::tetris.db/db tetris-db)
+        {:db      (assoc-in db [::tetris.db/db name] tetris-db)
          :timeout {:id    ::tick
-                   :event [::game-tick]
+                   :event [::game-tick game-opts]
                    :time  tick-timeout}}))))
 
 (rf/reg-event-fx

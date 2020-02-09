@@ -12,14 +12,14 @@
 ;; TODO update to handle db-name
 (rf/reg-event-fx
   ::set-view
-  (fn [{:keys [db]} [_ new-view]]
+  (fn [{:keys [db]} [_ {:keys [name] :as game-opts} new-view]]
     (let [should-pause? (or (= new-view :controls)
                             (= new-view :about))]
       (cond->
-          {:db (assoc-in db [::puyo.db/db :current-view] new-view)}
+          {:db (assoc-in db [::puyo.db/db name :current-view] new-view)}
 
         should-pause?
-        (assoc :dispatch [::pause-game])))))
+        (assoc :dispatch [::pause-game game-opts])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
@@ -28,7 +28,6 @@
 (rf/reg-event-fx
   ::start-game
   (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
-    ;; TODO add game-opts to db for this game
     {:db         (assoc-in db [::puyo.db/db name]
                            (puyo.db/initial-db game-opts))
      :dispatch-n [[::set-controls game-opts]
@@ -52,7 +51,7 @@
   ::game-tick
   (fn [{:keys [db]} [_  {:keys [name] :as game-opts}]]
     (let [{:keys [gameover?] :as puyo-db} (-> db ::puyo.db/db (get name))
-          puyo-db                         (puyo/step puyo-db)
+          puyo-db                         (puyo/step puyo-db game-opts)
 
           {:keys [tick-timeout] :as puyo-db}
           (if (should-advance-level? puyo-db)

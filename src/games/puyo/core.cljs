@@ -272,12 +272,12 @@
                      (assoc :falling true)))))))
 
 (defn step
-  [db]
+  [db game-opts]
   (let [groups (groups-to-clear db)]
     (cond
       ;; game is over, update db and return
       (gameover? db)
-      (puyo.db/initial-db)
+      (puyo.db/initial-db game-opts)
       ;; (case (:gameover-response db)
       ;;   ;; TODO this should be an event dispatched
       ;;   :restart (puyo.db/initial-db)
