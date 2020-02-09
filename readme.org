@@ -90,11 +90,11 @@ or shows about content
 ***** [X] set proper cell sizes in all screens
 ***** [X] set proper board sizes in all screens
 ***** [X] gameover enabled in page, not in mini player
-***** [ ] ensure all puyo features (score?)
-***** [ ] expose controls, about views on main menu
-***** [ ] clear console errors
+***** [X] ensure all puyo features (score?)
+***** [X] expose controls, about views on main menu
 ***** [ ] create and post game on itch!
 **** [ ] reach goals
+***** [ ] clear console errors
 ***** [ ] (slightly) better controls layout
 ***** [ ] selected game with keyboard controls
 ***** [ ] input controls to both games on select page

@@ -157,7 +157,7 @@
 
       ;; timer
       :time      0
-      :timer-inc 3000
+      :timer-inc 100
 
       ;; level/score
       :level                1

@@ -47,16 +47,12 @@
    :hold       "Hold / Swap"
    :pause      "Pause"
    :controls   "Controls"
-   :about      "About"
-   :game       "Back to Game"})
+   :about      "About"})
 
 (def global-controls
   {:main     {:label "Main Menu"
               :keys  (set ["m" "x"])
               :event [:games.events/unset-view]}
-   :game     {:label "Return to game"
-              :keys  (set ["g"])
-              :event [:games.events/set-view :game]}
    :controls {:label "Controls"
               :keys  (set ["c"]) ;; TODO support '?' here and above
               :event [:games.events/set-view :controls]}

@@ -19,7 +19,6 @@
   "Returns the rows of cells."
   ([] [matrix {:name :default}])
   ([{:keys [name cell-style]}]
-   (println cell-style)
    (let [grid @(rf/subscribe [::tetris.subs/game-grid name])]
      (grid.views/matrix
        grid

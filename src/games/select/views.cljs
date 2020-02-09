@@ -4,9 +4,8 @@
    [games.events :as events]
    [games.tetris.views :as tetris.views]
    [games.puyo.views :as puyo.views]
+   [games.controls.views :as controls.views]
    [games.views.components :refer [widget]]))
-
-;; TODO display controls/about
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -55,7 +54,9 @@
      :flex    "1"
      :display "flex"}}
    (for [game selectable-games]
-     (selection game))])
+     (selection game))
+   [controls.views/mini {:controls [:about :controls :tetris :puyo]}]])
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Expectations
