@@ -53,17 +53,22 @@
 (defn piece-list
   "Displays a centered list of pieces below a label."
   ([] (piece-list {}))
-  ([{:keys [label piece-grids cell->style]}]
+  ([{:keys [label style piece-grids cell->style]}]
    [widget
     {:label label
-     :style
-     {:flex       "1"
-      :text-align "center"}}
-    (for [[i g] (map-indexed vector piece-grids)]
-      ^{:key (str i)}
-      [:div
-       {:style
+     :style {:flex "1"}}
+    [:div
+     {:style
+      (merge
         {:display         "flex"
-         :justify-content "center"
-         :margin-bottom   "12px"}}
-       [matrix g {:cell->style cell->style}]])]))
+         :flex-direction  "column"
+         :justify-content "space-around"
+         :width           "100%"}
+        style)}
+     (for [[i g] (map-indexed vector piece-grids)]
+       ^{:key (str i)}
+       [:div
+        {:style
+         {:display       "flex"
+          :margin-bottom "12px"}}
+        [matrix g {:cell->style cell->style}]])]]))

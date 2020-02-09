@@ -87,8 +87,8 @@ or shows about content
 ****** [X] make `about` a global event
 ****** [X] remove about from both games
 ***** [X] remove about link from game page (in favor of `exit`)
-***** [ ] set proper cell sizes in all screens
-***** [ ] set proper board sizes in all screens
+***** [X] set proper cell sizes in all screens
+***** [X] set proper board sizes in all screens
 ***** [ ] (slightly) better controls layout
 ***** [ ] expose controls, about views on main menu
 ***** [ ] ensure all puyo features (score?)

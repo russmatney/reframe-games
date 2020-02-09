@@ -44,7 +44,7 @@
 
 (defn matrix
   ([] [matrix {:name :default}])
-  ([{:keys [name]}]
+  ([{:keys [name cell-style]}]
    (let [grid          @(rf/subscribe [::puyo.subs/game-grid name])
          spin?         @(rf/subscribe [::puyo.subs/puyo-db name :spin-the-bottle?])
          pieces-played @(rf/subscribe [::puyo.subs/puyo-db name :pieces-played])
@@ -54,11 +54,15 @@
            spin?
            (grid/spin {:reverse-y? (contains? #{1 2 3} (mod pieces-played 6))
                        :reverse-x? (contains? #{2 3 4} (mod pieces-played 6))}))]
-     [grid.views/matrix grid {:cell->style
-                              (fn [{:keys [color] :as c}]
-                                (if color
-                                  {:background (cell->piece-color c)}
-                                  {:background (cell->background c)}))}])))
+     [grid.views/matrix
+      grid
+      {:cell->style
+       (fn [{:keys [color] :as c}]
+         (merge
+           (or cell-style {})
+           (if color
+             {:background (cell->piece-color c)}
+             {:background (cell->background c)})))}])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Center Panel
@@ -87,7 +91,7 @@
       {:style {:flex "1"}}
       (when gameover? [gameover])
 
-      ^{:key "matrix"} [matrix]
+      ^{:key "matrix"} [matrix game-opts]
 
       (when gameover? [restart game-opts])]]))
 
@@ -124,12 +128,18 @@
 ;; Piece Queue
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn piece-queue [{:keys [name]}]
+(defn piece-queue [{:keys [name cell-style]}]
   (let [preview-grids @(rf/subscribe [::puyo.subs/preview-grids name])]
     (grid.views/piece-list
       {:label       "Queue"
        :piece-grids preview-grids
-       :cell->style (fn [c] {:background (cell->piece-color c)})})))
+       :style       {:justify-content "space-between"
+                     :flex-direction  "row"}
+       :cell->style
+       (fn [c]
+         (merge
+           (or cell-style {})
+           {:background (cell->piece-color c)}))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Held Piece
@@ -141,16 +151,18 @@
         hold-key  (first hold-keys)]
     (str (if any-held? "Swap (" "Hold (") hold-key ")")))
 
-(defn held-piece [{:keys [name]}]
+(defn held-piece [{:keys [name cell-style]}]
   (let [held-grid @(rf/subscribe [::puyo.subs/held-grid name])]
     (grid.views/piece-list
       {:label       (hold-string name)
        :piece-grids [held-grid]
        :cell->style
        (fn [{:keys [color] :as c}]
-         (if color
-           {:background (cell->piece-color c)}
-           {:background "transparent"}))})))
+         (merge
+           (or cell-style {})
+           (if color
+             {:background (cell->piece-color c)}
+             {:background "transparent"})))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Right panel
@@ -218,10 +230,11 @@
        black 67px, black 69px, transparent 69px), 64px"))
 
 (def page-game-defaults
-  {:name      :default
-   :game-grid {:entry-cell {:x 3 :y -1}
-               :height     12
-               :width      8}})
+  {:name       :default
+   :cell-style {:width "20px" :height "20px"}
+   :game-grid  {:entry-cell {:x 3 :y -1}
+                :height     16
+                :width      8}})
 
 (defn page
   ([] (page {}))

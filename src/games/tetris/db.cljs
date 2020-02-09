@@ -99,7 +99,7 @@
    :hold       {:label "Hold"
                 :keys  (set ["space"])
                 :event [:games.tetris.events/hold-and-swap-piece name]}
-   :rotate     {:label "Rotate Piece"
+   :rotate     {:label "Rotate"
                 :keys  (set ["up" "k" "w"])
                 :event [:games.tetris.events/rotate-piece name]}
    :pause      {:label "Pause"
