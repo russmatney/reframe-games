@@ -12,6 +12,7 @@
    :yellow
    :blue])
 
+;; TODO come off the db, or operate over passed colors or the db itself
 (defn build-piece-fn []
   (let [colorA (rand-nth colors)
         colorB (rand-nth colors)]
@@ -66,7 +67,7 @@
   "Creates an initial puyo game state."
   ([] (initial-db {:name :default}))
 
-  ([{:keys [name grid] :as game-opts}]
+  ([{:keys [name grid tick-timeout] :as game-opts}]
    {:name      name
     :game-opts game-opts
 
@@ -83,7 +84,7 @@
     ;; game logic
     :current-view      :game
     :group-size        4 ;; number of puyos in a group to be removed
-    :tick-timeout      300
+    :tick-timeout      tick-timeout
     :paused?           false
     :gameover?         false
     :waiting-for-fall? false

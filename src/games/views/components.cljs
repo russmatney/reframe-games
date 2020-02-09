@@ -24,15 +24,16 @@
 
 (defn widget
   "A div with a 'vget-itude"
-  ([{:keys [label subhead value style] :as args} & children]
+  ([{:keys [label subhead value class style] :as args} & children]
    (let [args (-> args ;; quick and dirty - could clean up
                   (dissoc :label)
                   (dissoc :subhead)
                   (dissoc :value)
+                  (dissoc :class)
                   (dissoc :style))]
      [:div
       (merge
-        {:class "nes-container is-dark"
+        {:class (str "nes-container is-dark " class)
          :style
          (merge
            {:display         "flex"

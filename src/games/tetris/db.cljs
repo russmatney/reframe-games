@@ -127,7 +127,7 @@
   "Creates an initial tetris game-state."
   ([] (initial-db {:name :default}))
 
-  ([{:keys [name grid] :as game-opts}]
+  ([{:keys [name grid tick-timeout] :as game-opts}]
    {:name      name
     :game-opts game-opts
 
@@ -142,7 +142,7 @@
         grid))
 
     ;; game logic
-    :tick-timeout 500
+    :tick-timeout tick-timeout
     :paused?      false
     :gameover?    false
     :current-view :game

@@ -14,15 +14,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def selectable-games
+  ;; TODO specify easier pieces, fewer colors
   [{:label     "Tetris"
     :on-click  #(rf/dispatch [::events/select-game :tetris])
     :component [tetris.views/mini-game
-                {:grid         {:height 4 :width 5 :entry-cell {:x 2 :y -1}}
+                {:grid         {:height 10 :width 5 :entry-cell {:x 2 :y -1}}
                  :tick-timeout 500}]}
    {:label     "Puyo"
     :on-click  #(rf/dispatch [::events/select-game :puyo])
     :component [puyo.views/mini-game
-                {:grid         {:height 4 :width 4 :entry-cell {:x 2 :y -1}}
+                {:grid         {:height 10 :width 5 :entry-cell {:x 2 :y -1}}
                  :tick-timeout 500}]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -32,10 +33,11 @@
 (defn selection
   [{:keys [label on-click component]}]
   [widget
-   {:on-click on-click
+   {:class    "selection"
+    :on-click on-click
     :label    label
     :style    {:flex "1"}}
-   [:div.select-view
+   [:div
     {:style
      {:flex "1"}}
     component]])
@@ -54,6 +56,7 @@
 ;; Expectations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO support this copy well enough to include
 (defn expectations
   "TODO fade-in effect, maybe on the widget api?"
   []
@@ -61,7 +64,7 @@
    {
     :style   {:flex "1"}
     :label   "Expectations"
-    :subhead [:ul
+    :subhead [:ul {:style {:list-style "none"}}
               [:li "Move with mouse*, arrow keys, wasd, or vim bindings"]
               [:li "Enter, Click, or Score to choose."]
               [:li "*Mouse not yet implemented*"]]}])
@@ -102,5 +105,5 @@
              :height         "100%"
              :width          "100%"}}
     [header]
-    [expectations]
+    ;; [expectations]
     [selections]]])

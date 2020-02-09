@@ -14,12 +14,20 @@
 ;; Grid
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def board-black "#212529")
+
 (defn matrix
   "Returns the rows of cells."
   ([] [matrix {:name :default}])
   ([{:keys [name]}]
    (let [grid @(rf/subscribe [::tetris.subs/game-grid name])]
-     (grid.views/matrix grid {:cell->style :style}))))
+     (grid.views/matrix
+       grid
+       {:cell->style
+        (fn [c]
+          (if (:style c)
+            (:style c)
+            {:background board-black}))}))))
 
 (defn center-panel []
   (let [gameover? @(rf/subscribe [::tetris.subs/gameover?])]
