@@ -85,7 +85,8 @@ add garden, herb, css live-reload
 or shows about content
 ****** [ ] remove about from both games
 ***** [ ] ensure all puyo features (score?)
-***** [ ] restore proper board sizes in all screens
+***** [ ] set proper board sizes in all screens
+***** [ ] set proper cell sizes in all screens
 ***** [ ] restore tetris controls
 **** [ ] reach goals
 ***** [ ] selected game with keyboard controls

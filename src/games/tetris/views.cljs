@@ -148,10 +148,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def mini-game-defaults
-  {:name :default
-   :grid {:entry-cell {:x 1 :y 0}
-          :height     8
-          :width      5}})
+  {:name      :default
+   :game-grid {:entry-cell {:x 1 :y 0}
+               :height     8
+               :width      5}})
 
 
 (defn mini-game

@@ -207,10 +207,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def mini-game-defaults
-  {:name :default
-   :grid {:entry-cell {:x 1 :y 0}
-          :height     8
-          :width      4}})
+  {:name      :default
+   :game-grid {:entry-cell {:x 1 :y 0}
+               :height     8
+               :width      4}})
 
 (defn mini-game
   "Intended as a div.
@@ -239,10 +239,10 @@
        black 67px, black 69px, transparent 69px), 64px"))
 
 (def page-game-defaults
-  {:name :default
-   :grid {:entry-cell {:x 1 :y 0}
-          :height     8
-          :width      4}})
+  {:name      :default
+   :game-grid {:entry-cell {:x 1 :y 0}
+               :height     8
+               :width      4}})
 
 (defn page
   ([] (page {}))

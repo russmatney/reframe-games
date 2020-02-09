@@ -18,12 +18,12 @@
   [{:label     "Tetris"
     :on-click  #(rf/dispatch [::events/select-game :tetris])
     :component [tetris.views/mini-game
-                {:grid         {:height 10 :width 5 :entry-cell {:x 2 :y -1}}
+                {:game-grid    {:height 10 :width 5 :entry-cell {:x 2 :y -1}}
                  :tick-timeout 500}]}
    {:label     "Puyo"
     :on-click  #(rf/dispatch [::events/select-game :puyo])
     :component [puyo.views/mini-game
-                {:grid         {:height 10 :width 5 :entry-cell {:x 2 :y -1}}
+                {:game-grid    {:height 10 :width 5 :entry-cell {:x 2 :y -1}}
                  :tick-timeout 500}]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

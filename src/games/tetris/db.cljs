@@ -123,57 +123,62 @@
                                   :width      4
                                   :entry-cell {:x 1 :y 1}}))
 
+(def defaults
+  {:tick-timeout 500})
+
 (defn initial-db
   "Creates an initial tetris game-state."
   ([] (initial-db {:name :default}))
 
-  ([{:keys [name grid tick-timeout] :as game-opts}]
-   {:name      name
-    :game-opts game-opts
+  ([game-opts]
+   (let [{:keys [name game-grid tick-timeout] :as game-opts}
+         (merge defaults game-opts)]
+     {:name      name
+      :game-opts game-opts
 
-    ;; game matrix
-    :game-grid
-    (grid/build-grid
-      (merge
-        {:height       10
-         :width        10
-         :phantom-rows 2
-         :entry-cell   {:x 5 :y -1}}
-        grid))
+      ;; game matrix
+      :game-grid
+      (grid/build-grid
+        (merge
+          {:height       10
+           :width        10
+           :phantom-rows 2
+           :entry-cell   {:x 5 :y -1}}
+          game-grid))
 
-    ;; game logic
-    :tick-timeout tick-timeout
-    :paused?      false
-    :gameover?    false
-    :current-view :game
+      ;; game logic
+      :tick-timeout tick-timeout
+      :paused?      false
+      :gameover?    false
+      :current-view :game
 
-    ;; queue
-    :piece-queue       (shuffle allowed-shape-fns)
-    :min-queue-size    5
-    :allowed-shape-fns allowed-shape-fns
-    :preview-grids     (repeat 3 piece-grid)
+      ;; queue
+      :piece-queue       (shuffle allowed-shape-fns)
+      :min-queue-size    5
+      :allowed-shape-fns allowed-shape-fns
+      :preview-grids     (repeat 3 piece-grid)
 
-    ;; controls
-    :controls (initial-controls game-opts)
+      ;; controls
+      :controls (initial-controls game-opts)
 
-    ;; hold/swap
-    :falling-shape-fn nil
-    :held-shape-fn    nil
-    :held-grid        piece-grid
-    :hold-lock        false
+      ;; hold/swap
+      :falling-shape-fn nil
+      :held-shape-fn    nil
+      :held-grid        piece-grid
+      :hold-lock        false
 
-    ;; timer
-    :time      0
-    :timer-inc 100
+      ;; timer
+      :time      0
+      :timer-inc 100
 
-    ;; level/score
-    :level                1
-    :rows-per-level       5
-    :rows-cleared         0
-    :pieces-played        0
-    :score                0
-    :score-per-row-clear  10
-    :rows-in-combo        0
-    :last-combo-piece-num nil
-    }))
+      ;; level/score
+      :level                1
+      :rows-per-level       5
+      :rows-cleared         0
+      :pieces-played        0
+      :score                0
+      :score-per-row-clear  10
+      :rows-in-combo        0
+      :last-combo-piece-num nil
+      })))
 
