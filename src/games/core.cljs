@@ -7,8 +7,6 @@
    [games.controls.events :as controls.events]
    [re-frame.core :as rf]))
 
-(goog-define GAME "all")
-
 (defn dev-setup []
   (enable-console-print!)
   (println "dev mode"))

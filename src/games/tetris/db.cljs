@@ -6,80 +6,69 @@
 ;; Piece Shapes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def shapes
+  [{:k     :square
+    :cells [{:x 1 :y 1} {:x 1} {:y 1} {}]}
+   {:k     :line
+    :cells [{:x 2} {:x 1} {:anchor true} {:x -1}]}
+   {:k     :t
+    :cells [{:y -1} {:x 1} {} {:x 1}]}
+   {:k     :z
+    :cells [{:x -1 :y -1} {:x 1} {:anchor true} {:x -1}]}
+   {:k     :s
+    :cells [{:x 1 :y -1} {:y 1} {:anchor true} {:x -1}]}
+   {:k     :r
+    :cells [{:x -1 :y -1} {:x 1} {:anchor true} {:x -1}]}
+   {:k     :l
+    :cells [{:x -1 :y -1} {:x 1} {:anchor true} {:y -1}]}])
 
-(defn single-cell-shape [entry-cell]
-  [entry-cell])
+(def shapes-map
+  "The above `shapes` as a map by its `:key`"
+  (into {} (map (fn [{k :k :as s}] [k s]) shapes)))
+
+(defn cell->props [shape]
+  (case (:k shape)
+    :line   {:color :light-blue}
+    :square {:color :yellow}
+    :l      {:color :orange}
+    :r      {:color :blue}
+    :s      {:color :red}
+    :z      {:color :red}
+    :t      {:aka   #{"mr. t"}
+             :color :magenta}))
+
+(defn cell->style [shape]
+  (case (:k shape)
+    :line   {:background "#6EBFF5"}
+    :square {:background "rgb(247,213,29)"}
+    :l      {:background "rgb(146,204,65)"}
+    :r      {:background "#209CEE"}
+    :s      {:background "#FE493C"}
+    :z      {:background "rgb(231,110,85)"}
+    :t      {:background "#B564D4"}
+    nil     (println "shape missing" shape)))
 
 (defn relative [{x0 :x y0 :y} {:keys [x y] :as cell}]
   (-> cell
       (assoc :x (+ x0 x))
       (assoc :y (+ y0 y))))
 
-;; TODO refactor style/color into view?
-(defn line-shape [ec]
-  (let [style {:background "#6ebff5"}] ;; light blue
-    (map #(assoc % :style style)
-         [(relative ec {:x 2})
-          (relative ec {:x 1})
-          (assoc ec :anchor true)
-          (relative ec {:x -1})])))
+(defn shape->ec->cell
+  [{:keys [cells] :as shape}]
+  (let [style (cell->style shape)
+        props (cell->props shape)]
+    (fn [ec]
+      (map (comp
+             #(assoc % :props props)
+             #(assoc % :style style)
+             #(relative ec %))
+           cells))))
 
-(defn t-shape [ec]
-  (let [style {:background "#B564D4"}] ;; magenta
-    (map #(assoc % :style style)
-         [(relative ec {:y -1})
-          (relative ec {:x -1})
-          (relative ec {:x 1})
-          (assoc ec :anchor true)])))
-
-(defn z-shape [ec]
-  (let [style {:background "rgb(231,110,85)"}] ;; orange/red
-    (map #(assoc % :style style)
-         [(relative ec {:y -1})
-          (relative ec {:y -1 :x -1})
-          (relative ec {:x 1})
-          (assoc ec :anchor true)])))
-
-(defn s-shape [ec]
-  (let [style {:background "#FE493C"}] ;; red
-    (map #(assoc % :style style)
-         [(relative ec {:y -1})
-          (relative ec {:y -1 :x 1})
-          (relative ec {:x -1})
-          (assoc ec :anchor true)])))
-
-(defn r-shape [ec]
-  (let [style {:background "#209CEE"}] ;; blue
-    (map #(assoc % :style style)
-         [(relative ec {:x -1 :y -1})
-          (relative ec {:x -1})
-          (relative ec {:x 1})
-          (assoc ec :anchor true)])))
-
-(defn l-shape [ec]
-  (let [style {:background "rgb(146,204,65)"}] ;; orange coral
-    (map #(assoc % :style style)
-         [(relative ec {:x 1 :y -1})
-          (relative ec {:x -1})
-          (relative ec {:x 1})
-          (assoc ec :anchor true)])))
-
-(defn square-shape [ec]
-  (let [style {:background "rgb(247,213,29)"}] ;; yellow
-    (map #(assoc % :style style)
-         [(relative ec {:y -1})
-          (relative ec {:x 1})
-          (relative ec {:y -1 :x 1})
-          (assoc ec :anchor true)])))
+(defn single-cell-shape [entry-cell]
+  [entry-cell])
 
 (def allowed-shape-fns
-  [t-shape
-   z-shape
-   s-shape
-   r-shape
-   l-shape
-   square-shape
-   line-shape])
+  (map shape->ec->cell shapes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Initial DB
@@ -156,8 +145,7 @@
       :hold-lock        false
 
       ;; timer
-      :time      0
-      :timer-inc 100
+      :time 0
 
       ;; level/score
       :level                1

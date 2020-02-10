@@ -16,28 +16,8 @@
            :modules         {:main {:entries [games.core]}}
            :output-dir      "public/js/compiled"
            :asset-path      "/js/compiled"
-           :closure-defines {games.core/GAME "all"}
+           :closure-defines {}
            :devtools        {:http-root   "public"
                              :http-port   2989
                              :loader-mode :eval
-                             :after-load  games.core/mount-root}}
-
-          :tetris {:target          :browser
-                   :modules         {:main {:entries [games.core]}}
-                   :output-dir      "public/js/compiled"
-                   :asset-path      "/js/compiled"
-                   :closure-defines {games.core/GAME "tetris"}
-                   :devtools        {:http-root   "public"
-                                     :http-port   2989
-                                     :loader-mode :eval
-                                     :after-load  games.core/mount-root}}
-
-          :puyo {:target          :browser
-                 :modules         {:main {:entries [games.core]}}
-                 :output-dir      "public/js/compiled"
-                 :asset-path      "/js/compiled"
-                 :closure-defines {games.core/GAME puyo}
-                 :devtools        {:http-root   "public"
-                                   :http-port   2989
-                                   :loader-mode :eval
-                                   :after-load  games.core/mount-root}}}}
+                             :after-load  games.core/mount-root}}}}
