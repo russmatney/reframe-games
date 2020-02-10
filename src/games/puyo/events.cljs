@@ -4,6 +4,7 @@
    [games.events.interceptors :refer [game-db-interceptor]]
    [games.puyo.db :as puyo.db]
    [games.puyo.core :as puyo]
+   [games.pause.core :as pause]
    [games.controls.events :as controls.events]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,10 +46,10 @@
 
       ;; TODO consider a gameover, score, piece-played etc event model
       (if (:gameover? db)
-        {:clear-timeouts [{:id ::tick}
+        {:clear-timeouts [{:id ::game-tick}
                           {:id ::game-timer}]}
         {:db      db
-         :timeout {:id    ::tick
+         :timeout {:id    ::game-tick
                    :event [::game-tick game-opts]
                    :time  tick-timeout}}))))
 
@@ -154,43 +155,15 @@
 ;; Pause
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (games.pause/reg-events
-;;   {:registry       ::puyo.db/db
-;;    :clear-timeouts [{:id ::tick}
-;;                     {:id ::game-timer}]
-;;    :on-resume      {:dispatch-n [[::game-tick game-opts]
-;;                                  [::game-timer game-opts]]}})
+(pause/reg-events
+  {;; TODO these could just be a namespace and convention?
+   ;; TODO not sure how this ties to controls - but maybe pause could own this
+   :pause-event  ::pause-game
+   :resume-event ::resume-game
+   :toggle-event ::toggle-pause
+   ;; TODO rename this key. do i really need this? could just be :game-dbs ?
+   :game-map-key ::puyo.db/db
 
-
-;; TODO dry up pause logic?
-;; pauses, ignoring whatever the current state is
-(rf/reg-event-fx
-  ::pause-game
-  [(game-db-interceptor ::puyo.db/db)]
-  (fn [{:keys [db]} _game-opts]
-    {:db             (assoc db :paused? true)
-     :clear-timeouts [{:id ::tick}
-                      {:id ::game-timer}]}))
-
-;; resumes the game
-(rf/reg-event-fx
-  ::resume-game
-  [(game-db-interceptor ::puyo.db/db)]
-  (fn [{:keys [db]} game-opts]
-    (let [updated-db (assoc db :paused? false)]
-      {:db         updated-db
-       :dispatch-n [[::game-tick game-opts]
-                    [::game-timer game-opts]]})))
-
-(rf/reg-event-fx
-  ::toggle-pause
-  [(game-db-interceptor ::puyo.db/db)]
-  ;; NOTE that events coming from keybds have extra event args,
-  ;; so the interceptor passes it as a list rather than game-opts directly
-  (fn [{:keys [db]} [game-opts]]
-    (if-not (:gameover? db)
-      (if (:paused? db)
-        ;; unpause
-        {:dispatch [::resume-game game-opts]}
-        ;; pause
-        {:dispatch [::pause-game game-opts]}))))
+   ;; NOTE these keys are used elsewhere in these events
+   :timers [(pause/game-timer ::game-timer)
+            (pause/game-timer ::game-tick)]})
