@@ -139,7 +139,4 @@
      {:name      name
       :game-opts game-opts
       :game-grid (grid/build-grid game-grid)
-      :controls  (controls-game-controls game-opts)
-
-      ;; modes
-      :no-walls? true})))
+      :controls  (controls-game-controls game-opts)})))

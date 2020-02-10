@@ -60,9 +60,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn move-piece
-  [{:keys [game-grid] :as db} direction]
+  [{:keys [game-grid game-opts] :as db} direction]
   (let [falling-cells (get-falling-cells db)
-        move-f        #(grid/move-cell-coords % direction)
+        move-f        #(grid/move-cell-coords
+                         % direction
+                         (merge game-opts {:grid game-grid}))
 
         updated-grid
         (grid/move-cells game-grid

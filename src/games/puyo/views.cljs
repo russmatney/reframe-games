@@ -135,16 +135,17 @@
 
 (defn piece-queue [{:keys [cell-style] :as game-opts}]
   (let [preview-grids @(rf/subscribe [::puyo.subs/preview-grids game-opts])]
-    (grid.views/piece-list
-      {:label       "Queue"
-       :piece-grids preview-grids
-       :style       {:justify-content "space-between"
-                     :flex-direction  "row"}
-       :cell->style
-       (fn [c]
-         (merge
-           (or cell-style {})
-           {:background (cell->piece-color c)}))})))
+    ^{:key "piece-queue"}
+    [grid.views/piece-list
+     {:label       "Queue"
+      :piece-grids preview-grids
+      :style       {:justify-content "space-between"
+                    :flex-direction  "row"}
+      :cell->style
+      (fn [c]
+        (merge
+          (or cell-style {})
+          {:background (cell->piece-color c)}))}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Held Piece
@@ -235,11 +236,12 @@
        black 67px, black 69px, transparent 69px), 64px"))
 
 (def page-game-defaults
-  {:name       :default
-   :cell-style {:width "20px" :height "20px"}
-   :game-grid  {:entry-cell {:x 3 :y -1}
-                :height     16
-                :width      8}})
+  {:name        :default
+   :cell-style  {:width "20px" :height "20px"}
+   :no-walls-x? true
+   :game-grid   {:entry-cell {:x 3 :y -1}
+                 :height     16
+                 :width      8}})
 
 (defn page
   ([] (page {}))

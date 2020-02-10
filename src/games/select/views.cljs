@@ -20,6 +20,7 @@
                 {:game-grid       {:height 10 :width 5 :entry-cell {:x 2 :y -1}}
                  :tick-timeout    500
                  :on-gameover     :restart
+                 :no-walls-x?     true
                  :ignore-controls true}]}
 
    {:label     "Puyo"
@@ -28,6 +29,7 @@
                 {:game-grid       {:height 10 :width 5 :entry-cell {:x 2 :y -1}}
                  :tick-timeout    500
                  :on-gameover     :restart
+                 :no-walls-x?     true
                  :ignore-controls true}]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

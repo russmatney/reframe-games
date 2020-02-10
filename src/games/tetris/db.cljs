@@ -7,11 +7,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def shapes
-  [{:k :square :cells [{:x 1 :y 1} {:x 1} {:y 1} {}]}
+  [{:k :square :cells [{:x 1 :y -1} {:x 1} {:y -1} {}]}
    {:k :line :cells [{:x 2} {:x 1} {:anchor true} {:x -1}]}
-   {:k :t :cells [{:y -1} {:x 1} {} {:x 1 :y 1}]}
+   {:k :t :cells [{:x -1} {:x 1} {} {:y -1}]}
    {:k :z :cells [{:x -1 :y -1} {:x 1} {:anchor true} {:x -1}]}
-   {:k :s :cells [{:x 1 :y -1} {:y 1} {:anchor true} {:x -1}]}
+   {:k :s :cells [{:x 1 :y -1} {:y -1} {:anchor true} {:x -1}]}
    {:k :r :cells [{:x -1 :y -1} {:y -1} {:anchor true} {:x -1}]}
    {:k :l :cells [{:x -1 :y -1} {:x 1} {:anchor true} {:y -1}]}])
 
@@ -21,14 +21,15 @@
 
 (defn cell->props [shape]
   (case (:k shape)
-    :line   {:color :light-blue}
-    :square {:color :yellow}
-    :l      {:color :orange}
-    :r      {:color :blue}
-    :s      {:color :red}
-    :z      {:color :red}
+    :line   {:color :light-blue :type :line}
+    :square {:color :yellow :type :square}
+    :l      {:color :orange :type :l}
+    :r      {:color :blue :type :r}
+    :s      {:color :red :type :s}
+    :z      {:color :red :type :z}
     :t      {:aka   #{"mr. t"}
-             :color :magenta}))
+             :color :magenta
+             :type  :t}))
 
 ;; TODO move to tetris views
 (defn cell->style [shape]

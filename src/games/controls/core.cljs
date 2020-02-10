@@ -83,11 +83,10 @@
 
 (defn move-piece
   "Gathers `:moveable?` cells and moves them with `grid/move-cells`"
-  [{:keys [game-grid] :as db} dir]
+  [{:keys [game-grid game-opts] :as db} dir]
   (let [move-f         #(grid/move-cell-coords
                           % dir
-                          {:grid      game-grid
-                           :no-walls? (:no-walls? db)})
+                          (merge game-opts {:grid game-grid}))
         moveable-cells (grid/get-cells game-grid :moveable?)
         updated-grid   (grid/move-cells
                          game-grid

@@ -4,6 +4,10 @@
 
 (def border-color "#484848")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn cell
   [{c     :cell
     style :style
@@ -13,7 +17,6 @@
         style               (or style {})
         width               (if debug "260px" "40px")
         height              (if debug "120px" "40px")]
-    ^{:key (str x y)}
     [:div
      {:style
       (merge
@@ -29,7 +32,9 @@
      (when cell-comp
        (cell-comp c))]))
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Matrix
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn matrix
   "Displays the game matrix itself, using the passed grid-db and cell->style
@@ -55,27 +60,32 @@
         :justify-content "center"
         :flex            "1"}}
       (for [[i row] (map-indexed vector grid)]
-        ^{:key (str i)}
+        ^{:key i}
         [:div
          {:style
           {:display "flex"}}
          (for [{:keys [x y] :as c} row]
            (if ->cell
-             ^{:key (str x y)}
-             (->cell c)
-             ^{:key (str x y)}
+             ^{:key (str "custom-" x y)} (->cell c)
+
+             ^{:key (str "cell-" x y)}
              [cell
               {:game-opts game-opts
                :cell      c
                :style     (if cell->style (cell->style c) {})}]))])])))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Piece-list (Matricies)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn piece-list
   "Displays a centered list of pieces below a label."
-  ([] (piece-list {}))
+  ([] [piece-list {}])
   ([{:keys [label style piece-grids cell->style]}]
    [widget
     {:label label
      :style {:flex "1"}}
+    ^{:key (str "piece-list-container" label)}
     [:div
      {:style
       (merge
@@ -85,7 +95,7 @@
          :width           "100%"}
         style)}
      (for [[i g] (map-indexed vector piece-grids)]
-       ^{:key (str i)}
+       ^{:key (str "matrix-container" i)}
        [:div
         {:style
          {:display       "flex"

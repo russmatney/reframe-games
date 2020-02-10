@@ -88,8 +88,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def mini-game-defaults
-  {:name  :controls-mini-game
-   :debug false})
+  {:name      :controls-mini-game
+   :debug     false
+   :no-walls? true})
 
 ;; Macro for defn that handles zero arity with defaults/merging?
 (defn mini-game

@@ -44,11 +44,16 @@
            style)}
         args)
 
-      (when label [display-label label])
+      (when label
+        ^{:key (str "display-label-" label)}
+        [display-label label])
 
-      (when subhead subhead)
+      (when subhead
+        ^{:key (str "subhead-" label)}
+        subhead)
 
       (when value
+        ^{:key (str "value-" value)}
         [:h2
          {:style {:margin-top "12px"
                   :opacity    "0.95"}}

@@ -187,6 +187,7 @@
         :background-size  "64px 128px"
         :padding          "24px"}}
 
+
       ^{:key "left"}
       [left-panel game-opts]
 
