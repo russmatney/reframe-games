@@ -17,11 +17,12 @@
   (fn [_cofx game-opts]
     {:db         (puyo.db/initial-db game-opts)
      :dispatch-n [[::set-controls game-opts]
-                  [::game-tick game-opts]
-                  [::game-timer game-opts]
+                  [::step game-opts]
+                  [::pause/game-timer game-opts]
                   ]}))
 
 
+;; TODO move to core
 (defn should-advance-level?
   [{:keys [level groups-per-level groups-cleared]}]
   (>= groups-cleared (* level groups-per-level)))
@@ -31,39 +32,28 @@
   [db]
   (-> db
       (update :level inc)
-      (update :tick-timeout #(.floor js/Math (* % 0.9)))))
+      (update :step-timeout #(.floor js/Math (* % 0.9)))))
 
 (rf/reg-event-fx
-  ::game-tick
+  ::step
   [(game-db-interceptor ::puyo.db/db)]
   (fn [{:keys [db]} game-opts]
     (let [db (puyo/step db game-opts)
 
-          {:keys [tick-timeout] :as db}
+          ;; why is this out here vs in core?
+          {:keys [step-timeout] :as db}
           (if (should-advance-level? db)
             (advance-level db)
             db)]
 
       ;; TODO consider a gameover, score, piece-played etc event model
       (if (:gameover? db)
-        {:clear-timeouts [{:id ::game-tick}
-                          {:id ::game-timer}]}
+        {:clear-timeouts [{:id ::step}
+                          {:id ::pause/game-timer}]}
         {:db      db
-         :timeout {:id    ::game-tick
-                   :event [::game-tick game-opts]
-                   :time  tick-timeout}}))))
-
-(rf/reg-event-fx
-  ::game-timer
-  [(game-db-interceptor ::puyo.db/db)]
-  (fn [{:keys [db]} game-opts]
-    (let [{:keys [timer-inc]} db]
-      {:db (update db :time #(+ % timer-inc))
-       :timeout
-       ;; TODO update id to use game name
-       {:id    ::game-timer
-        :event [::game-timer game-opts]
-        :time  timer-inc}})))
+         :timeout {:id    ::step
+                   :event [::step game-opts]
+                   :time  step-timeout}}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Set Controls
@@ -155,15 +145,8 @@
 ;; Pause
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(pause/reg-events
-  {;; TODO these could just be a namespace and convention?
-   ;; TODO not sure how this ties to controls - but maybe pause could own this
-   :pause-event  ::pause-game
-   :resume-event ::resume-game
-   :toggle-event ::toggle-pause
-   ;; TODO rename this key. do i really need this? could just be :game-dbs ?
-   :game-map-key ::puyo.db/db
 
-   ;; NOTE these keys are used elsewhere in these events
-   :timers [(pause/game-timer ::game-timer)
-            (pause/game-timer ::game-tick)]})
+;; register the pause events
+(pause/reg-pause-events
+  {:game-map-key ::puyo.db/db
+   :timers       [(pause/make-timer ::step)]})

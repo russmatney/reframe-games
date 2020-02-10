@@ -44,14 +44,14 @@
                 :event [:games.puyo.events/rotate-piece game-opts]}
    :pause      {:label "Pause"
                 :keys  (set ["enter"])
-                :event [:games.puyo.events/toggle-pause game-opts]}})
+                :event [:games.pause.core/toggle game-opts]}})
 
 (def piece-grid (grid/build-grid {:height     2
                                   :width      1
                                   :entry-cell {:x 0 :y 1}}))
 
 (def defaults
-  {:tick-timeout    500
+  {:step-timeout    500
    :ignore-controls false})
 
 (defn initial-db
@@ -59,7 +59,7 @@
   ([] (initial-db {:name :default}))
 
   ([game-opts]
-   (let [{:keys [name game-grid tick-timeout ignore-controls] :as game-opts}
+   (let [{:keys [name game-grid step-timeout ignore-controls] :as game-opts}
          (merge defaults game-opts)]
      {:name      name
       :game-opts game-opts
@@ -76,11 +76,14 @@
 
       ;; game logic
       :group-size        4 ;; number of puyos in a group to be removed
-      :tick-timeout      tick-timeout
+      :step-timeout      step-timeout
       :paused?           false
       :gameover?         false
       :waiting-for-fall? false
       :current-piece-num 0
+
+      ;; timer
+      :time 0
 
       ;; queue
       :piece-queue    (repeatedly 5 build-piece-fn)
@@ -90,10 +93,6 @@
       ;; controls
       :controls        (initial-controls game-opts)
       :ignore-controls ignore-controls
-
-      ;; timer
-      :time      0
-      :timer-inc 100
 
       ;; hold/swap
       :falling-shape-fn nil

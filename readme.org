@@ -10,29 +10,6 @@ Tetris clone. Check out the live game at [[https://russmatney.itch.io/tetruss][r
 The [[https://tetris.wiki][Tetris Wiki]] has some great Tetris related resources.
 
 **** Ideas, Version 2, and Punted Features/Issues
-- [ ] mobile touch/gesture support
-- [ ] customizable controls
-- [ ] rotation styles on rows
-- [ ] bullet mode: size-3 pieces, 10x speed
-- [ ] draw your own piece
-- [ ] build up a puzzle/art piece
-- [ ] record and show replay/highlights
-- [ ] shared high-score + leaderboard
-- [ ] configurable pieces and board size
-- [ ] bonus for clearing the screen completely
-- [ ] controls: instant-drop
-- [ ] high-score, custom controls preserved across re-fresh
-- [ ] rows-to-next-level visual indication
-- [ ] refactor colors into view, rather than attached to cells
-- [ ] 'doom' face - show emotion during left/right/rotate/score
-- [ ] Add achievements
-- [ ] poster-ized level clears (gunn style)
-  include current game state metadata
-- [ ] display character commentary per piece played
-- [ ] rotate in two directions
-- [ ] show 'ghost' piece (for fast drop)
-- [ ] mobile detection and 'alert'?
-- [ ] pause doesn't always stop the clock?
 **** Build and Deploy
 ***** Building the release
 #+BEGIN_SRC sh
@@ -64,7 +41,7 @@ Build as described above, then zip it up.
 #+BEGIN_SRC sh
 zip -r reframe-games.zip public
 #+END_SRC
-* Mean-bean Machine clone
+* [X] Mean-bean Machine clone
 **** V1
 ***** [X] engine basics
 ***** [X] controls: hold
@@ -74,7 +51,7 @@ zip -r reframe-games.zip public
 ***** [X] presentation: queue
 ***** [X] presentation: score
 ***** [X] presentation: controls
-**** [ ] ship mvp
+**** [X] ship mvp
 ***** [X] highlight selected game with mouse
 add garden, herb, css live-reload
 ***** [X] remove highlight from puyo background
@@ -91,7 +68,7 @@ or shows about content
 ***** [X] gameover enabled in page, not in mini player
 ***** [X] ensure all puyo features (score?)
 ***** [X] expose controls, about views on main menu
-***** [ ] build and post update on itch!
+***** [X] build and post update on itch!
 * misc todos
 **** [X] move entrypoints into grids
 **** [X] clean up 'widget' api
@@ -119,6 +96,38 @@ redo controls view, maybe just show when paused
 **** [ ] incorporate spin feature
 **** [ ] show combos/rows-to-next-level
 **** [ ] faster tick-timeout while locked falls are happening
+**** [ ] show controls on the board
+**** [ ] mobile touch/gesture support
+**** [ ] customizable controls
+**** [ ] rotation styles on rows
+**** [ ] bullet mode: size-3 pieces, 10x speed
+**** [ ] draw your own piece
+**** [ ] build up a puzzle/art piece
+**** [ ] record and show replay/highlights
+**** [ ] shared high-score + leaderboard
+**** [ ] configurable pieces and board size
+**** [ ] bonus for clearing the screen completely
+**** [ ] controls: instant-drop
+**** [ ] high-score, custom controls preserved across re-fresh
+**** [ ] rows-to-next-level visual indication
+**** [ ] refactor colors into view, rather than attached to cells
+**** [ ] 'doom' face - show emotion during left/right/rotate/score
+**** [ ] Add achievements
+**** [ ] poster-ized level clears (gunn style)
+***** include current game state metadata
+**** [ ] display character commentary per piece played
+**** [ ] rotate in two directions
+**** [ ] show 'ghost' piece (for fast drop)
+**** [ ] mobile detection and 'alert'?
+**** [ ] pause doesn't always stop the clock?
+**** [ ] add a robot to make moves when no one has for a while
+something for leaving it on
+**** [ ] create the menu as the game itself
+**** [ ] send multiple controls events per each - allow for multi-register
+just overwrite for now? or fire both controls? both i think?
+make it easy to register/deregister them.
+**** [ ] create controls page for connecting events and keys
+let the user write the controls/db.cljs
 * Contributing
 My intention for this repository is to build some things from scratch on my
 own - selfishly, I'm somewhat closed-minded to contributions.

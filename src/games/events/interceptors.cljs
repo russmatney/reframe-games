@@ -77,3 +77,24 @@
 
 (comment
   (rf/dispatch [::interceptor-example {:name :default}]))
+
+(defn ->fancy-interceptor
+  "'This thing is just a map.'"
+  [& {:keys [id before after]}]
+  (when true (println "using the fancy interceptor! Good luck!"))
+  (rfi/->interceptor
+    :id     (or id :unnamed)
+    :before before
+    :after  after )
+  )
+
+(comment
+  (def my-fancy-interceptor
+    (->fancy-interceptor
+      :id :something-fancy
+      :before
+      (fn remove-complexity [ctx] ctx)
+      :after
+      (fn add-back-to-context
+        ;; Remember to add to :effects, not :coeffects
+        [ctx] ctx))))

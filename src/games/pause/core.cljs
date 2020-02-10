@@ -3,29 +3,33 @@
    [re-frame.core :as rf]
    [games.events.interceptors :refer [game-db-interceptor]]))
 
-(defn game-timer [id]
+(defn make-timer [id]
   {:id      id
    :->event (fn [gopts] [id gopts])})
 
-(defn reg-events
+(defn reg-pause-events
   "Registers pause events with the passed options.
 
-  Depends on db keys:
+  Reads db keys:
   - :paused?
   - :gameover?
+
+  Sets db keys:
+  - :paused?
+  - :time
 
   Expects `timers` like:
   `[{:id      ::game-tick
      :->event (fn [x] [::game-tick x])}]`
   "
   [{:keys
-    [game-map-key timers
-     ;; TODO remove these passed names in favor namespace+convention
-     pause-event resume-event toggle-event]}]
+    [;; TODO rename this key. do i really need this? could just be :game-dbs ?
+     game-map-key
+     timers]}]
 
   ;; pauses, ignoring whatever the current state is
   (rf/reg-event-fx
-    pause-event
+    ::pause
     [(game-db-interceptor game-map-key)]
     (fn [{:keys [db]} _game-opts]
       {:db             (assoc db :paused? true)
@@ -33,7 +37,7 @@
 
   ;; resumes the game
   (rf/reg-event-fx
-    resume-event
+    ::resume
     [(game-db-interceptor game-map-key)]
     (fn [{:keys [db]} game-opts]
       (let [updated-db (assoc db :paused? false)]
@@ -43,7 +47,7 @@
                         timers))))))
 
   (rf/reg-event-fx
-    toggle-event
+    ::toggle
     [(game-db-interceptor game-map-key)]
     ;; NOTE that events coming from keybds have extra event args,
     ;; so the interceptor passes it as a list rather than game-opts directly
@@ -51,6 +55,19 @@
       (if-not (:gameover? db)
         (if (:paused? db)
           ;; unpause
-          {:dispatch [resume-event game-opts]}
+          {:dispatch [::resume game-opts]}
           ;; pause
-          {:dispatch [pause-event game-opts]})))))
+          {:dispatch [::pause game-opts]}))))
+
+  (rf/reg-event-fx
+    ::game-timer
+    [(game-db-interceptor game-map-key)]
+    (fn [{:keys [db]} game-opts]
+      (let [{:keys [timer-increment]} db
+            timer-increment           (or timer-increment 400)]
+        {:db (update db :time #(+ % timer-increment))
+         :timeout
+         ;; TODO update id to use game name
+         {:id    ::game-timer
+          :event [::game-timer game-opts]
+          :time  timer-increment}}))))
