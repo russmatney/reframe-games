@@ -25,7 +25,7 @@
     :id :game-db-interceptor
     :before (fn game-db-interceptor-before
               [context]
-              (let [name (nth (get-in context [:coeffects :event]) 1)]
+              (let [{:keys [name]} (nth (get-in context [:coeffects :event]) 1)]
                 (-> context
                     ;; set db to the game's db
                     (assoc-in
@@ -40,7 +40,7 @@
                     ;; trim event object
                     (update-in [:coeffects :event]
                                (fn [event]
-                                 (let [trimmed (subvec event 2)]
+                                 (let [trimmed (subvec event 1)]
                                    (if (= 1 (count trimmed))
                                      (first trimmed)
                                      trimmed))))
@@ -50,7 +50,8 @@
                               (get-in context [:coeffects :event])))))
     :after (fn game-db-interceptor-after
              [context]
-             (let [name       (nth (get-in context [:coeffects ::untrimmed-event]) 1)
+             (let [{:keys [name]}
+                   (nth (get-in context [:coeffects ::untrimmed-event]) 1)
                    game-db    (-> context :effects :db)
                    og-db      (-> context :coeffects ::original-db)
                    updated-db (if game-db
@@ -70,15 +71,12 @@
 (rf/reg-event-fx
   ::interceptor-example
   [(game-db-interceptor ::puyo.db/db)]
-  (fn [{:keys [db]} event]
-    (println event)
-    (println (keys db))
-    {:db db}))
+  (fn [{:keys [db]} game-opts]
+    (println game-opts)
+    (println (keys db))))
 
 (comment
-  (rf/dispatch [::interceptor-example :default "other" "nother"])
-  (rf/dispatch [::interceptor-example :default "other"])
-  (rf/dispatch [::interceptor-example :default]))
+  (rf/dispatch [::interceptor-example {:name :default}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
@@ -86,9 +84,9 @@
 
 (rf/reg-event-fx
   ::start-game
-  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
-    {:db         (assoc-in db [::puyo.db/db name]
-                           (puyo.db/initial-db game-opts))
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [_cofx game-opts]
+    {:db         (puyo.db/initial-db game-opts)
      :dispatch-n [[::set-controls game-opts]
                   [::game-tick game-opts]
                   [::game-timer game-opts]
@@ -108,29 +106,30 @@
 
 (rf/reg-event-fx
   ::game-tick
-  (fn [{:keys [db]} [_  {:keys [name] :as game-opts}]]
-    (let [{:keys [gameover?] :as puyo-db} (-> db ::puyo.db/db (get name))
-          puyo-db                         (puyo/step puyo-db game-opts)
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [{:keys [db]} game-opts]
+    (let [db (puyo/step db game-opts)
 
-          {:keys [tick-timeout] :as puyo-db}
-          (if (should-advance-level? puyo-db)
-            (advance-level puyo-db)
-            puyo-db)]
+          {:keys [tick-timeout] :as db}
+          (if (should-advance-level? db)
+            (advance-level db)
+            db)]
 
-      ;; TODO consider a gameover, score, etc event model instead
-      (if gameover?
+      ;; TODO consider a gameover, score, piece-played etc event model
+      (if (:gameover? db)
         {:clear-timeouts [{:id ::tick}
                           {:id ::game-timer}]}
-        {:db      (assoc-in db [::puyo.db/db name] puyo-db)
+        {:db      db
          :timeout {:id    ::tick
                    :event [::game-tick game-opts]
                    :time  tick-timeout}}))))
 
 (rf/reg-event-fx
   ::game-timer
-  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
-    (let [{:keys [timer-inc]} (-> db ::puyo.db/db (get name))]
-      {:db (update-in db [::puyo.db/db name :time] #(+ % timer-inc))
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [{:keys [db]} game-opts]
+    (let [{:keys [timer-inc]} db]
+      {:db (update db :time #(+ % timer-inc))
        :timeout
        ;; TODO update id to use game name
        {:id    ::game-timer
@@ -141,14 +140,14 @@
 ;; Set Controls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO clean up ignore-controls
+;; TODO clean up ignore-controls and general controls usage
 (rf/reg-event-fx
   ::set-controls
-  (fn [{:keys [db]} [_ {:keys [name ignore-controls]}]]
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [{:keys [db]} {:keys [ignore-controls]}]
     (when-not ignore-controls
       {:dispatch
-       [::controls.events/set
-        (-> db ::puyo.db/db (get name) :controls)]})))
+       [::controls.events/set (:controls db)]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move/Rotate piece
@@ -161,18 +160,21 @@
     (not paused?)
     (not fall-lock)))
 
+;; TODO update interceptor to handle this (pass game-opts through kbd events)
 (rf/reg-event-db
   ::move-piece
-  (fn [db [_ name direction]]
-    (if (can-player-move? (-> db ::puyo.db/db (get name)))
-      (update-in db [::puyo.db/db name] #(puyo/move-piece % direction))
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [db [_game-opts direction]]
+    (if (can-player-move? db)
+      (puyo/move-piece db direction)
       db)))
 
 (rf/reg-event-db
   ::rotate-piece
-  (fn [db [_ name]]
-    (if (can-player-move? (-> db ::puyo.db/db (get name)))
-      (update-in db [::puyo.db/db name] #(puyo/rotate-piece %))
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [db [_game-opts]]
+    (if (can-player-move? db)
+      (puyo/rotate-piece db)
       db)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -182,56 +184,42 @@
 ;; TODO dry up hold/swap logic?
 (rf/reg-event-db
   ::hold-and-swap-piece
-  (fn [db [_ name]]
-    ;; if there is a hold, move current hold to front of queue
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [db [_game-opts]]
+    ;; if there is a hold, move current hold to front of piece-queue
     ;; remove current falling piece from board, move it to hold
-    (let [puyo-db       (-> db ::puyo.db/db (get name))
-          held          (:held-shape-fn puyo-db)
-          falling-shape (:falling-shape-fn puyo-db)
-          hold-lock     (:hold-lock puyo-db)
-          paused?       (:paused? puyo-db)
-          puyo-db
-          (if
-              ;; No holding if nothing falling, or if hold-lock in effect
-              (or (not falling-shape)
-                  hold-lock
-                  paused?)
-            puyo-db
-            (cond-> puyo-db
-              ;; prepend queue with held piece
-              ;; TODO prevent quick double tap from stacking the queue here
-              held
-              (update :piece-queue (fn [q]
-                                     (cons held q)))
+    (let [{:keys [held-shape-fn falling-shape-fn hold-lock paused?]} db]
 
-              ;; move falling piece to held piece
-              falling-shape
-              (assoc :held-shape-fn falling-shape)
+      (if ;; if nothing falling or if hold-lock in effect, return db
+          (or (not falling-shape-fn)
+              hold-lock
+              paused?)
+        db
+        (cond-> db
+          ;; prepend queue with held piece
+          held-shape-fn
+          (update :piece-queue (fn [q]
+                                 (cons held-shape-fn q)))
 
-              ;; clear falling piece if there was one
-              falling-shape
-              (assoc :falling-shape-fn nil)
+          falling-shape-fn
+          (->
+            ;; move falling piece to held piece
+            (assoc :held-shape-fn falling-shape-fn)
+            ;; clear falling piece if there was one
+            (assoc :falling-shape-fn nil)
+            ;; clear the falling pieces from the board
+            (puyo/clear-falling-cells)
+            ;; update grid for showing held piece
+            (update :held-grid
+                    #(puyo/add-preview-piece % falling-shape-fn))
 
-              ;; clear the falling pieces from the board
-              falling-shape
-              (puyo/clear-falling-cells)
+            ;; indicate that a piece was held to prevent double-holds
+            (assoc :hold-lock true)
 
-              ;; update grid for showing held piece
-              falling-shape
-              (update :held-grid
-                      #(puyo/add-preview-piece % falling-shape))
-
-              ;; indicate that a piece was held to prevent double-holds
-              falling-shape
-              (assoc :hold-lock true)
-
-              ;; TODO handle this better!
-              ;; decrement current-piece-num (it's about be re-inc in add-new-piece)
-              ;; NOTE that current-piece-num excludes holds to supports combos
-              falling-shape
-              (update :current-piece-num dec)))]
-
-      (assoc-in db [::puyo.db/db name] puyo-db))))
+            ;; TODO handle this better!
+            ;; decrement current-piece-num (it's about be re-inc in add-new-piece)
+            ;; NOTE that current-piece-num excludes holds to supports combos
+            (update :current-piece-num dec)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -242,28 +230,31 @@
 ;; pauses, ignoring whatever the current state is
 (rf/reg-event-fx
   ::pause-game
-  (fn [{:keys [db]} [_ {:keys [name]}]]
-    (let [updated-db (assoc-in db [::puyo.db/db name :paused?] true)]
-      {:db             updated-db
-       :clear-timeouts [{:id ::tick}
-                        {:id ::game-timer}]})))
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [{:keys [db]} _game-opts]
+    {:db             (assoc db :paused? true)
+     :clear-timeouts [{:id ::tick}
+                      {:id ::game-timer}]}))
 
 ;; resumes the game
 (rf/reg-event-fx
   ::resume-game
-  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
-    (let [updated-db (assoc-in db [::puyo.db/db name :paused?] false)]
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [{:keys [db]} game-opts]
+    (let [updated-db (assoc db :paused? false)]
       {:db         updated-db
        :dispatch-n [[::game-tick game-opts]
                     [::game-timer game-opts]]})))
 
 (rf/reg-event-fx
   ::toggle-pause
-  (fn [{:keys [db]} [_ {:keys [name] :as game-opts}]]
-    (let [paused (-> db ::puyo.db/db (get name) :paused?)]
-      (if-not (-> db ::puyo.db/db (get name) :gameover?)
-        (if paused
-          ;; unpause
-          {:dispatch [::resume-game game-opts]}
-          ;; pause
-          {:dispatch [::pause-game game-opts]})))))
+  [(game-db-interceptor ::puyo.db/db)]
+  ;; NOTE that events coming from keybds have extra event args,
+  ;; so the interceptor passes it as a list rather than game-opts directly
+  (fn [{:keys [db]} [game-opts]]
+    (if-not (:gameover? db)
+      (if (:paused? db)
+        ;; unpause
+        {:dispatch [::resume-game game-opts]}
+        ;; pause
+        {:dispatch [::pause-game game-opts]}))))
