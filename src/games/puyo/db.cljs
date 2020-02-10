@@ -44,7 +44,7 @@
                 :event [:games.puyo.events/rotate-piece game-opts]}
    :pause      {:label "Pause"
                 :keys  (set ["enter"])
-                :event [:games.pause.core/toggle game-opts]}})
+                :event [:games.puyo.events/toggle-pause game-opts]}})
 
 (def piece-grid (grid/build-grid {:height     2
                                   :width      1

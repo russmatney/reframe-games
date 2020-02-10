@@ -18,8 +18,7 @@
     {:db         (puyo.db/initial-db game-opts)
      :dispatch-n [[::set-controls game-opts]
                   [::step game-opts]
-                  [::pause/game-timer game-opts]
-                  ]}))
+                  [::game-timer game-opts]]}))
 
 ;; TODO consider a gameover, score, piece-played etc event model
 ;; i.e. pulling the cond step fn out and into re-frame
@@ -31,7 +30,7 @@
       (if (:gameover? db)
         {:db             db
          :clear-timeouts [{:id ::step}
-                          {:id ::pause/game-timer}]}
+                          {:id ::game-timer}]}
         {:db      db
          :timeout {:id    ::step
                    :event [::step game-opts]
@@ -121,5 +120,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (pause/reg-pause-events
-  {:game-map-key ::puyo.db/db
+  {:n            :games.puyo.events
+   :game-map-key ::puyo.db/db
    :timers       [(pause/make-timer ::step)]})

@@ -17,7 +17,8 @@
   (fn [_cofx game-opts]
     {:db         (tetris.db/initial-db game-opts)
      :dispatch-n [[::set-controls game-opts]
-                  [::step game-opts]]}))
+                  [::step game-opts]
+                  [::game-timer game-opts]]}))
 
 (rf/reg-event-fx
   ::step
@@ -27,7 +28,7 @@
       (if (:gameover? db)
         {:db             db
          :clear-timeouts [{:id ::step}
-                          {:id ::pause/game-timer}]}
+                          {:id ::game-timer}]}
         {:db      db
          :timeout {:id    ::step
                    :event [::step game-opts]
@@ -111,5 +112,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (pause/reg-pause-events
-  {:game-map-key ::tetris.db/db
+  {:n            :games.tetris.events
+   :game-map-key ::tetris.db/db
    :timers       [(pause/make-timer ::step)]})
