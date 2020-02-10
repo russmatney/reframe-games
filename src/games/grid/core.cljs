@@ -141,7 +141,6 @@
         update-f   (or update-cell (fn [c] c))
         cells      (make-cells entry-cell)
         cells      (map update-f cells)]
-    (print "adding cells" cells)
     (if-not cells
       db
       (reduce

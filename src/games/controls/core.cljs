@@ -47,7 +47,7 @@
 
 (def shapes
   "Shapes added to the controls game."
-  [{:props {:move true}
+  [{:props {:moveable? true}
     :cells [{:y -1} {:x -1} {:anchor true} {:x 1}]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -62,23 +62,36 @@
                  (grid/relative ec cell)))
              cells)))
 
-(defn add-pieces
-  [grid]
+(defn add-piece
+  [db]
   (let [ec->cell-fns (map shape->cells shapes)]
-    (print ec->cell-fns)
-    (reduce
-      (fn [grid cell-fn]
-        (grid/add-cells grid {:make-cells cell-fn}))
-      grid
-      ec->cell-fns)))
+    (update db :game-grid
+            (fn [g]
+              (reduce
+                (fn [grid cell-fn]
+                  (grid/add-cells grid {:make-cells cell-fn}))
+                g
+                ec->cell-fns)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move Logic
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn can-player-move? [db] true)
+(defn can-player-move?
+  [_db]
+  true)
 
-(defn move-piece [db dir]
-  db)
+(defn move-piece
+  "Gathers `:moveable?` cells and moves them with `grid/move-cells`"
+  [{:keys [game-grid] :as db} dir]
+  (let [move-f         #(grid/move-cell-coords % dir)
+        moveable-cells (grid/get-cells game-grid :moveable?)
+        updated-grid   (grid/move-cells
+                         game-grid
+                         {:move-f    move-f
+                          :cells     moveable-cells
+                          :can-move? (fn [_] true)})
+        db             (assoc db :game-grid updated-grid)]
+    db))
 
 (defn rotate-piece [db] db)

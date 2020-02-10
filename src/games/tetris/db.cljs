@@ -65,26 +65,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn initial-controls
-  [{:keys [name] :as game-opts}]
+  [game-opts]
   {:move-left  {:label "Move Left"
                 :keys  (set ["left" "h" "a"])
-                :event [:games.tetris.events/move-piece name :left]}
+                :event [:games.tetris.events/move-piece game-opts :left]}
    :move-down  {:label "Move Down"
                 :keys  (set ["down" "j" "s"])
-                :event [:games.tetris.events/move-piece name :down]}
+                :event [:games.tetris.events/move-piece game-opts :down]}
    :move-right {:label "Move Right"
                 :keys  (set ["right" "l" "d"])
-                :event [:games.tetris.events/move-piece name :right]}
+                :event [:games.tetris.events/move-piece game-opts :right]}
    :hold       {:label "Hold"
                 :keys  (set ["space"])
-                :event [:games.tetris.events/hold-and-swap-piece name]}
+                :event [:games.tetris.events/hold-and-swap-piece game-opts]}
    :rotate     {:label "Rotate"
                 :keys  (set ["up" "k" "w"])
-                :event [:games.tetris.events/rotate-piece name]}
+                :event [:games.tetris.events/rotate-piece game-opts]}
    ;; TODO update this event to the global one?
-   :pause {:label "Pause"
-           :keys  (set ["enter"])
-           :event [:games.tetris.events/toggle-pause game-opts]}})
+   :pause      {:label "Pause"
+                :keys  (set ["enter"])
+                :event [:games.tetris.events/toggle-pause game-opts]}})
 
 (def piece-grid (grid/build-grid {:height     2
                                   :width      4

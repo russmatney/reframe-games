@@ -111,27 +111,32 @@
 
 (defn controls-game-controls
   "heh."
-  [{:keys [name] :as game-opts}]
-  {:move-left  {:label "Move Left"
+  [game-opts]
+  {:add-piece  {:label "Add Piece"
+                :keys  (set ["space"])
+                :event [:games.controls.events/add-piece game-opts]}
+   :move-left  {:label "Move Left"
                 :keys  (set ["left" "h" "a"])
-                :event [:games.controls.events/move-piece name :left]}
+                :event [:games.controls.events/move-piece game-opts :left]}
    :move-down  {:label "Move Down"
                 :keys  (set ["down" "j" "s"])
-                :event [:games.controls.events/move-piece name :down]}
+                :event [:games.controls.events/move-piece game-opts :down]}
    :move-right {:label "Move Right"
                 :keys  (set ["right" "l" "d"])
-                :event [:games.controls.events/move-piece name :right]}
+                :event [:games.controls.events/move-piece game-opts :right]}
    :move-up    {:label "Move Up"
                 :keys  (set ["up" "j" "s"])
-                :event [:games.controls.events/move-piece name :up]}
+                :event [:games.controls.events/move-piece game-opts :up]}
    :rotate     {:label "Rotate"
                 :keys  (set ["up" "k" "w"])
-                :event [:games.controls.events/rotate-piece name]}})
+                :event [:games.controls.events/rotate-piece game-opts]}})
 
 (defn initial-db
   ([] (initial-db {}))
   ([game-opts]
-   (let [{:keys [game-grid] :as game-opts}
+   (let [{:keys [name game-grid] :as game-opts}
          (merge db-defaults game-opts)]
-     {:game-grid (grid/build-grid game-grid)
+     {:name      name
+      :game-opts game-opts
+      :game-grid (grid/build-grid game-grid)
       :controls  (controls-game-controls game-opts)})))

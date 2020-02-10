@@ -26,7 +26,7 @@
 (rf/reg-event-fx
   ::set
   [rf/trim-v]
-  (fn [{:keys [db]} [_ controls]]
+  (fn [{:keys [db]} [controls]]
     (let [controls   (merge controls.db/global-controls (or controls {}))
           event-keys (controls/controls->rp-event-keys controls)
           all-keys   (controls/controls->rp-all-keys controls)]
@@ -41,22 +41,30 @@
 ;; Controls 'game'
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(rf/reg-event-db
-  ::init-db
+(rf/reg-event-fx
+  ::start-game
   [(game-db-interceptor :controls-games)]
-  (fn [_db game-opts]
-    (controls.db/initial-db game-opts)))
+  (fn [{:keys [db]} game-opts]
+    {:dispatch [::set-controls game-opts]
+     :db       (merge (-> (controls.db/initial-db game-opts)
+                          (controls/add-piece))
+                      ;; prefer whatever is in the db already
+                      db)}))
 
-;; TODO clean up ignore-controls and general controls usage
+
 (rf/reg-event-fx
   ::set-controls
   [(game-db-interceptor :controls-games)]
   (fn [{:keys [db]} {:keys [ignore-controls]}]
     (when-not ignore-controls
-      {:dispatch
-       [::set (:controls db)]})))
+      {:dispatch [::set (:controls db)]})))
 
-;; TODO update interceptor to handle this (pass game-opts through kbd events)
+(rf/reg-event-db
+  ::add-piece
+  [(game-db-interceptor :controls-games)]
+  (fn [db [_game-opts]]
+    (controls/add-piece db)))
+
 (rf/reg-event-db
   ::move-piece
   [(game-db-interceptor :controls-games)]
