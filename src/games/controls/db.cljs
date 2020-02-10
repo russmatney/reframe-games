@@ -1,4 +1,6 @@
-(ns games.controls.db)
+(ns games.controls.db
+  (:require
+   [games.grid.core :as grid]))
 
 (def key-label->re-pressed-key
   "Maps a 'nice' string to a re-pressed key with keyCode."
@@ -100,3 +102,10 @@
    :puyo     {:label "Play Puyo-Puyo"
               :keys  (set ["p"])
               :event [:games.events/set-view :puyo]}})
+
+(def initial-db
+  {:grid
+   (grid/build-grid
+     {:width      5
+      :height     5
+      :entry-cell {:x 0 :y 0}})})

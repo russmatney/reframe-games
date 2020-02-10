@@ -53,9 +53,9 @@
     {:width   "100%"
      :flex    "1"
      :display "flex"}}
-   (for [game selectable-games]
-     (selection game))
-   [controls.views/mini {:controls [:about :controls :tetris :puyo]}]])
+   ;; (for [game selectable-games]
+   ;;   (selection game))
+   [controls.views/mini-game]])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

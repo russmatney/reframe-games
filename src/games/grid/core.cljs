@@ -131,11 +131,14 @@
         update-f   (or update-cell (fn [c] c))
         cells      (make-cells entry-cell)
         cells      (map update-f cells)]
-    (reduce
-      (fn [db {:keys [x y] :as cell}]
-        (overwrite-cell db {:cell cell :target {:x x :y y}}))
-      db
-      cells)))
+    (println "add-cells")
+    (println cells)
+    (when cells
+      (reduce
+        (fn [db {:keys [x y] :as cell}]
+          (overwrite-cell db {:cell cell :target {:x x :y y}}))
+        db
+        cells))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell Fetching and Deleting
