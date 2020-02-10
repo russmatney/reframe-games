@@ -48,7 +48,7 @@
 (def shapes
   "Shapes added to the controls game."
   [{:props {:moveable? true}
-    :cells [{:y -1} {:x -1} {:anchor true} {:x 1}]}])
+    :cells [{:y -1} {:x -1} {:anchor true} {:x 1} {:y 1}]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adding Pieces
@@ -84,7 +84,10 @@
 (defn move-piece
   "Gathers `:moveable?` cells and moves them with `grid/move-cells`"
   [{:keys [game-grid] :as db} dir]
-  (let [move-f         #(grid/move-cell-coords % dir)
+  (let [move-f         #(grid/move-cell-coords
+                          % dir
+                          {:grid      game-grid
+                           :no-walls? (:no-walls? db)})
         moveable-cells (grid/get-cells game-grid :moveable?)
         updated-grid   (grid/move-cells
                          game-grid

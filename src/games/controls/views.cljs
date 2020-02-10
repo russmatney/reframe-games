@@ -99,17 +99,20 @@
   ([] (mini-game {}))
   ([game-opts]
    (let [game-opts (merge mini-game-defaults game-opts)
+         debug     true
          grid      @(rf/subscribe [::controls.subs/game-grid game-opts])]
+
      (rf/dispatch [::controls.events/start-game game-opts])
      (grid.views/matrix
        grid
        {:->cell
         (fn cell-component
-          [{:keys [moveable?] :as _cell}]
+          [{:keys [moveable? x y] :as cell}]
+          ^{:key (str x y)}
           [:div
            {:style
-            {:height     "48px"
-             :width      "48px"
+            {:height     "148px"
+             :width      "148px"
              :border     (if moveable? "1px solid white" "1px solid red")
-             :background (if moveable? "green" "black")}}
-           ""])}))))
+             :background (if moveable? "green" "white")}}
+           (if debug (str cell) "")])}))))

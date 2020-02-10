@@ -272,14 +272,40 @@
 ;; Cell 'Movement'
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn grid-min-max
+  "Returns legal x/y mins and maxes for the passed grid.
+  Some grids use phantom-columns, others don't allow it."
+  [{:keys [phantom-columns phantom-rows width height]}]
+  {:x-min (* -1 phantom-columns)
+   :x-max (- width 1)
+   :y-min (* -1 phantom-rows)
+   :y-max (- height 1)})
+
 (defn move-cell-coords
   "Returns a map with :x, :y coords relative to the passed direction
   (:left, :right, :up, :down)."
-  [{:keys [x y]} direction]
-  (let [x-diff (case direction :left -1 :right 1 0)
-        y-diff (case direction :down 1 :up -1 0)]
-    {:x (+ x x-diff)
-     :y (+ y y-diff)}))
+  ([{:keys [x y]} direction]
+   (let [x-diff (case direction :left -1 :right 1 0)
+         y-diff (case direction :down 1 :up -1 0)]
+     {:x (+ x x-diff)
+      :y (+ y y-diff)}))
+
+  ([cell direction
+    {:keys [no-walls? grid]}]
+   (let [{:keys [x y]}                     (move-cell-coords cell direction)
+         {:keys [x-min x-max y-min y-max]} (grid-min-max grid)
+
+         x (if no-walls?
+             (cond (< x x-min) x-max
+                   (> x x-max) x-min
+                   :else       x)
+             x)
+         y (if no-walls?
+             (cond (< y y-min) y-max
+                   (> y y-max) y-min
+                   :else       y)
+             y)]
+     {:x x :y y})))
 
 (defn- calc-move-cells
   [db {:keys [cells move-f can-move?]}]

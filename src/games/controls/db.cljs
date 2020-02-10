@@ -104,10 +104,10 @@
 
 (def db-defaults
   {:game-grid {:entry-cell      {:x 0 :y 0}
-               :height          5
-               :width           5
-               :phantom-columns 4
-               :phantom-rows    4}})
+               :height          3
+               :width           3
+               :phantom-columns 2
+               :phantom-rows    2}})
 
 (defn controls-game-controls
   "heh."
@@ -125,10 +125,10 @@
                 :keys  (set ["right" "l" "d"])
                 :event [:games.controls.events/move-piece game-opts :right]}
    :move-up    {:label "Move Up"
-                :keys  (set ["up" "j" "s"])
+                :keys  (set ["up" "k" "s"])
                 :event [:games.controls.events/move-piece game-opts :up]}
    :rotate     {:label "Rotate"
-                :keys  (set ["up" "k" "w"])
+                :keys  (set [])
                 :event [:games.controls.events/rotate-piece game-opts]}})
 
 (defn initial-db
@@ -139,4 +139,7 @@
      {:name      name
       :game-opts game-opts
       :game-grid (grid/build-grid game-grid)
-      :controls  (controls-game-controls game-opts)})))
+      :controls  (controls-game-controls game-opts)
+
+      ;; modes
+      :no-walls? true})))
