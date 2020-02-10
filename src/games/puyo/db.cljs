@@ -101,8 +101,9 @@
       :hold-lock        false
 
       ;; modes
-      :spin-the-bottle? false
-      :spin             false
+      :spin-the-bottle? false ;; rotate the board on every piece
+      :pacman-sides     true  ;; travel across the walls
+      :fancy-pants      false ;; travel between games
 
       ;; level/score
       :level                 1

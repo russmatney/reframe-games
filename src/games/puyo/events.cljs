@@ -21,32 +21,13 @@
                   [::pause/game-timer game-opts]
                   ]}))
 
-
-;; TODO move to core
-(defn should-advance-level?
-  [{:keys [level groups-per-level groups-cleared]}]
-  (>= groups-cleared (* level groups-per-level)))
-
-(defn advance-level
-  "Each level updates the step timeout to 90% of the current speed."
-  [db]
-  (-> db
-      (update :level inc)
-      (update :step-timeout #(.floor js/Math (* % 0.9)))))
-
+;; TODO consider a gameover, score, piece-played etc event model
+;; i.e. pulling the cond step fn out and into re-frame
 (rf/reg-event-fx
   ::step
   [(game-db-interceptor ::puyo.db/db)]
   (fn [{:keys [db]} game-opts]
-    (let [db (puyo/step db game-opts)
-
-          ;; why is this out here vs in core?
-          {:keys [step-timeout] :as db}
-          (if (should-advance-level? db)
-            (advance-level db)
-            db)]
-
-      ;; TODO consider a gameover, score, piece-played etc event model
+    (let [{:keys [step-timeout] :as db} (puyo/step db game-opts)]
       (if (:gameover? db)
         {:clear-timeouts [{:id ::step}
                           {:id ::pause/game-timer}]}
@@ -72,19 +53,12 @@
 ;; Move/Rotate piece
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn can-player-move?
-  "Returns true if the game should accept player movement input."
-  [{:keys [paused? fall-lock]}]
-  (and
-    (not paused?)
-    (not fall-lock)))
-
 ;; TODO update interceptor to handle this (pass game-opts through kbd events)
 (rf/reg-event-db
   ::move-piece
   [(game-db-interceptor ::puyo.db/db)]
   (fn [db [_game-opts direction]]
-    (if (can-player-move? db)
+    (if (puyo/can-player-move? db)
       (puyo/move-piece db direction)
       db)))
 
@@ -92,7 +66,7 @@
   ::rotate-piece
   [(game-db-interceptor ::puyo.db/db)]
   (fn [db [_game-opts]]
-    (if (can-player-move? db)
+    (if (puyo/can-player-move? db)
       (puyo/rotate-piece db)
       db)))
 

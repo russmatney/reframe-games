@@ -8,7 +8,15 @@
 ;; Game logic, predicates, helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn cell-occupied? [{:keys [game-grid]} cell]
+(defn can-player-move?
+  "Returns true if the game should accept player movement input."
+  [{:keys [paused? fall-lock]}]
+  (and
+    (not paused?)
+    (not fall-lock)))
+
+(defn cell-occupied?
+  [{:keys [game-grid]} cell]
   (:occupied (grid/get-cell game-grid cell)))
 
 (defn cell-open?
@@ -237,6 +245,7 @@
         (assoc :groups-in-combo groups-in-combo)
         (assoc :last-combo-piece-num current-piece-num))))
 
+
 (defn clear-groups
   "Clears groups that are have reached the group-size."
   [db groups]
@@ -275,16 +284,39 @@
                      (dissoc :occupied)
                      (assoc :falling true)))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Level Advancement
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn should-advance-level?
+  [{:keys [level groups-per-level groups-cleared]}]
+  (>= groups-cleared (* level groups-per-level)))
+
+(defn advance-level
+  "Each level updates the step timeout to 90% of the current speed."
+  [db]
+  (-> db
+      (update :level inc)
+      (update :step-timeout #(.floor js/Math (* % 0.9)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Step
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn step
   [db game-opts]
   (let [groups (groups-to-clear db)]
     (cond
+
       ;; game is over, update db and return
       ;; TODO gameover event, score event?
       (gameover? db)
       (case (-> game-opts :on-gameover)
         :restart (puyo.db/initial-db game-opts)
         nil      (assoc db :gameover? true))
+
+      (should-advance-level? db)
+      (advance-level db)
 
       ;; a piece is falling, move it down
       (any-falling? db)

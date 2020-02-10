@@ -10,6 +10,11 @@
    [games.subs :as subs]
    [games.puyo.subs :as puyo.subs]))
 
+;; Write a metadata component
+;;
+;; include: current combo, highest combo, combos to next level, highest level
+;; pieces played, combos scored, items available
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

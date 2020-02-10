@@ -4,8 +4,8 @@
    [games.events.interceptors :refer [game-db-interceptor]]))
 
 (defn make-timer [id]
-  {:id      id
-   :->event (fn [gopts] [id gopts])})
+  {:id               id
+   :game-opts->event (fn [gopts] [id gopts])})
 
 (defn reg-pause-events
   "Registers pause events with the passed options.
@@ -20,7 +20,7 @@
 
   Expects `timers` like:
   `[{:id      ::game-tick
-     :->event (fn [x] [::game-tick x])}]`
+     :game-opts->event (fn [x] [::game-tick x])}]`
   "
   [{:keys
     [;; TODO rename this key. do i really need this? could just be :game-dbs ?
@@ -43,7 +43,7 @@
       (let [updated-db (assoc db :paused? false)]
         (-> {:db updated-db}
             (assoc :dispatch-n
-                   (map #((:->event %) game-opts)
+                   (map #((:game-opts->event %) game-opts)
                         timers))))))
 
   (rf/reg-event-fx
