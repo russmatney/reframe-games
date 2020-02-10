@@ -13,6 +13,7 @@
         style               (or style {})
         width               (if debug "260px" "40px")
         height              (if debug "120px" "40px")]
+    ^{:key (str x y)}
     [:div
      {:style
       (merge
@@ -59,12 +60,14 @@
          {:style
           {:display "flex"}}
          (for [{:keys [x y] :as c} row]
-           ^{:key (str x y)}
-           (if ->cell (->cell c)
-               [cell
-                {:game-opts game-opts
-                 :cell      c
-                 :style     (if cell->style (cell->style c) {})}]))])])))
+           (if ->cell
+             ^{:key (str x y)}
+             (->cell c)
+             ^{:key (str x y)}
+             [cell
+              {:game-opts game-opts
+               :cell      c
+               :style     (if cell->style (cell->style c) {})}]))])])))
 
 (defn piece-list
   "Displays a centered list of pieces below a label."

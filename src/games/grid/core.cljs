@@ -291,16 +291,16 @@
       :y (+ y y-diff)}))
 
   ([cell direction
-    {:keys [no-walls? grid]}]
+    {:keys [no-walls? no-x-walls? no-y-walls? grid]}]
    (let [{:keys [x y]}                     (move-cell-coords cell direction)
          {:keys [x-min x-max y-min y-max]} (grid-min-max grid)
 
-         x (if no-walls?
+         x (if (or no-walls? no-x-walls?)
              (cond (< x x-min) x-max
                    (> x x-max) x-min
                    :else       x)
              x)
-         y (if no-walls?
+         y (if (or no-walls? no-y-walls?)
              (cond (< y y-min) y-max
                    (> y y-max) y-min
                    :else       y)

@@ -88,7 +88,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def mini-game-defaults
-  {:name :controls-mini-game})
+  {:name  :controls-mini-game
+   :debug false})
 
 ;; Macro for defn that handles zero arity with defaults/merging?
 (defn mini-game
@@ -99,7 +100,7 @@
   ([] (mini-game {}))
   ([game-opts]
    (let [game-opts (merge mini-game-defaults game-opts)
-         debug     true
+         debug     (:debug game-opts)
          grid      @(rf/subscribe [::controls.subs/game-grid game-opts])]
 
      (rf/dispatch [::controls.events/start-game game-opts])
@@ -111,8 +112,8 @@
           ^{:key (str x y)}
           [:div
            {:style
-            {:height     "148px"
-             :width      "148px"
+            {:height     (if debug "148px" "48px")
+             :width      (if debug "148px" "48px")
              :border     (if moveable? "1px solid white" "1px solid red")
              :background (if moveable? "green" "white")}}
            (if debug (str cell) "")])}))))

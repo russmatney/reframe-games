@@ -36,14 +36,17 @@
 
 (defn selection
   [{:keys [label on-click component]}]
+  ^{:key label}
   [widget
    {:class    "selection"
     :on-click on-click
     :label    label
     :style    {:flex "1"}}
+   ^{:key (str "selection-container-" label)}
    [:div
     {:style
      {:flex "1"}}
+    ^{:key label}
     component]])
 
 (defn selections
@@ -53,8 +56,10 @@
     {:width   "100%"
      :flex    "1"
      :display "flex"}}
-   ;; (for [game selectable-games]
-   ;;   (selection game))
+   (for [{:keys [label] :as game} selectable-games]
+     ^{:key label}
+     (selection game))
+   ^{:key "controls-mini-game"}
    [controls.views/mini-game]])
 
 
