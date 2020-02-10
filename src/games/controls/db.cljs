@@ -121,6 +121,9 @@
    :move-right {:label "Move Right"
                 :keys  (set ["right" "l" "d"])
                 :event [:games.controls.events/move-piece name :right]}
+   :move-up    {:label "Move Up"
+                :keys  (set ["up" "j" "s"])
+                :event [:games.controls.events/move-piece name :up]}
    :rotate     {:label "Rotate"
                 :keys  (set ["up" "k" "w"])
                 :event [:games.controls.events/rotate-piece name]}})

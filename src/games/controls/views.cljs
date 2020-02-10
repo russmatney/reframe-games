@@ -6,6 +6,7 @@
    [games.views.components :refer [widget]]
    [games.grid.views :as grid.views]
    [games.grid.core :as grid]
+   [games.controls.core :as controls]
    [games.controls.events :as controls.events]
    [games.controls.subs :as controls.subs]))
 
@@ -86,52 +87,6 @@
 ;; Controls-mini
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(defn control-in-cell [[control {:keys [keys event label]}]]
-  ^{:key control}
-  [widget
-   {:on-click #(rf/dispatch event)
-    :style
-    {:flex "1 0 25%"}
-    :label    label}
-   ^{:key (str keys)}
-   [:p (string/join "," keys)]])
-
-(defn relative [{x0 :x y0 :y} {:keys [x y] :as cell}]
-  (-> cell
-      (assoc :x (+ x0 x))
-      (assoc :y (+ y0 y))))
-
-(defn control->ec->cells [ctrl]
-  (let [[control {:keys [label keys event]}] ctrl]
-    (fn [ec]
-      (seq (map (comp
-                  #(assoc % :control ctrl)
-                  #(relative ec %))
-                (case control
-                  :move-left [{:y -1} {:x -1} {} {:x 1}]
-                  (:main
-                   :about
-                   :controls
-                   :tetris
-                   :puyo)    [{:y -1} {:x -1} {} {:x 1}]
-                  nil))))))
-
-(defn controls->shapes [controls]
-  (let [controls (take 1 controls)
-        res      (seq  (map control->ec->cells controls))]
-    res))
-
-
-(defn controls-add-pieces
-  [grid controls]
-  (let [ec->cell-fns (controls->shapes controls)]
-    (reduce
-      (fn [grid cell-fn]
-        (grid/add-cells grid {:make-cells cell-fn}))
-      grid
-      ec->cell-fns)))
-
 (def mini-game-defaults
   {:name :controls-mini-game})
 
@@ -143,27 +98,19 @@
   Establishes sane defaults for a mini-player."
   ([] (mini-game {}))
   ([game-opts]
-   (let [{:keys [cell-style] :as game-opts}
-         (merge mini-game-defaults game-opts)
-         controls @(rf/subscribe [::subs/controls])
-         grid     @(rf/subscribe [::controls.subs/game-grid game-opts])
-         grid     (controls-add-pieces grid controls)]
+   (let [game-opts (merge mini-game-defaults game-opts)
+         grid      @(rf/subscribe [::controls.subs/game-grid game-opts])
+         grid      (controls/add-pieces grid)]
      (rf/dispatch [::controls.events/init-db game-opts])
      (grid.views/matrix
        grid
-       {:cell-comp
-        (fn controls-cell-comp
-          [{:keys [control] :as c}]
-          (let [[ctrl {:keys [label]}] control]
-            [:div
-             {:style {:background "green"}}
-             [:h3 ctrl]
-             [:p label]]))
-
-        :cell->style
-        (fn [c]
-          (merge
-            (or cell-style {})
-            (if (:style c)
-              (:style c)
-              {:background "#FEFEFE"})))}))))
+       {:->cell
+        (fn cell-component
+          [{:keys [move] :as _cell}]
+          [:div
+           {:style
+            {:height     "48px"
+             :width      "48px"
+             :border     (if move "1px solid white" "1px solid red")
+             :background (if move "green" "black")}}
+           ""])}))))

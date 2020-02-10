@@ -41,12 +41,7 @@
     :z      {:background "rgb(231,110,85)"}
     :t      {:background "#B564D4"}
     ;; TODO add 'log' function
-    nil (println "shape missing" shape)))
-
-(defn relative [{x0 :x y0 :y} {:keys [x y] :as cell}]
-  (-> cell
-      (assoc :x (+ x0 x))
-      (assoc :y (+ y0 y))))
+    nil     (println "shape missing" shape)))
 
 (defn shape->ec->cell
   [{:keys [cells] :as shape}]
@@ -56,7 +51,7 @@
       (map (comp
              #(assoc % :props props)
              #(assoc % :style style)
-             #(relative ec %))
+             #(grid/relative ec %))
            cells))))
 
 (defn single-cell-shape [entry-cell]

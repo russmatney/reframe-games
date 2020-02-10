@@ -40,6 +40,15 @@
                                 (take (+ height phantom-rows)
                                       (repeat (build-row opts)))))))
 
+(defn relative
+  "Helper for creating cells relative to another, usually an entry-cell.
+  Maintains the properties of the passed `cell` (2nd argument)."
+  [{x0 :x y0 :y} {:keys [x y] :as cell}]
+  (-> cell
+      (assoc :x (+ x0 x))
+      (assoc :y (+ y0 y))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Row manipulation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -132,6 +141,7 @@
         update-f   (or update-cell (fn [c] c))
         cells      (make-cells entry-cell)
         cells      (map update-f cells)]
+    (print "adding cells" cells)
     (if-not cells
       db
       (reduce
