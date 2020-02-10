@@ -18,8 +18,8 @@
 (defn matrix
   "Returns the rows of cells."
   ([] [matrix {:name :default}])
-  ([{:keys [name cell-style]}]
-   (let [grid @(rf/subscribe [::tetris.subs/game-grid name])]
+  ([{:keys [cell-style] :as game-opts}]
+   (let [grid @(rf/subscribe [::tetris.subs/game-grid game-opts])]
      (grid.views/matrix
        grid
        {:cell->style
@@ -31,7 +31,7 @@
               {:background board-black})))}))))
 
 (defn center-panel [game-opts]
-  (let [gameover? @(rf/subscribe [::tetris.subs/gameover?])]
+  (let [gameover? @(rf/subscribe [::tetris.subs/gameover? game-opts])]
     [:div.center-panel
      {:style
       {:display "flex"
@@ -50,17 +50,17 @@
         ^{:key "rest."}
         [:p
          {:style    {:margin-top "1rem"}
-          :on-click #(rf/dispatch [::tetris.events/start-game])}
+          :on-click #(rf/dispatch [::tetris.events/start-game game-opts])}
          "Click here to restart."])]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Left panel
 
 (defn left-panel [game-opts]
-  (let [score   @(rf/subscribe [::tetris.subs/score])
-        t       @(rf/subscribe [::tetris.subs/time])
-        level   @(rf/subscribe [::tetris.subs/level])
-        paused? @(rf/subscribe [::tetris.subs/paused?])
+  (let [score   @(rf/subscribe [::tetris.subs/score game-opts])
+        t       @(rf/subscribe [::tetris.subs/time game-opts])
+        level   @(rf/subscribe [::tetris.subs/level game-opts])
+        paused? @(rf/subscribe [::tetris.subs/paused? game-opts])
         time    (str (util/with-precision 1 (/ t 1000)) "s")]
     [:div.left-panel
      {:style
@@ -68,11 +68,10 @@
        :flex           "1"
        :flex-direction "column"}}
      [widget
-      {:on-click #(rf/dispatch [::tetris.events/toggle-pause])
-       :style
+      {:style
        {:flex "1"}
-       :label    (if paused? "Paused" "Time")
-       :value    time}]
+       :label (if paused? "Paused" "Time")
+       :value time}]
      [widget
       {:style
        {:flex "1"}
@@ -87,29 +86,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn piece-queue [game-opts]
-  (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids])]
-    (grid.views/piece-list {:label       "Queue"
-                            :cell->style
-                            (fn [c]
-                              (merge
-                                (or (:cell-style game-opts) {})
-                                (:style c)))
-                            :piece-grids preview-grids})))
+  (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids game-opts])]
+    (grid.views/piece-list
+      {:label       "Queue"
+       :cell->style
+       (fn [c]
+         (merge
+           (or (:cell-style game-opts) {})
+           (:style c)))
+       :piece-grids preview-grids})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Hold/Swap
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn hold-string []
-  (let [any-held? @(rf/subscribe [::tetris.subs/any-held?])
+(defn hold-string [game-opts]
+  (let [any-held? @(rf/subscribe [::tetris.subs/any-held? game-opts])
         hold-keys @(rf/subscribe [::subs/keys-for :hold])
         hold-key  (first hold-keys)]
     (str (if any-held? "Swap (" "Hold (") hold-key ")")))
 
 (defn held-piece [game-opts]
-  (let [held-grid @(rf/subscribe [::tetris.subs/held-grid])]
+  (let [held-grid @(rf/subscribe [::tetris.subs/held-grid game-opts])]
     (grid.views/piece-list
-      {:label       (hold-string)
+      {:label       (hold-string game-opts)
        :piece-grids [held-grid]
        :cell->style
        (fn [c]
@@ -141,7 +141,6 @@
    :game-grid {:entry-cell {:x 1 :y 0}
                :height     8
                :width      5}})
-
 
 (defn mini-game
   "Intended as a div.

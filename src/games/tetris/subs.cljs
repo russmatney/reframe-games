@@ -5,9 +5,11 @@
    [games.grid.core :as grid]))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Subs
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn game-opts->db
+  ([db {:keys [name] :as _game-opts}]
+   (-> db ::tetris.db/db name))
+  ([db {:keys [name] :as _game-opts} k]
+   (-> db ::tetris.db/db name k)))
 
 (rf/reg-sub
   ::tetris-db
@@ -16,54 +18,66 @@
       1 (-> db ::tetris.db/db :default)
       2 (let [[_e n] evt] (-> db ::tetris.db/db (get n))))))
 
-(rf/reg-sub
-  ::paused?
-  :<- [::tetris-db]
-  :paused?)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Grids
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (rf/reg-sub
-  ::gameover?
-  :<- [::tetris-db]
-  :gameover?)
+::game-grid
+(fn [db [_ game-opts]]
+  (-> db
+      (game-opts->db game-opts :game-grid)
+      (grid/only-positive-rows))))
 
 (rf/reg-sub
-  ::game-grid
-  :<- [::tetris-db]
-  (fn [{:keys [game-grid]}]
-    (grid/only-positive-rows game-grid)))
+::preview-grids
+(fn [db [_ game-opts]]
+  (-> db
+      (game-opts->db game-opts :preview-grids))))
 
 (rf/reg-sub
-  ::preview-grids
-  :<- [::tetris-db]
-  (fn [db]
-    (:preview-grids db)))
+::held-grid
+(fn [db [_ game-opts]]
+  (-> db
+      (game-opts->db game-opts :held-grid))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Logic
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rf/reg-sub
-  ::held-grid
-  :<- [::tetris-db]
-  (fn [{:keys [held-grid]}]
-    held-grid))
+::paused?
+(fn [db [_ game-opts]]
+  (-> db
+      (game-opts->db game-opts :paused?))))
 
 (rf/reg-sub
-  ::any-held?
-  :<- [::tetris-db]
-  (fn [{:keys [held-shape-fn]}]
-    held-shape-fn))
+::gameover?
+(fn [db [_ game-opts]]
+  (-> db
+      (game-opts->db game-opts :gameover?))))
 
 (rf/reg-sub
-  ::score
-  :<- [::tetris-db]
-  (fn [db]
-    (:score db)))
+::any-held?
+(fn [db [_ game-opts]]
+  (-> db
+      (game-opts->db game-opts :held-shape-fn))))
 
 (rf/reg-sub
-  ::time
-  :<- [::tetris-db]
-  (fn [db]
-    (:time db)))
+::score
+(fn [db [_ game-opts]]
+  (-> db
+      (game-opts->db game-opts :score))))
 
 (rf/reg-sub
-  ::level
-  :<- [::tetris-db]
-  (fn [db]
-    (:level db)))
+::time
+(fn [db [_ game-opts]]
+  (-> db
+      (game-opts->db game-opts :time))))
+
+(rf/reg-sub
+::level
+(fn [db [_ game-opts]]
+  (-> db
+      (game-opts->db game-opts :level))))

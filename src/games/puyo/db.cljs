@@ -104,6 +104,7 @@
       :spin-the-bottle? false ;; rotate the board on every piece
       :pacman-sides     true  ;; travel across the walls
       :fancy-pants      false ;; travel between games
+      :mirror-mode      false ;; reverse left/right
 
       ;; level/score
       :level                 1

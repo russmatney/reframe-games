@@ -49,10 +49,10 @@
 
 (defn matrix
   ([] [matrix {:name :default}])
-  ([{:keys [name cell-style]}]
-   (let [grid          @(rf/subscribe [::puyo.subs/game-grid name])
-         spin?         @(rf/subscribe [::puyo.subs/puyo-db name :spin-the-bottle?])
-         pieces-played @(rf/subscribe [::puyo.subs/puyo-db name :pieces-played])
+  ([{:keys [cell-style] :as game-opts}]
+   (let [grid          @(rf/subscribe [::puyo.subs/game-grid game-opts])
+         spin?         @(rf/subscribe [::puyo.subs/puyo-db game-opts :spin-the-bottle?])
+         pieces-played @(rf/subscribe [::puyo.subs/puyo-db game-opts :pieces-played])
 
          grid
          (cond-> grid
@@ -86,8 +86,8 @@
     :on-click #(rf/dispatch [::puyo.events/start-game game-opts])}
    "Click here to restart."])
 
-(defn center-panel [{:keys [name] :as game-opts}]
-  (let [gameover? @(rf/subscribe [::puyo.subs/gameover? name])]
+(defn center-panel [game-opts]
+  (let [gameover? @(rf/subscribe [::puyo.subs/gameover? game-opts])]
     [:div.center-panel
      {:style
       {:display "flex"
@@ -104,11 +104,11 @@
 ;; Left panel
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn left-panel [{:keys [name]}]
-  (let [score   @(rf/subscribe [::puyo.subs/score name])
-        t       @(rf/subscribe [::puyo.subs/time name])
-        level   @(rf/subscribe [::puyo.subs/level name])
-        paused? @(rf/subscribe [::puyo.subs/paused? name])
+(defn left-panel [game-opts]
+  (let [score   @(rf/subscribe [::puyo.subs/score game-opts])
+        t       @(rf/subscribe [::puyo.subs/time game-opts])
+        level   @(rf/subscribe [::puyo.subs/level game-opts])
+        paused? @(rf/subscribe [::puyo.subs/paused? game-opts])
         time    (str (util/with-precision 1 (/ t 1000)) "s")]
     [:div.left-panel
      {:style
@@ -116,7 +116,7 @@
        :flex           "1"
        :flex-direction "column"}}
      [widget
-      {:on-click #(rf/dispatch [::puyo.events/toggle-pause name])
+      {:on-click #(rf/dispatch [::puyo.events/toggle-pause game-opts])
        :style    {:flex "1"}
        :label    (if paused? "Paused" "Time")
        :value    time}]
@@ -133,8 +133,8 @@
 ;; Piece Queue
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn piece-queue [{:keys [name cell-style]}]
-  (let [preview-grids @(rf/subscribe [::puyo.subs/preview-grids name])]
+(defn piece-queue [{:keys [cell-style] :as game-opts}]
+  (let [preview-grids @(rf/subscribe [::puyo.subs/preview-grids game-opts])]
     (grid.views/piece-list
       {:label       "Queue"
        :piece-grids preview-grids
@@ -150,16 +150,16 @@
 ;; Held Piece
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn hold-string [name]
-  (let [any-held? @(rf/subscribe [::puyo.subs/any-held? name])
+(defn hold-string [game-opts]
+  (let [any-held? @(rf/subscribe [::puyo.subs/any-held? game-opts])
         hold-keys @(rf/subscribe [::subs/keys-for :hold])
         hold-key  (first hold-keys)]
     (str (if any-held? "Swap (" "Hold (") hold-key ")")))
 
-(defn held-piece [{:keys [name cell-style]}]
-  (let [held-grid @(rf/subscribe [::puyo.subs/held-grid name])]
+(defn held-piece [{:keys [cell-style] :as game-opts}]
+  (let [held-grid @(rf/subscribe [::puyo.subs/held-grid game-opts])]
     (grid.views/piece-list
-      {:label       (hold-string name)
+      {:label       (hold-string game-opts)
        :piece-grids [held-grid]
        :cell->style
        (fn [{:keys [color] :as c}]

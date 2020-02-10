@@ -18,7 +18,7 @@
    {:k     :s
     :cells [{:x 1 :y -1} {:y 1} {:anchor true} {:x -1}]}
    {:k     :r
-    :cells [{:x -1 :y -1} {:x 1} {:anchor true} {:x -1}]}
+    :cells [{:x -1 :y -1} {:y -1} {:anchor true} {:x -1}]}
    {:k     :l
     :cells [{:x -1 :y -1} {:x 1} {:anchor true} {:y -1}]}])
 
