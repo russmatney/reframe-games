@@ -7,6 +7,11 @@
 ;; Predicates and game logic
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn can-player-move?
+  "Returns true if the game should accept player movement input."
+  [{:keys [paused?]}]
+  (not paused?))
+
 (defn cell-occupied? [{:keys [game-grid]} cell]
   (:occupied (grid/get-cell game-grid cell)))
 
@@ -251,6 +256,17 @@
         (assoc :last-combo-piece-num pieces-played)
         (update :rows-cleared #(+ % rows-cleared)))))
 
+(defn should-advance-level?
+  [{:keys [level rows-per-level rows-cleared]}]
+  (>= rows-cleared (* level rows-per-level)))
+
+(defn advance-level
+  "Each level updates the step timeout to 90% of the current speed."
+  [db]
+  (-> db
+      (update :level inc)
+      (update :tick-timeout #(.floor js/Math (* % 0.9)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game tick/steps functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -268,6 +284,9 @@
     (case (-> game-opts :on-gameover)
       :restart (tetris.db/initial-db game-opts)
       nil      (assoc db :gameover? true))
+
+    (should-advance-level? db)
+    (advance-level db)
 
     ;; a piece is falling, move it down
     (any-falling? db)

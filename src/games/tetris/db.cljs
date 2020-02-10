@@ -111,7 +111,7 @@
                                   :entry-cell {:x 1 :y 1}}))
 
 (def defaults
-  {:tick-timeout    500
+  {:step-timeout    500
    :ignore-controls false})
 
 (defn initial-db
@@ -119,7 +119,7 @@
   ([] (initial-db {:name :default}))
 
   ([game-opts]
-   (let [{:keys [name game-grid tick-timeout ignore-controls] :as game-opts}
+   (let [{:keys [name game-grid step-timeout ignore-controls] :as game-opts}
          (merge defaults game-opts)]
      {:name      name
       :game-opts game-opts
@@ -135,7 +135,7 @@
           game-grid))
 
       ;; game logic
-      :tick-timeout tick-timeout
+      :step-timeout step-timeout
       :paused?      false
       :gameover?    false
 

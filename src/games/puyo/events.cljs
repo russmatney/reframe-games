@@ -29,7 +29,8 @@
   (fn [{:keys [db]} game-opts]
     (let [{:keys [step-timeout] :as db} (puyo/step db game-opts)]
       (if (:gameover? db)
-        {:clear-timeouts [{:id ::step}
+        {:db             db
+         :clear-timeouts [{:id ::step}
                           {:id ::pause/game-timer}]}
         {:db      db
          :timeout {:id    ::step
@@ -119,8 +120,6 @@
 ;; Pause
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;; register the pause events
 (pause/reg-pause-events
   {:game-map-key ::puyo.db/db
    :timers       [(pause/make-timer ::step)]})

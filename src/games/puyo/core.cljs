@@ -147,10 +147,9 @@
                    :can-move? #(cell-open? db %)
                    :cells     (remove :anchor falling-cells)}))))))
 
-(defn clear-falling-cells
-  "Supports the 'hold/swap' mechanic."
-  [db]
-  (update db :game-grid #(grid/clear-cells % :falling)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Adding Pieces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn next-bag
   "'bag' terminology carried over from tetris."
@@ -209,6 +208,14 @@
                    (add-preview-piece g2 p2)
                    (add-preview-piece g3 p3)]))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Clearing pieces and cells
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn clear-falling-cells
+  "Supports the 'hold/swap' mechanic."
+  [db]
+  (update db :game-grid #(grid/clear-cells % :falling)))
 
 (defn groups-to-clear
   "Returns true if there are any groups of 4 or more adjacent same-color cells."
@@ -217,34 +224,6 @@
         color-groups (vals (group-by :color puyos))
         groups       (mapcat grid/group-adjacent-cells color-groups)]
     (filter (fn [group] (<= group-size (count group))) groups)))
-
-;; TODO should depend on a piece-played event
-(defn update-score
-  "Score is a function of the number of groups cleared and the level.
-  Combos function by double-counting previously cleared groups.
-  Ex: if groups are cleared by piece n, and another group is cleared by piece n + 1,
-  the original groups are included in the group-count-score multipled by the current
-  level.
-
-  ;; TODO update to take size of groups into account
-  "
-  [{:keys [score-per-group-clear
-           level
-           groups-in-combo
-           last-combo-piece-num ;; TODO rename last-score-piece-num?
-           current-piece-num]
-    :as   db}]
-  (let [groups-cleared  (count (groups-to-clear db))
-        carry-combo?    (= current-piece-num last-combo-piece-num)
-        groups-in-combo (if carry-combo?
-                          (+ groups-cleared groups-in-combo)
-                          groups-cleared)
-        addl-score      (* score-per-group-clear groups-in-combo level)]
-    (-> db
-        (update :score #(+ % addl-score))
-        (assoc :groups-in-combo groups-in-combo)
-        (assoc :last-combo-piece-num current-piece-num))))
-
 
 (defn clear-groups
   "Clears groups that are have reached the group-size."
@@ -284,9 +263,36 @@
                      (dissoc :occupied)
                      (assoc :falling true)))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Level Advancement
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Score and Level
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO should depend on a piece-played event
+(defn update-score
+  "Score is a function of the number of groups cleared and the level.
+  Combos function by double-counting previously cleared groups.
+  Ex: if groups are cleared by piece n, and another group is cleared by piece n + 1,
+  the original groups are included in the group-count-score multipled by the current
+  level.
+
+  ;; TODO update to take size of groups into account
+  "
+  [{:keys [score-per-group-clear
+           level
+           groups-in-combo
+           last-combo-piece-num ;; TODO rename last-score-piece-num?
+           current-piece-num]
+    :as   db}]
+  (let [groups-cleared  (count (groups-to-clear db))
+        carry-combo?    (= current-piece-num last-combo-piece-num)
+        groups-in-combo (if carry-combo?
+                          (+ groups-cleared groups-in-combo)
+                          groups-cleared)
+        addl-score      (* score-per-group-clear groups-in-combo level)]
+    (-> db
+        (update :score #(+ % addl-score))
+        (assoc :groups-in-combo groups-in-combo)
+        (assoc :last-combo-piece-num current-piece-num))))
 
 (defn should-advance-level?
   [{:keys [level groups-per-level groups-cleared]}]
@@ -299,7 +305,7 @@
       (update :level inc)
       (update :step-timeout #(.floor js/Math (* % 0.9)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Step
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
