@@ -8,6 +8,10 @@
 ;; Intereceptors
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO break event modifier out of game-db path usage
+;; one for list event -> map or subvec 1 list
+;; one for pulling key out of game-opts
+;; TODO accept fn for getting k out of game-opts (instead of implicit :name)
 (defn game-db-interceptor
   "Interceptor that operates over the game db.
   Events passed through this interceptor will

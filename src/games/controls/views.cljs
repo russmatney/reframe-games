@@ -143,10 +143,12 @@
   Establishes sane defaults for a mini-player."
   ([] (mini-game {}))
   ([game-opts]
-   (let [{:keys [cell-style]} (merge mini-game-defaults game-opts)
-         controls             @(rf/subscribe [::subs/controls])
-         grid                 @(rf/subscribe [::controls.subs/grid])
-         grid                 (controls-add-pieces grid controls)]
+   (let [{:keys [cell-style] :as game-opts}
+         (merge mini-game-defaults game-opts)
+         controls @(rf/subscribe [::subs/controls])
+         grid     @(rf/subscribe [::controls.subs/game-grid game-opts])
+         grid     (controls-add-pieces grid controls)]
+     (rf/dispatch [::controls.events/init-db game-opts])
      (grid.views/matrix
        grid
        {:cell-comp

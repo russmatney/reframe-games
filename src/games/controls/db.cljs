@@ -2,6 +2,11 @@
   (:require
    [games.grid.core :as grid]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; controls->re-pressed helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO move to re-pressed namespace?
 (def key-label->re-pressed-key
   "Maps a 'nice' string to a re-pressed key with keyCode."
   {
@@ -68,30 +73,20 @@
    "]"  {:keyCode 221}
    "}"  {:keyCode 221}
    "'"  {:keyCode 222}
-   "\"" {:keyCode 222}
-
-   })
+   "\"" {:keyCode 222}})
 
 (def supported-keys (set (keys key-label->re-pressed-key)))
 
-;; TODO remove, write smarter descriptions
-(def control->label
-  "Maps a control to a human label"
-  {:move-left  "Move Left"
-   :move-right "Move Right"
-   :move-down  "Move Down"
-   :rotate     "Rotate"
-   :hold       "Hold / Swap"
-   :pause      "Pause"
-   :controls   "Controls"
-   :about      "About"})
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Global controls
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def global-controls
   {:main     {:label "Main Menu"
               :keys  (set ["m" "x"])
               :event [:games.events/unset-view]}
    :controls {:label "Controls"
-              :keys  (set ["c"]) ;; TODO support '?' here and above
+              :keys  (set ["c" "?"])
               :event [:games.events/set-view :controls]}
    :about    {:label "About"
               :keys  (set ["b"])
@@ -103,15 +98,37 @@
               :keys  (set ["p"])
               :event [:games.events/set-view :puyo]}})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Controls Game DB
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (def db-defaults
   {:game-grid {:entry-cell      {:x 0 :y 0}
                :height          5
                :width           5
-               :phantom-columns 5
-               :phantom-rows    5}})
+               :phantom-columns 4
+               :phantom-rows    4}})
+
+(defn controls-game-controls
+  "heh."
+  [{:keys [name] :as game-opts}]
+  {:move-left  {:label "Move Left"
+                :keys  (set ["left" "h" "a"])
+                :event [:games.controls.events/move-piece name :left]}
+   :move-down  {:label "Move Down"
+                :keys  (set ["down" "j" "s"])
+                :event [:games.controls.events/move-piece name :down]}
+   :move-right {:label "Move Right"
+                :keys  (set ["right" "l" "d"])
+                :event [:games.controls.events/move-piece name :right]}
+   :rotate     {:label "Rotate"
+                :keys  (set ["up" "k" "w"])
+                :event [:games.controls.events/rotate-piece name]}})
 
 (defn initial-db
   ([] (initial-db {}))
   ([game-opts]
-   (let [{:keys [game-grid]} (merge db-defaults game-opts)]
-     {:game-grid (grid/build-grid game-grid)})))
+   (let [{:keys [game-grid] :as game-opts}
+         (merge db-defaults game-opts)]
+     {:game-grid (grid/build-grid game-grid)
+      :controls  (controls-game-controls game-opts)})))

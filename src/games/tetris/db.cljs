@@ -40,7 +40,8 @@
     :s      {:background "#FE493C"}
     :z      {:background "rgb(231,110,85)"}
     :t      {:background "#B564D4"}
-    nil     (println "shape missing" shape)))
+    ;; TODO add 'log' function
+    nil (println "shape missing" shape)))
 
 (defn relative [{x0 :x y0 :y} {:keys [x y] :as cell}]
   (-> cell
@@ -85,9 +86,10 @@
    :rotate     {:label "Rotate"
                 :keys  (set ["up" "k" "w"])
                 :event [:games.tetris.events/rotate-piece name]}
-   :pause      {:label "Pause"
-                :keys  (set ["enter"])
-                :event [:games.tetris.events/toggle-pause game-opts]}})
+   ;; TODO update this event to the global one?
+   :pause {:label "Pause"
+           :keys  (set ["enter"])
+           :event [:games.tetris.events/toggle-pause game-opts]}})
 
 (def piece-grid (grid/build-grid {:height     2
                                   :width      4
