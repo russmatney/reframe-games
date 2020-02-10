@@ -30,15 +30,20 @@
 
 
 
-
-;; TODO don't require cell->style
 (defn matrix
   "Displays the game matrix itself, using the passed grid-db and cell->style
-  functions."
-  ([grid-db]
-   [matrix grid-db {:cell->style (fn [_] {})}])
+  functions.
 
-  ([grid-db {:keys [cell->style] :as game-opts}]
+  `cell->style` merges the resulting map with the `cell` component's styles.
+
+  `cell-comp` attaches a passed component as a child to the above cell component.
+
+  Passing `->cell` allows you to write your own cell component, ignoring
+  `cell->style` and `cell-comp`.
+  "
+  ([grid-db] [matrix grid-db {}])
+
+  ([grid-db {:keys [cell->style ->cell] :as game-opts}]
    (let [grid (:grid grid-db)]
      [:div.matrix
       {:style
@@ -55,10 +60,11 @@
           {:display "flex"}}
          (for [{:keys [x y] :as c} row]
            ^{:key (str x y)}
-           [cell
-            {:game-opts game-opts
-             :cell      c
-             :style     (cell->style c)}])])])))
+           (if ->cell (->cell c)
+               [cell
+                {:game-opts game-opts
+                 :cell      c
+                 :style     (if cell->style (cell->style c) {})}]))])])))
 
 (defn piece-list
   "Displays a centered list of pieces below a label."

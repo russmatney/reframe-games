@@ -11,25 +11,25 @@
   "Adds :x, :y keys and vals to every cell in the grid.
   Used to initialize the board, and to reset x/y after removing rows/cells.
   "
-  [{:keys [phantom-rows]} grid]
+  [{:keys [phantom-rows phantom-columns]} grid]
   (vec
     (map-indexed
       (fn [y row]
         (vec
           (map-indexed
             (fn [x cell]
-              (assoc cell :y (- y phantom-rows) :x x))
+              (assoc cell :y (- y phantom-rows) :x (- x phantom-columns)))
             row)))
       grid)))
 
 (defn build-row
   "Used to create initial rows as well as new ones after rows are removed."
-  [{:keys [width]}]
-  (vec (take width (repeat {}))))
+  [{:keys [width phantom-columns]}]
+  (vec (take (+ width phantom-columns) (repeat {}))))
 
 (defn build-grid
   "Builds a grid with the passed `opts`.
-  Expects :height, :width, :phantom-rows as `int`s.
+  Expects :height, :width, :phantom-rows, :phantom-columns as `int`s.
 
   Can also be used to rebuild/reset the grid.
   "
@@ -78,8 +78,8 @@
 
 (defn update-cell
   "Applies the passed function to the cell at the specified coords."
-  [{:keys [grid phantom-rows] :as db} {:keys [x y]} f]
-  (let [updated (update-in grid [(+ phantom-rows y) x] f)]
+  [{:keys [grid phantom-rows phantom-columns] :as db} {:keys [x y]} f]
+  (let [updated (update-in grid [(+ phantom-rows y) (+ phantom-columns x)] f)]
     (assoc db :grid updated)))
 
 (defn update-cells
@@ -124,6 +124,7 @@
                  {:x (:x c)
                   :y (:y c)})))
 
+;; TODO Unit tests to make sure these funcs at least return the db
 (defn add-cells
   "Adds the passed cells to the passed grid"
   [{:keys [entry-cell] :as db} {:keys [make-cells update-cell]}]
@@ -131,9 +132,8 @@
         update-f   (or update-cell (fn [c] c))
         cells      (make-cells entry-cell)
         cells      (map update-f cells)]
-    (println "add-cells")
-    (println cells)
-    (when cells
+    (if-not cells
+      db
       (reduce
         (fn [db {:keys [x y] :as cell}]
           (overwrite-cell db {:cell cell :target {:x x :y y}}))
@@ -145,8 +145,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-cell
-  [{:keys [grid phantom-rows]} {:keys [x y]}]
-  (-> grid (nth (+ y phantom-rows)) (nth x)))
+  [{:keys [grid phantom-rows phantom-columns]} {:keys [x y]}]
+  (-> grid (nth (+ y phantom-rows)) (nth (+ phantom-columns x))))
 
 (defn get-cells
   [{:keys [grid]} pred]

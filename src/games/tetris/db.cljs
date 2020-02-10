@@ -30,6 +30,7 @@
     :t      {:aka   #{"mr. t"}
              :color :magenta}))
 
+;; TODO move to tetris views
 (defn cell->style [shape]
   (case (:k shape)
     :line   {:background "#6EBFF5"}

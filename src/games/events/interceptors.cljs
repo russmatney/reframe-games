@@ -70,8 +70,7 @@
   ::interceptor-example
   [(game-db-interceptor :games.puyo.db/db)]
   (fn [{:keys [db]} _game-opts]
-    ;; (println game-opts)
-    ;; (println (keys db))
+    ;; (println game-opts) (println (keys db))
     {:db db}))
 
 

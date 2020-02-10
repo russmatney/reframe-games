@@ -6,6 +6,7 @@
    [games.views.components :refer [widget]]
    [games.grid.views :as grid.views]
    [games.grid.core :as grid]
+   [games.controls.events :as controls.events]
    [games.controls.subs :as controls.subs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -104,19 +105,21 @@
 (defn control->ec->cells [ctrl]
   (let [[control {:keys [label keys event]}] ctrl]
     (fn [ec]
-      (println "ctrl->ec->cells: " ctrl)
-      (println control)
       (seq (map (comp
                   #(assoc % :control ctrl)
                   #(relative ec %))
                 (case control
                   :move-left [{:y -1} {:x -1} {} {:x 1}]
-                  :main      [{:y -1} {:x 2} {} {:x 1}]
-                  [{}]))))))
+                  (:main
+                   :about
+                   :controls
+                   :tetris
+                   :puyo)    [{:y -1} {:x -1} {} {:x 1}]
+                  nil))))))
 
 (defn controls->shapes [controls]
-  (let [res (seq  (map control->ec->cells controls))]
-    (print res)
+  (let [controls (take 1 controls)
+        res      (seq  (map control->ec->cells controls))]
     res))
 
 
@@ -130,12 +133,9 @@
       ec->cell-fns)))
 
 (def mini-game-defaults
-  {:name      :default
-   :game-grid {:entry-cell   {:x 0 :y 0}
-               :height       5
-               :phantom-rows 5
-               :width        5}})
+  {:name :controls-mini-game})
 
+;; Macro for defn that handles zero arity with defaults/merging?
 (defn mini-game
   "Intended as a div.
   Starts itself.
@@ -147,17 +147,12 @@
          controls             @(rf/subscribe [::subs/controls])
          grid                 @(rf/subscribe [::controls.subs/grid])
          grid                 (controls-add-pieces grid controls)]
-     (println "mini-game grid")
-     (println grid)
      (grid.views/matrix
        grid
        {:cell-comp
         (fn controls-cell-comp
           [{:keys [control] :as c}]
-          (println "cell-comp arg - cell? " c)
           (let [[ctrl {:keys [label]}] control]
-            ;; (println "cell-comp")
-            ;; (println label)
             [:div
              {:style {:background "green"}}
              [:h3 ctrl]

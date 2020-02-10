@@ -103,9 +103,15 @@
               :keys  (set ["p"])
               :event [:games.events/set-view :puyo]}})
 
-(def initial-db
-  {:grid
-   (grid/build-grid
-     {:width      5
-      :height     5
-      :entry-cell {:x 0 :y 0}})})
+(def db-defaults
+  {:game-grid {:entry-cell      {:x 0 :y 0}
+               :height          5
+               :width           5
+               :phantom-columns 5
+               :phantom-rows    5}})
+
+(defn initial-db
+  ([] (initial-db {}))
+  ([game-opts]
+   (let [{:keys [game-grid]} (merge db-defaults game-opts)]
+     {:game-grid (grid/build-grid game-grid)})))
