@@ -67,25 +67,30 @@
 
 (defn initial-controls
   [game-opts]
-  {:move-left  {:label "Move Left"
-                :keys  (set ["left" "h" "a"])
-                :event [:games.tetris.events/move-piece game-opts :left]}
-   :move-down  {:label "Move Down"
-                :keys  (set ["down" "j" "s"])
-                :event [:games.tetris.events/move-piece game-opts :down]}
-   :move-right {:label "Move Right"
-                :keys  (set ["right" "l" "d"])
-                :event [:games.tetris.events/move-piece game-opts :right]}
-   :hold       {:label "Hold"
-                :keys  (set ["space"])
-                :event [:games.tetris.events/hold-and-swap-piece game-opts]}
-   :rotate     {:label "Rotate"
-                :keys  (set ["up" "k" "w"])
-                :event [:games.tetris.events/rotate-piece game-opts]}
-   ;; TODO update this event to the global one?
-   :pause      {:label "Pause"
-                :keys  (set ["enter"])
-                :event [:games.tetris.events/toggle-pause game-opts]}})
+  [{:id    :move-left
+    :label "Move Left"
+    :keys  (set ["left" "h" "a"])
+    :event [:games.tetris.events/move-piece game-opts :left]}
+   {:id    :move-down
+    :label "Move Down"
+    :keys  (set ["down" "j" "s"])
+    :event [:games.tetris.events/move-piece game-opts :down]}
+   {:id    :move-right
+    :label "Move Right"
+    :keys  (set ["right" "l" "d"])
+    :event [:games.tetris.events/move-piece game-opts :right]}
+   {:id    :hold
+    :label "Hold"
+    :keys  (set ["space"])
+    :event [:games.tetris.events/hold-and-swap-piece game-opts]}
+   {:id    :rotate
+    :label "Rotate"
+    :keys  (set ["up" "k" "w"])
+    :event [:games.tetris.events/rotate-piece game-opts]}
+   {:id    :pause
+    :label "Pause"
+    :keys  (set ["enter"])
+    :event [:games.tetris.events/toggle-pause game-opts]}])
 
 (def piece-grid (grid/build-grid {:height     2
                                   :width      4
@@ -95,9 +100,9 @@
   {:step-timeout    500
    :ignore-controls false})
 
-(defn initial-db
+(defn game-db
   "Creates an initial tetris game-state."
-  ([] (initial-db {:name :default}))
+  ([] (game-db {:name :default}))
 
   ([game-opts]
    (let [{:keys [name game-grid step-timeout ignore-controls] :as game-opts}
@@ -150,3 +155,48 @@
       :last-combo-piece-num nil
       })))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Game DBs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def page-game-db
+  (->
+    {:name       :tetris-page-game
+     :cell-style {:width "20px" :height "20px"}
+     :pages      #{:tetris}
+     :game-grid  {:entry-cell {:x 4 :y -1}
+                  :height     16
+                  :width      10}}
+    (game-db)))
+
+(def mini-game-db
+  (-> {:name         :tetris-mini-game
+       :pages        #{:select}
+       :tick-timeout 500
+       :on-gameover  :restart
+       :no-walls-x?  true
+       :game-grid    {:height 10 :width 5 :entry-cell {:x 2 :y -1}}}
+      (game-db)))
+
+(def default-db
+  (-> {:name :default}
+      (game-db)))
+
+(def game-dbs
+  [default-db
+   mini-game-db
+   page-game-db])
+
+;; TODO dry up
+(def game-dbs-map
+  (->> game-dbs
+       (map (fn [game] [(-> game :game-opts :name) game]))
+       (into {})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DB
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def db
+  ;; TODO rename to ::game-dbs
+  {::db game-dbs-map})

@@ -13,6 +13,7 @@
   []
   (merge
     controls.db/db
-    {::tetris.db/db {}
-     ::puyo.db/db   {}
-     :current-page  :controls}))
+    tetris.db/db
+    {::puyo.db/db  {}
+     ;; NOTE also the initial page
+     :current-page :select}))

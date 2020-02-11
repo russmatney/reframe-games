@@ -81,21 +81,23 @@
 (defn debug-cells
   "Debug cells have clickable `:anchor?`s."
   [{:keys [moveable? x y anchor?] :as cell}
-   {:keys [debug?] :as game-opts}]
-  ^{:key (str x y)}
-  [:div
-   {:on-click
-    (when anchor?
-      #(rf/dispatch [::controls.events/toggle-debug game-opts]))
-    :style
-    {:height     (if debug? "148px" "48px")
-     :width      (if debug? "148px" "48px")
-     :border     (if moveable? "1px solid white" "1px solid red")
-     :background (cond
-                   anchor?   "blue"
-                   moveable? "green"
-                   :else     "white")}}
-   (if debug? (str cell) "")])
+   {:keys [debug? cell-height cell-width] :as game-opts}]
+  (let [cell-width  (or cell-width (if debug? "148px" "48px"))
+        cell-height (or cell-height (if debug? "148px" "48px"))]
+    ^{:key (str x y)}
+    [:div
+     {:on-click
+      (when anchor?
+        #(rf/dispatch [::controls.events/toggle-debug game-opts]))
+      :style
+      {:height     cell-height
+       :width      cell-width
+       :border     (if moveable? "1px solid white" "1px solid red")
+       :background (cond
+                     anchor?   "blue"
+                     moveable? "green"
+                     :else     "white")}}
+     (if debug? (str cell) "")]))
 
 (defn debug-game
   "Intended as a full page.
@@ -139,11 +141,10 @@
     [:div
      {:style {:width           "100%"
               :display         "flex"
-              :justify-content "space-between"}}
+              :justify-content "space-around"}}
      (for [opts debug-game-opts]
        ^{:key (:name opts)}
-       [debug-game opts])
-     ]))
+       [debug-game opts])]))
 
 (defn page []
   [components/page

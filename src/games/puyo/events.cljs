@@ -8,6 +8,32 @@
    [games.controls.events :as controls.events]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Start-games
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO dry this up
+;; implies games have page knowledge (`pages`)
+;; maybe the pages should call out their named-games?
+(defn for-page?
+  [page {:keys [game-opts] :as _game-db}]
+  (contains? (:pages game-opts) page))
+
+;; TODO mark games :started and use to add controls?
+(rf/reg-event-fx
+  ::start-games
+  (fn [{:keys [db]}]
+    (let [page (:current-page db)
+          game-opts-for-page
+          (-> db
+              ::puyo.db/db ;; TODO rename games-map key?
+              (vals)
+              (->>
+                (filter #(for-page? page %))
+                (map :game-opts)))]
+      {:dispatch-n
+       (map (fn [gopts] [::start-game gopts]) game-opts-for-page)})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

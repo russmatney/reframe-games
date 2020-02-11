@@ -25,8 +25,8 @@
   ::start-games
   (fn [_cofx]
     {:dispatch-n
-     [;; [::puyo.events/start-games]
-      ;; [::tetris.events/start-games]
+     [[::puyo.events/start-games]
+      [::tetris.events/start-games]
       [::controls.events/start-games]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

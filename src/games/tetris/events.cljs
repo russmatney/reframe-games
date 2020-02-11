@@ -8,6 +8,34 @@
    [games.controls.events :as controls.events]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Start-games
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO dry this up
+;; implies games have page knowledge (`pages`)
+;; maybe the pages should call out their named-games?
+(defn for-page?
+  [page {:keys [game-opts] :as _game-db}]
+  (contains? (:pages game-opts) page))
+
+;; TODO mark games :started and use to add controls?
+(rf/reg-event-fx
+  ::start-games
+  (fn [{:keys [db]}]
+    (let [page (:current-page db)
+          game-opts-for-page
+          (-> db
+              ::tetris.db/db ;; TODO rename games-map key?
+              (vals)
+              (->>
+                (filter #(for-page? page %))
+                (map :game-opts)))]
+      {:dispatch-n
+       (map (fn [gopts] [::start-game gopts]) game-opts-for-page)})))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -15,8 +43,8 @@
   ::start-game
   [(game-db-interceptor ::tetris.db/db)]
   (fn [_cofx game-opts]
-    {:db         (tetris.db/initial-db game-opts)
-     :dispatch-n [[::set-controls game-opts]
+    (println "starting tetris: " (:name game-opts))
+    {:dispatch-n [[::set-controls game-opts]
                   [::step game-opts]
                   [::game-timer game-opts]]}))
 
@@ -58,10 +86,11 @@
       (tetris/move-piece db direction)
       db)))
 
+;; TODO fix interceptor for these events
 (rf/reg-event-db
   ::rotate-piece
   [(game-db-interceptor ::tetris.db/db)]
-  (fn [db [_game-opts]]
+  (fn [db _game-opts]
     (if (tetris/can-player-move? db)
       (tetris/rotate-piece db)
       db)))
@@ -73,7 +102,7 @@
 (rf/reg-event-db
   ::hold-and-swap-piece
   [(game-db-interceptor ::tetris.db/db)]
-  (fn [db [_game-opts]]
+  (fn [db _game-opts]
     ;; if there is a hold, move current hold to front of queue
     ;; remove current falling piece from board, move it to hold
     (let [held          (:held-shape-fn db)

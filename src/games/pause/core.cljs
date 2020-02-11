@@ -67,7 +67,7 @@
       [(game-db-interceptor game-map-key)]
       ;; NOTE that events coming from keybds have extra event args,
       ;; so the interceptor passes it as a list rather than game-opts directly
-      (fn [{:keys [db]} [game-opts]]
+      (fn [{:keys [db]} game-opts]
         (if-not (:gameover? db)
           (if (:paused? db)
             ;; unpause

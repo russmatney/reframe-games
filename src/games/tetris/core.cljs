@@ -286,7 +286,7 @@
     ;; game is over, update db and return
     (gameover? db)
     (case (-> game-opts :on-gameover)
-      :restart (tetris.db/initial-db game-opts)
+      :restart (tetris.db/game-db game-opts)
       nil      (assoc db :gameover? true))
 
     (should-advance-level? db)

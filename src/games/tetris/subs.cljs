@@ -18,17 +18,22 @@
       1 (-> db ::tetris.db/db :default)
       2 (let [[_e n] evt] (-> db ::tetris.db/db (get n))))))
 
+(rf/reg-sub
+  ::game-opts
+  (fn [db [_ game-opts]]
+    (-> db ::tetris.db/db (get (:name game-opts)) :game-opts)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grids
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (rf/reg-sub
-::game-grid
-(fn [db [_ game-opts]]
-  (-> db
-      (game-opts->db game-opts :game-grid)
-      (grid/only-positive-rows))))
+  ::game-grid
+  (fn [db [_ game-opts]]
+    (-> db
+        (game-opts->db game-opts :game-grid)
+        (grid/only-positive-rows))))
 
 (rf/reg-sub
 ::preview-grids

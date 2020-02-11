@@ -17,21 +17,21 @@
 
 (defn matrix
   "Returns the rows of cells."
-  ([] [matrix {:name :default}])
-  ([{:keys [cell-style] :as game-opts}]
-   (let [grid @(rf/subscribe [::tetris.subs/game-grid game-opts])]
-     (grid.views/matrix
-       grid
-       {:cell->style
-        (fn [c]
-          (merge
-            (or cell-style {})
-            (if (:style c)
-              (:style c)
-              {:background board-black})))}))))
+  [grid {:keys [cell-style] :as game-opts}]
+  (let []
+    (grid.views/matrix
+      grid
+      {:cell->style
+       (fn [c]
+         (merge
+           (or cell-style {})
+           (if (:style c)
+             (:style c)
+             {:background board-black})))})))
 
 (defn center-panel [game-opts]
-  (let [gameover? @(rf/subscribe [::tetris.subs/gameover? game-opts])]
+  (let [grid      @(rf/subscribe [::tetris.subs/game-grid game-opts])
+        gameover? @(rf/subscribe [::tetris.subs/gameover? game-opts])]
     [:div.center-panel
      {:style
       {:display "flex"
@@ -45,7 +45,7 @@
          {:style {:margin-bottom "1rem"}}
          "Game Over."])
       ^{:key "matrix"}
-      [matrix game-opts]
+      [matrix grid game-opts]
       (when gameover?
         ^{:key "rest."}
         [:p
@@ -136,42 +136,28 @@
 ;; Mini-player
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def mini-game-defaults
-  {:name      :default
-   :game-grid {:entry-cell {:x 1 :y 0}
-               :height     8
-               :width      5}})
-
 (defn mini-game
   "Intended as a div.
   Starts itself.
 
   Establishes sane defaults for a mini-player."
-  ([] (mini-game {}))
+  ([] (mini-game {:name :tetris-mini-game}))
   ([game-opts]
-   (let [game-opts (merge mini-game-defaults game-opts)]
-     (rf/dispatch [::tetris.events/start-game game-opts])
+   (let [grid      @(rf/subscribe [::tetris.subs/game-grid game-opts])
+         game-opts @(rf/subscribe [::tetris.subs/game-opts game-opts])]
      [:div
-      [matrix game-opts]])))
+      [matrix grid game-opts]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Main page component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def page-game-defaults
-  {:name       :default
-   :cell-style {:width "20px" :height "20px"}
-   :game-grid  {:entry-cell {:x 4 :y -1}
-                :height     16
-                :width      10}})
-
 (defn page
   "Intended for a full browser window
   Expects to be started itself."
-  ([] (page {}))
+  ([] (page {:name :tetris-page-game}))
   ([game-opts]
-   (let [game-opts (merge page-game-defaults game-opts)]
-     (rf/dispatch [::tetris.events/start-game game-opts])
+   (let [game-opts @(rf/subscribe [::tetris.subs/game-opts game-opts])]
      [components/page {:direction    :row
                        :full-height? true}
       ^{:key "left"}

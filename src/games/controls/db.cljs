@@ -80,7 +80,7 @@
       :controls  (controls-game-controls game-opts)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Controls Game DBs
+;; Game DBs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def mini-game-db
@@ -126,10 +126,13 @@
    (make-debug-game-db
      :controls-debug-game-3
      {:game-grid   {:height 4 :width 4}
+      :cell-height "24px"
+      :cell-width  "24px"
       :debug-game? true
       :debug?      false})
    default-db])
 
+;; TODO dry up
 (def game-dbs-map
   (->> game-dbs
        (map (fn [game] [(-> game :game-opts :name) game]))
