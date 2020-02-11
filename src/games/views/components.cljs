@@ -99,7 +99,8 @@
    (let [opts (dissoc opts
                       :style
                       :class
-                      :header)]
+                      :header
+                      :full-height?)]
      [:div
       (merge
         {:class (str "page " class)
@@ -109,8 +110,7 @@
             :width          "100vw"
             :display        "flex"
             :padding        "24px"
-            :flex-direction "column"
-            }
+            :flex-direction "column"}
            (if empty-bg? {} global-bg)
            style)}
         opts)

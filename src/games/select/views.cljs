@@ -101,4 +101,5 @@
    {:direction :row
     :header    [header]}
    ;; [expectations]
+   ^{:key "selections-comp"}
    [selections]])

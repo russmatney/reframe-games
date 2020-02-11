@@ -86,7 +86,8 @@
 ;; Page Game
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn page-game-cells
+(defn debug-cells
+  "Debug cells have clickable `:anchor?`s."
   [{:keys [moveable? x y anchor?] :as cell} {:keys [debug?] :as game-opts}]
   ^{:key (str x y)}
   [:div
@@ -98,14 +99,14 @@
      :width      (if debug? "148px" "48px")
      :border     (if moveable? "1px solid white" "1px solid red")
      :background (cond
-                   anchor? "blue"
+                   anchor?   "blue"
                    moveable? "green"
                    :else     "white")}}
    (if debug? (str cell) "")])
 
 (def page-game-defaults
   {:name      :controls-page-game
-   :debug?    true
+   :debug?    false
    :no-walls? true})
 
 (defn page-game
@@ -117,11 +118,11 @@
   ([game-opts]
    (let [game-opts (merge page-game-defaults game-opts)
          grid      @(rf/subscribe [::controls.subs/game-grid game-opts])
-         game-opts @(rf/subscribe [::controls.subs/game-opts game-opts])]
+         game-opts (or game-opts @(rf/subscribe [::controls.subs/game-opts game-opts]))]
 
      (rf/dispatch [::controls.events/start-game game-opts])
 
-     (grid.views/matrix grid {:->cell #(page-game-cells % game-opts)}))))
+     (grid.views/matrix grid {:->cell #(debug-cells % game-opts)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls Pages
@@ -147,5 +148,9 @@
    [components/widget
     {:style {:width "100%"}
      :label "Controls"}]
-   ^{:key "controls-game"}
-   [page-game]])
+
+   ^{:key "controls-game-1"}
+   [page-game {:name :controls-game-1}]
+
+   ^{:key "controls-game-2"}
+   [page-game {:name :controls-game-2}]])
