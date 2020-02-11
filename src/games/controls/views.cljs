@@ -12,6 +12,7 @@
 ;; Page control display
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Bring control display back
 (defn display-control [[control {:keys [keys event label]}]]
   ^{:key control}
   [components/widget
@@ -57,12 +58,7 @@
      :background (if moveable? "green" "white")}}
    ""])
 
-(def mini-game-defaults
-  {:name      :controls-mini-game
-   :debug?    false
-   :no-walls? true})
-
-;; Macro for defn that handles zero arity with defaults/merging?
+;; TODO handle game-opts with no name warning
 (defn mini-game
   "Intended as a div.
   Starts itself.
@@ -72,23 +68,20 @@
   Controls mini game is a useful debugger and sandbox -
   Click the anchor to toggle debugging.
   "
-  ([] (mini-game {}))
+  ([] (mini-game nil))
   ([game-opts]
-   (let [game-opts (merge mini-game-defaults game-opts)
-         grid      @(rf/subscribe [::controls.subs/game-grid game-opts])]
-
-     (rf/dispatch [::controls.events/start-game game-opts])
-     [grid.views/matrix
-      grid
+   (let [grid @(rf/subscribe [::controls.subs/game-grid game-opts])]
+     [grid.views/matrix grid
       {:->cell mini-game-cells}])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Page Game
+;; Debug game
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn debug-cells
   "Debug cells have clickable `:anchor?`s."
-  [{:keys [moveable? x y anchor?] :as cell} {:keys [debug?] :as game-opts}]
+  [{:keys [moveable? x y anchor?] :as cell}
+   {:keys [debug?] :as game-opts}]
   ^{:key (str x y)}
   [:div
    {:on-click
@@ -104,48 +97,49 @@
                    :else     "white")}}
    (if debug? (str cell) "")])
 
-(def page-game-defaults
-  {:name      :controls-page-game
-   :debug?    true
-   :no-walls? true})
-
-(defn page-game
+(defn debug-game
   "Intended as a full page.
   Useful as a debugger and sandbox, for implementing fancy features.
   Click the anchor cell to toggle `debug`.
   "
-  ([] [page-game {}])
+  ([] (debug-game {:name :controls-debug-game}))
   ([game-opts]
-   (let [game-opts (merge page-game-defaults game-opts)
-         grid      @(rf/subscribe [::controls.subs/game-grid game-opts])
+   (println "debug-game: " game-opts)
+   (let [grid      @(rf/subscribe [::controls.subs/game-grid game-opts])
          debug?    @(rf/subscribe [::controls.subs/debug? game-opts])
-         game-opts (or game-opts @(rf/subscribe [::controls.subs/game-opts game-opts]))]
+         game-opts @(rf/subscribe [::controls.subs/game-opts game-opts])]
+     (println "debug-game game-opts re-sub: " game-opts)
 
-     (rf/dispatch [::controls.events/start-game game-opts])
+     [:div
+      (when debug? [:h1 {:style {:color "white"}} (str "debug? :" debug?)])
 
-     [grid.views/matrix grid {:->cell #(debug-cells % game-opts)}]
+      [grid.views/matrix grid {:->cell #(debug-cells % game-opts)}]
 
-     #_[:div
-        [:h1 (str debug?)]
-        [grid.views/matrix grid {:->cell #(debug-cells % game-opts)}]
-        [:div {:style {:background "white"}} [:p (str game-opts)]]
-        ])))
+      (when debug? [:div {:style {:background "white"}} [:p (str game-opts)]])]
+     )))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Page game
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn page-game
+  ([] (page-game {:name :controls-page-game}))
+  ([game-opts]
+   (let [grid      @(rf/subscribe [::controls.subs/game-grid game-opts])
+         game-opts @(rf/subscribe [::controls.subs/game-opts game-opts])]
+     [grid.views/matrix grid {:->cell #(debug-cells % game-opts)}])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls Pages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn old-page []
-  (let [controls @(rf/subscribe [::subs/controls])]
-    [components/page {:direction    :row
-                      :full-height? true}
-     ^{:key "controls!"}
-     [components/widget
-      {:style {:width "100%"}
-       :label "Controls"}]
-     (for [control controls]
-       ^{:key control}
-       (display-control control))]))
+(defn two-games-page []
+  [:div
+   ^{:key "game-1"}
+   [debug-game {:name :controls-debug-game-1}]
+
+   ^{:key "game-2"}
+   [debug-game {:name :controls-debug-game-2}]])
 
 (defn page []
   [components/page
@@ -155,11 +149,10 @@
    [components/widget
     {:style {:width "100%"}
      :label "Controls"}]
-   [page-game]
-
-   ;; ^{:key "controls-game-1"}
-   ;; [page-game {:name :controls-game-1}]
-
-   ;; ^{:key "controls-game-2"}
-   ;; [page-game {:name :controls-game-2}]
+   ;; ^{:key "page-game"}
+   ;; [page-game]
+   ;; ^{:key "debug-game"}
+   ;; [debug-game]
+   ^{:key "two-games"}
+   [two-games-page]
    ])

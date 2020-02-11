@@ -16,6 +16,8 @@
   (fn [_cofx]
     {:dispatch-n
      [[::rp/add-keyboard-event-listener "keydown"]
+      ;; init global controls
+      ;; TODO should this add all controls? controls based on the view?
       [::set]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,7 +30,10 @@
   ::set
   [rf/trim-v]
   (fn [{:keys [db]} [controls]]
-    (let [controls   (merge controls.db/global-controls (or controls {}))
+    ;; currently merges controls into db
+    ;; might want to keep globals only...
+    ;; maybe preserve controls with a :global? flag
+    (let [controls   (merge (:controls db) (or controls {}))
           event-keys (controls.rp/controls->rp-event-keys controls)
           all-keys   (controls.rp/controls->rp-all-keys controls)]
       {:db (assoc db :controls controls)
@@ -37,6 +42,29 @@
         {:event-keys           event-keys
          :prevent-default-keys all-keys}]})))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Start-games
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO implies games have page knowledge (`pages`)
+;; maybe the pages should call out their named-games?
+(defn for-page?
+  [page {:keys [game-opts] :as _game-db}]
+  (contains? (:pages game-opts) page))
+
+(rf/reg-event-fx
+  ::start-games
+  (fn [{:keys [db]}]
+    (let [page (:current-page db)
+          game-opts-for-page
+          (-> db
+              :controls-games
+              (vals)
+              (->>
+                (filter #(for-page? page %))
+                (map :game-opts)))]
+      {:dispatch-n
+       (map (fn [gopts] [::start-game gopts]) game-opts-for-page)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls 'game'
@@ -45,12 +73,9 @@
 (rf/reg-event-fx
   ::start-game
   [(game-db-interceptor :controls-games)]
-  (fn [{:keys [db]} game-opts]
-    {:dispatch [::set-controls game-opts]
-     :db       (merge (-> (controls.db/initial-db game-opts)
-                          (controls/add-piece))
-                      ;; prefer whatever is in the db already
-                      db)}))
+  (fn [{:keys [_db]} game-opts]
+    (println "starting controls game: " (:name game-opts))
+    {:dispatch [::set-controls game-opts]}))
 
 (rf/reg-event-fx
   ::set-controls

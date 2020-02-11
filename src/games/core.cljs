@@ -8,8 +8,7 @@
    [re-frame.core :as rf]))
 
 (defn dev-setup []
-  (enable-console-print!)
-  (println "dev mode"))
+  (enable-console-print!))
 
 (defn mount-root []
   (reagent/render [views/root]
@@ -26,5 +25,8 @@
   ;; initialize db
   (rf/dispatch-sync [::events/init-db])
 
-  ;; setup controls
-  (rf/dispatch-sync [::controls.events/init]))
+  ;; setup control listener
+  (rf/dispatch-sync [::controls.events/init])
+
+  ;; start games!
+  (rf/dispatch-sync [::events/start-games]))

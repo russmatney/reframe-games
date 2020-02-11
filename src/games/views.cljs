@@ -9,9 +9,9 @@
    [re-frame.core :as rf]))
 
 (defn show-page
-  [page]
-  (let [default-page @(rf/subscribe [::subs/default-page])
-        page         (or page default-page :select)]
+  []
+  (let [page @(rf/subscribe [::subs/current-page])
+        page (or page :select)]
     (case page
       :controls [controls.views/page]
       :about    [views.about/page]
@@ -22,8 +22,7 @@
       :select [select.views/page])))
 
 (defn root []
-  (let [page @(rf/subscribe [::subs/current-page])]
-    [:div#root
-     {:style {:width "100vw"}}
-     [show-page page]]))
+  [:div#root
+   {:style {:width "100vw"}}
+   [show-page]])
 

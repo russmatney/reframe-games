@@ -20,8 +20,6 @@
                   [::step game-opts]
                   [::game-timer game-opts]]}))
 
-;; TODO consider a gameover, score, piece-played etc event model
-;; i.e. pulling the cond step fn out and into re-frame
 (rf/reg-event-fx
   ::step
   [(game-db-interceptor ::puyo.db/db)]

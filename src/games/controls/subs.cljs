@@ -1,18 +1,23 @@
 (ns games.controls.subs
   (:require [re-frame.core :as rf]))
 
-;; TODO clean up walking across these named game-dbs
+(defn ->db
+  ([db game-opts]
+   (-> db :controls-games (get (:name game-opts))))
+  ([db game-opts k]
+   (-> db :controls-games (get (:name game-opts)) k)))
+
 (rf/reg-sub
   ::game-grid
   (fn [db [_ game-opts]]
-    (-> db :controls-games (get (:name game-opts)) :game-grid)))
+    (->db db game-opts :game-grid)))
 
 (rf/reg-sub
   ::game-opts
   (fn [db [_ game-opts]]
-    (-> db :controls-games (get (:name game-opts)) :game-opts)))
+    (->db db game-opts :game-opts)))
 
 (rf/reg-sub
   ::debug?
   (fn [db [_ game-opts]]
-    (-> db :controls-games (get (:name game-opts)) :game-opts :debug?)))
+    (:debug? (->db db game-opts :game-opts))))
