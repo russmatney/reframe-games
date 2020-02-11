@@ -5,7 +5,7 @@
    [games.tetris.views :as tetris.views]
    [games.puyo.views :as puyo.views]
    [games.controls.views :as controls.views]
-   [games.views.components :refer [widget]]))
+   [games.views.components :as components]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -39,7 +39,7 @@
 (defn selection
   [{:keys [label on-click component]}]
   ^{:key label}
-  [widget
+  [components/widget
    {:class    "selection"
     :on-click on-click
     :label    label
@@ -53,7 +53,7 @@
 
 (defn selections
   []
-  [:div
+  [:div.selections
    {:style
     {:width   "100%"
      :flex    "1"
@@ -73,7 +73,7 @@
 (defn expectations
   "TODO fade-in effect, maybe on the widget api?"
   []
-  [widget
+  [components/widget
    {
     :style   {:flex "1"}
     :label   "Expectations"
@@ -87,36 +87,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn header []
-  [widget
-   {:style {}
+  [components/widget
+   {:class "header"
+    :style {}
     :label "Select a game"}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Main page component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def background-color "#441086")
-(def background-style
-  {:background
-   (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
-       linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px")
-   :background-size  "64px 128px"
-   :background-color background-color})
-
 (defn page []
-  [:div
-   {:style
-    (conj
-      background-style
-      {:height  "100vh"
-       :width   "100vw"
-       :padding "24px"}
-      )}
-   [:div
-    {:style {:display        "flex"
-             :flex-direction "column"
-             :height         "100%"
-             :width          "100%"}}
-    [header]
-    ;; [expectations]
-    [selections]]])
+  [components/page
+   {:direction :row
+    :header    [header]}
+   ;; [expectations]
+   [selections]])

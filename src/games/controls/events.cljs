@@ -51,7 +51,6 @@
                       ;; prefer whatever is in the db already
                       db)}))
 
-
 (rf/reg-event-fx
   ::set-controls
   [(game-db-interceptor :controls-games)]

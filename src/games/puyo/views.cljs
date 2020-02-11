@@ -1,7 +1,7 @@
 (ns games.puyo.views
   (:require
    [re-frame.core :as rf]
-   [games.views.components :refer [widget]]
+   [games.views.components :as components]
    [games.views.util :as util]
    [games.controls.views :as controls.views]
    [games.grid.core :as grid]
@@ -19,6 +19,7 @@
 ;; Cell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO rewrite into 'shapes' style?
 (def board-black "#212529")
 
 (def green "#92CC41")
@@ -92,12 +93,11 @@
      {:style
       {:display "flex"
        :flex    "1"}}
-     [widget
+     [components/widget
       {:style {:flex "1"}}
+
       (when gameover? [gameover])
-
       ^{:key "matrix"} [matrix game-opts]
-
       (when gameover? [restart game-opts])]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -115,16 +115,16 @@
       {:display        "flex"
        :flex           "1"
        :flex-direction "column"}}
-     [widget
+     [components/widget
       {:on-click #(rf/dispatch [::puyo.events/toggle-pause game-opts])
        :style    {:flex "1"}
        :label    (if paused? "Paused" "Time")
        :value    time}]
-     [widget
+     [components/widget
       {:style {:flex "1"}
        :label "Level"
        :value level}]
-     [widget
+     [components/widget
       {:style {:flex "1"}
        :label "Score"
        :value score}]]))
@@ -186,20 +186,6 @@
     {:controls [:pause :hold :rotate]}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Page game wrapper
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn game-view [game-opts]
-  [:div
-   {:style
-    {:height  "100%"
-     :width   "100%"
-     :display "flex"}}
-   [left-panel game-opts]
-   [center-panel game-opts]
-   [right-panel game-opts]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mini-game
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -226,15 +212,6 @@
 ;; Full Page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def background-color "#441086")
-(def background
-  (str "linear-gradient(135deg, " background-color " 21px,
-       black 22px, black 24px, transparent 24px, transparent 67px,
-       black 67px, black 69px, transparent 69px),
-       linear-gradient(225deg, " background-color " 21px,
-       black 22px, black 24px, transparent 24px, transparent 67px,
-       black 67px, black 69px, transparent 69px), 64px"))
-
 (def page-game-defaults
   {:name        :default
    :cell-style  {:width "20px" :height "20px"}
@@ -248,13 +225,10 @@
   ([game-opts]
    (let [game-opts (merge page-game-defaults game-opts)]
      (rf/dispatch [::puyo.events/start-game game-opts])
-     [:div
-      {:style
-       {:height           "100vh"
-        :width            "100vw"
-        :display          "flex"
-        :background       background
-        :background-color background-color
-        :background-size  "64px 128px"
-        :padding          "24px"}}
-      [game-view game-opts]])))
+     [components/page
+      {:direction    :row
+       :full-height? true}
+      [left-panel game-opts]
+      [center-panel game-opts]
+      [right-panel game-opts]
+      ])))

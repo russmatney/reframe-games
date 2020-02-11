@@ -3,10 +3,8 @@
    [clojure.string :as string]
    [re-frame.core :as rf]
    [games.subs :as subs]
-   [games.views.components :refer [widget]]
+   [games.views.components :as components]
    [games.grid.views :as grid.views]
-   [games.grid.core :as grid]
-   [games.controls.core :as controls]
    [games.controls.events :as controls.events]
    [games.controls.subs :as controls.subs]))
 
@@ -16,7 +14,7 @@
 
 (defn display-control [[control {:keys [keys event label]}]]
   ^{:key control}
-  [widget
+  [components/widget
    {:on-click #(rf/dispatch event)
     :style
     {:flex "1 0 25%"}
@@ -25,50 +23,11 @@
    [:p (string/join "," keys)]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Controls-page
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO dry this up
-(def background-color "#441086")
-(def background
-  (str "linear-gradient(135deg, " background-color " 21px,
-       black 22px, black 24px, transparent 24px, transparent 67px,
-       black 67px, black 69px, transparent 69px),
-       linear-gradient(225deg, " background-color " 21px,
-       black 22px, black 24px, transparent 24px, transparent 67px,
-       black 67px, black 69px, transparent 69px), 64px"))
-
-
-;; TODO create page component
-(defn page []
-  (let [controls @(rf/subscribe [::subs/controls])]
-    [:div
-     {:style
-      {:height           "100vh"
-       :width            "100vw"
-       :display          "flex"
-       :background       background
-       :background-color background-color
-       :background-size  "64px 128px"
-       :padding          "24px"}}
-     [:div
-      {:style
-       {:display        "flex"
-        :flex-wrap      "wrap"
-        :flex-direction "row"}}
-      [widget
-       {:style {:width "100%"}
-        :label "Controls"}]
-      (for [control controls]
-        (display-control control))]]))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls-mini
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn mini [{:keys [controls]}]
-  [widget
+  [components/widget
    {:style
     {:padding "0.9rem"
      :flex    "1"}}
@@ -118,3 +77,29 @@
              :border     (if moveable? "1px solid white" "1px solid red")
              :background (if moveable? "green" "white")}}
            (if debug (str cell) "")])}))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Controls Pages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn old-page []
+  (let [controls @(rf/subscribe [::subs/controls])]
+    [components/page {:direction    :row
+                      :full-height? true}
+     ^{:key "controls!"}
+     [components/widget
+      {:style {:width "100%"}
+       :label "Controls"}]
+     (for [control controls]
+       ^{:key control}
+       (display-control control))]))
+
+(defn page []
+  [components/page
+   {:direction    :row
+    :full-height? true}
+   [components/widget
+    {:style {:width "100%"}
+     :label "Controls"}]
+   [mini-game]])

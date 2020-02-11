@@ -210,6 +210,7 @@
 (defn- adjacent?
   "True if the cells are neighboring cells.
   Determined by having the same x and y +/- 1, or same y and x +/- 1.
+  TODO add no-walls x/y support!
   "
   [c0 c1]
   (let [{x0 :x y0 :y} c0
@@ -291,16 +292,16 @@
       :y (+ y y-diff)}))
 
   ([cell direction
-    {:keys [no-walls? no-x-walls? no-y-walls? grid]}]
+    {:keys [no-walls? no-walls-x? no-walls-y? grid]}]
    (let [{:keys [x y]}                     (move-cell-coords cell direction)
          {:keys [x-min x-max y-min y-max]} (grid-min-max grid)
 
-         x (if (or no-walls? no-x-walls?)
+         x (if (or no-walls? no-walls-x?)
              (cond (< x x-min) x-max
                    (> x x-max) x-min
                    :else       x)
              x)
-         y (if (or no-walls? no-y-walls?)
+         y (if (or no-walls? no-walls-y?)
              (cond (< y y-min) y-max
                    (> y y-max) y-min
                    :else       y)

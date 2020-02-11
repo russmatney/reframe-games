@@ -1,6 +1,6 @@
 (ns games.views.about
   (:require
-   [games.views.components :refer [widget]]))
+   [games.views.components :as components]))
 
 (defn about
   []
@@ -35,24 +35,10 @@
    [:p "Thanks for playing!"]
    [:p "Press m to return to the main menu."]])
 
-;; TODO dry this up
-(def background-color "#441086")
-;;:background "#5d08c7"
-
 (defn page []
-  [:div
-   {:style
-    {:height           "100vh"
-     :width            "100vw"
-     :display          "flex"
-     :background
-     (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
-       linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px")
-     :background-color background-color
-     :background-size  "64px 128px"
-     :padding          "24px"}}
-   [widget
+  [components/page {}
+   [components/widget
     {:style
-     {:width "100%"}}
-    ^{:key "child"}
+     {:width  "100%"
+      :height "100%"}}
     [about]]])

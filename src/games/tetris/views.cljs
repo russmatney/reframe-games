@@ -1,7 +1,7 @@
 (ns games.tetris.views
   (:require
    [re-frame.core :as rf]
-   [games.views.components :refer [widget]]
+   [games.views.components :as components]
    [games.views.util :as util]
    [games.grid.views :as grid.views]
    [games.controls.views :as controls.views]
@@ -36,7 +36,7 @@
      {:style
       {:display "flex"
        :flex    "1"}}
-     [widget
+     [components/widget
       {:style
        {:flex "1"}}
       (when gameover?
@@ -67,16 +67,16 @@
       {:display        "flex"
        :flex           "1"
        :flex-direction "column"}}
-     [widget
+     [components/widget
       {:style
        {:flex "1"}
        :label (if paused? "Paused" "Time")
        :value time}]
-     [widget
+     [components/widget
       {:style
        {:flex "1"}
        :label "Level" :value level}]
-     [widget
+     [components/widget
       {:style
        {:flex "1"}
        :label "Score" :value score}]]))
@@ -158,9 +158,6 @@
 ;; Main page component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def background-color "#441086")
-;;:background "#5d08c7"
-
 (def page-game-defaults
   {:name       :default
    :cell-style {:width "20px" :height "20px"}
@@ -175,19 +172,8 @@
   ([game-opts]
    (let [game-opts (merge page-game-defaults game-opts)]
      (rf/dispatch [::tetris.events/start-game game-opts])
-     [:div
-      {:style
-       {:height           "100vh"
-        :width            "100vw"
-        :display          "flex"
-        :background
-        (str "linear-gradient(135deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px),
-       linear-gradient(225deg, " background-color " 21px, black 22px, black 24px, transparent 24px, transparent 67px, black 67px, black 69px, transparent 69px)0 64px")
-        :background-color background-color
-        :background-size  "64px 128px"
-        :padding          "24px"}}
-
-
+     [components/page {:direction    :row
+                       :full-height? true}
       ^{:key "left"}
       [left-panel game-opts]
 
