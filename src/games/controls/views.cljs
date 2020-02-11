@@ -104,15 +104,14 @@
   "
   ([] (debug-game {:name :controls-debug-game}))
   ([game-opts]
-   (println "debug-game: " game-opts)
    (let [grid      @(rf/subscribe [::controls.subs/game-grid game-opts])
          debug?    @(rf/subscribe [::controls.subs/debug? game-opts])
          game-opts @(rf/subscribe [::controls.subs/game-opts game-opts])]
-     (println "debug-game game-opts re-sub: " game-opts)
 
      [:div
       (when debug? [:h1 {:style {:color "white"}} (str "debug? :" debug?)])
 
+      (when debug? [:h3 {:style {:color "white"}} (:name game-opts)])
       [grid.views/matrix grid {:->cell #(debug-cells % game-opts)}]
 
       (when debug? [:div {:style {:background "white"}} [:p (str game-opts)]])]
@@ -135,6 +134,9 @@
 
 (defn two-games-page []
   [:div
+   {:style {:width           "100%"
+            :display         "flex"
+            :justify-content "space-between"}}
    ^{:key "game-1"}
    [debug-game {:name :controls-debug-game-1}]
 

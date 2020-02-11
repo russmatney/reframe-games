@@ -4,8 +4,7 @@
    [re-pressed.core :as rp]
    [games.controls.re-pressed :as controls.rp]
    [games.events.interceptors :refer [game-db-interceptor]]
-   [games.controls.core :as controls]
-   [games.controls.db :as controls.db]))
+   [games.controls.core :as controls]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init controls listener, global controls, and controls game
@@ -32,10 +31,15 @@
   (fn [{:keys [db]} [controls]]
     ;; currently merges controls into db
     ;; might want to keep globals only...
-    ;; maybe preserve controls with a :global? flag
-    (let [controls   (merge (:controls db) (or controls {}))
-          event-keys (controls.rp/controls->rp-event-keys controls)
-          all-keys   (controls.rp/controls->rp-all-keys controls)]
+    ;; maybe preserve globals with a :global? flag ?
+    (let [controls      (concat (:controls db) (or controls []))
+          id-events-map (controls.rp/controls->id-events-map controls)
+          event-keys    (controls.rp/controls->rp-event-keys controls)
+          all-keys      (controls.rp/controls->rp-all-keys controls)]
+
+      ;; TODO reckless! create a cofx
+      (controls.rp/register-dispatchers id-events-map)
+
       {:db (assoc db :controls controls)
        :dispatch
        [::rp/set-keydown-rules
@@ -52,6 +56,7 @@
   [page {:keys [game-opts] :as _game-db}]
   (contains? (:pages game-opts) page))
 
+;; TODO mark games :started and use to add controls?
 (rf/reg-event-fx
   ::start-games
   (fn [{:keys [db]}]
@@ -74,7 +79,6 @@
   ::start-game
   [(game-db-interceptor :controls-games)]
   (fn [{:keys [_db]} game-opts]
-    (println "starting controls game: " (:name game-opts))
     {:dispatch [::set-controls game-opts]}))
 
 (rf/reg-event-fx
@@ -110,6 +114,4 @@
   ::toggle-debug
   [(game-db-interceptor :controls-games)]
   (fn [db _game-opts]
-    (println "toggling debug")
-    (println (:game-opts db))
     (update-in db [:game-opts :debug?] not)))

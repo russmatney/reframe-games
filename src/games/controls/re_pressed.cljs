@@ -1,4 +1,5 @@
-(ns games.controls.re-pressed)
+(ns games.controls.re-pressed
+  (:require [re-frame.core :as rf]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; re-pressed helpers
@@ -74,19 +75,43 @@
 
 (def supported-keys (set (keys key-label->re-pressed-key)))
 
+(defn mk-control-event-name [id]
+  (keyword :games.controls id))
+
+(defn controls->id-events-map
+  "Builds a map of :id to a list of events"
+  [controls]
+  (let [controls-by-id (group-by :id controls)]
+    (into {}
+          (map (fn [[k ctrls]]
+                 [k (map :event ctrls)])
+               controls-by-id))))
+
+(defn register-dispatchers
+  [id-events-map]
+  (doall
+    (map
+      (fn [[id events]]
+        (rf/reg-event-fx
+          (mk-control-event-name id)
+          (fn [_cofx _evt]
+            {:dispatch-n (distinct events)})))
+      id-events-map)))
+
 (defn controls->rp-event-keys
   "Converts the passed controls-db into a
   re-pressed `[[::event][kbd1][kbd2]]` list.
+  TODO join `keys` from same :id events
   "
   [controls]
   (into
     []
     (map
-      (fn [[_ {:keys [event keys]}]]
+      (fn [{:keys [id event keys]}]
         (into
           []
           (cons
-            event
+            [(mk-control-event-name id)] ;; using id as event name
             (map (fn [k]
                    (when-not k
                      (print "Alert! Unsupported key passed for event " event))
@@ -101,6 +126,6 @@
   [controls]
   (into []
         (mapcat
-          (fn [[_ {:keys [keys]}]]
+          (fn [{:keys [keys]}]
             (map key-label->re-pressed-key keys))
           controls)))
