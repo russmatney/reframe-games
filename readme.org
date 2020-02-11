@@ -82,7 +82,7 @@ likely with malli
 **** [ ] manual-down should be instant-down
 **** [ ] display directional controls more prominently
 redo controls view, maybe just show when paused
-**** [ ] dry up @rf/subscribe usage with suggested subscribe macro `(<-sub! ::s/current-view])`?
+**** [ ] dry up @rf/subscribe usage with suggested subscribe macro `(<-sub! ::s/current-page])`?
 **** [ ] controls fire multiple events (from different sources)
 ***** [ ] control registration/deregistration
 **** [ ] unify cell color 'type' treatment

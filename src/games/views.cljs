@@ -8,19 +8,22 @@
    [games.select.views :as select.views]
    [re-frame.core :as rf]))
 
+(defn show-page
+  [page]
+  (let [default-page @(rf/subscribe [::subs/default-page])
+        page         (or page default-page :select)]
+    (case page
+      :controls [controls.views/page]
+      :about    [views.about/page]
+
+      :tetris [tetris.views/page]
+      :puyo   [puyo.views/page]
+
+      :select [select.views/page])))
+
 (defn root []
-  (let [view @(rf/subscribe [::subs/current-view])]
+  (let [page @(rf/subscribe [::subs/current-page])]
     [:div#root
      {:style {:width "100vw"}}
-     ;; TODO update view to 'page'?
-     (case view
-       :controls [controls.views/page]
-       :about    [views.about/page]
-
-       ;; games
-       :tetris [tetris.views/page]
-       :puyo   [puyo.views/page]
-
-       nil [select.views/page])]))
-
+     [show-page page]]))
 

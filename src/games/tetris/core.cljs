@@ -104,6 +104,8 @@
       (as-> db db
         (reduce (fn [d cell] (mark-cell-occupied d cell))
                 db falling-cells)
+
+        ;; TODO piece-played event-function
         ;; this also indicates that the pieces has been played, so we increment
         (update db :pieces-played inc)
         ;; remove the hold-lock to allow another hold to happen

@@ -13,4 +13,5 @@
   {::tetris.db/db {}
    ::puyo.db/db   {}
    :controls      {}
-   :current-view  nil})
+   :current-page  nil
+   :default-page  :controls})

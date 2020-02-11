@@ -4,9 +4,14 @@
 
 
 (rf/reg-sub
-  ::current-view
+  ::current-page
   (fn [db _]
-    (:current-view db)))
+    (:current-page db)))
+
+(rf/reg-sub
+  ::default-page
+  (fn [db _]
+    (:default-page db)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls

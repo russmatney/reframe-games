@@ -78,9 +78,9 @@
          grid      @(rf/subscribe [::controls.subs/game-grid game-opts])]
 
      (rf/dispatch [::controls.events/start-game game-opts])
-     (grid.views/matrix
-       grid
-       {:->cell mini-game-cells}))))
+     [grid.views/matrix
+      grid
+      {:->cell mini-game-cells}])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Page Game
@@ -106,7 +106,7 @@
 
 (def page-game-defaults
   {:name      :controls-page-game
-   :debug?    false
+   :debug?    true
    :no-walls? true})
 
 (defn page-game
@@ -114,15 +114,22 @@
   Useful as a debugger and sandbox, for implementing fancy features.
   Click the anchor cell to toggle `debug`.
   "
-  ([] (page-game {}))
+  ([] [page-game {}])
   ([game-opts]
    (let [game-opts (merge page-game-defaults game-opts)
          grid      @(rf/subscribe [::controls.subs/game-grid game-opts])
+         debug?    @(rf/subscribe [::controls.subs/debug? game-opts])
          game-opts (or game-opts @(rf/subscribe [::controls.subs/game-opts game-opts]))]
 
      (rf/dispatch [::controls.events/start-game game-opts])
 
-     (grid.views/matrix grid {:->cell #(debug-cells % game-opts)}))))
+     [grid.views/matrix grid {:->cell #(debug-cells % game-opts)}]
+
+     #_[:div
+        [:h1 (str debug?)]
+        [grid.views/matrix grid {:->cell #(debug-cells % game-opts)}]
+        [:div {:style {:background "white"}} [:p (str game-opts)]]
+        ])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls Pages
@@ -148,9 +155,11 @@
    [components/widget
     {:style {:width "100%"}
      :label "Controls"}]
+   [page-game]
 
-   ^{:key "controls-game-1"}
-   [page-game {:name :controls-game-1}]
+   ;; ^{:key "controls-game-1"}
+   ;; [page-game {:name :controls-game-1}]
 
-   ^{:key "controls-game-2"}
-   [page-game {:name :controls-game-2}]])
+   ;; ^{:key "controls-game-2"}
+   ;; [page-game {:name :controls-game-2}]
+   ])

@@ -82,21 +82,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def global-controls
-  {:main     {:label "Main Menu"
+  {:home     {:label "Home"
               :keys  (set ["m" "x"])
-              :event [:games.events/unset-view]}
+              :event [:games.events/unset-page]}
    :controls {:label "Controls"
               :keys  (set ["c" "?"])
-              :event [:games.events/set-view :controls]}
+              :event [:games.events/set-page :controls]}
    :about    {:label "About"
               :keys  (set ["b"])
-              :event [:games.events/set-view :about]}
+              :event [:games.events/set-page :about]}
    :tetris   {:label "Play Tetris"
               :keys  (set ["t"])
-              :event [:games.events/set-view :tetris]}
+              :event [:games.events/set-page :tetris]}
    :puyo     {:label "Play Puyo-Puyo"
               :keys  (set ["p"])
-              :event [:games.events/set-view :puyo]}})
+              :event [:games.events/set-page :puyo]}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls Game DB

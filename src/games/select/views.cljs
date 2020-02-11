@@ -15,7 +15,7 @@
 (def selectable-games
   ;; TODO specify easier pieces, fewer colors
   [{:label     "Tetris"
-    :on-click  #(rf/dispatch [::events/set-view :tetris])
+    :on-click  #(rf/dispatch [::events/set-page :tetris])
     :component [tetris.views/mini-game
                 {:game-grid       {:height 10 :width 5 :entry-cell {:x 2 :y -1}}
                  :tick-timeout    500
@@ -24,7 +24,7 @@
                  :ignore-controls true}]}
 
    {:label     "Puyo"
-    :on-click  #(rf/dispatch [::events/set-view :puyo])
+    :on-click  #(rf/dispatch [::events/set-page :puyo])
     :component [puyo.views/mini-game
                 {:game-grid       {:height 10 :width 5 :entry-cell {:x 2 :y -1}}
                  :tick-timeout    500

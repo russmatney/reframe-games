@@ -9,22 +9,24 @@
 ;; Init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO cofx to read defaults from user's config/cookie
+;; ex: default-page
 (rf/reg-event-db
   ::init-db
   (fn [_] (db/initial-db)))
 
 (rf/reg-event-fx
-  ::set-view
-  (fn [{:keys [db]} [_ view]]
-    {:db (assoc db :current-view view)}))
+  ::set-page
+  (fn [{:keys [db]} [_ page]]
+    {:db (assoc db :current-page page)}))
 
 (rf/reg-event-fx
-  ::unset-view
+  ::unset-page
   (fn [{:keys [db]} _]
-    (let [current-view (-> db :current-view)]
-      (cond-> {:db (dissoc db :current-view)}
-        (contains? #{:tetris :puyo} current-view)
+    (let [current-page (-> db :current-page)]
+      (cond-> {:db (dissoc db :current-page)}
+        (contains? #{:tetris :puyo} current-page)
         (assoc :dispatch
-               (case current-view
+               (case current-page
                  :tetris [::tetris.events/pause-game]
                  :puyo   [::puyo.events/pause-game]))))))

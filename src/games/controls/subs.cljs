@@ -12,3 +12,7 @@
   (fn [db [_ game-opts]]
     (-> db :controls-games (get (:name game-opts)) :game-opts)))
 
+(rf/reg-sub
+  ::debug?
+  (fn [db [_ game-opts]]
+    (-> db :controls-games (get (:name game-opts)) :game-opts :debug?)))
