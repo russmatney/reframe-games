@@ -68,7 +68,7 @@
   Controls mini game is a useful debugger and sandbox -
   Click the anchor to toggle debugging.
   "
-  ([] (mini-game nil))
+  ([] (mini-game {:name :controls-mini-game}))
   ([game-opts]
    (let [grid @(rf/subscribe [::controls.subs/game-grid game-opts])]
      [grid.views/matrix grid
