@@ -95,12 +95,11 @@
        ^{:key i} c))])
 
 (defn page
-  ([{:keys [class style empty-bg? full-height? direction header] :as opts} & children]
+  ([{:keys [class style empty-bg? direction header] :as opts} & children]
    (let [opts (dissoc opts
                       :style
                       :class
-                      :header
-                      :full-width?)]
+                      :header)]
      [:div
       (merge
         {:class (str "page " class)

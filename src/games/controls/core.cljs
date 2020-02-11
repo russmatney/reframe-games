@@ -10,6 +10,7 @@
 ;; controls->re-pressed helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO kick these into `re-pressed` namespace
 (defn controls->rp-event-keys
   "Converts the passed controls-db into a
   re-pressed `[[::event][kbd1][kbd2]]` list.
@@ -48,7 +49,7 @@
 (def shapes
   "Shapes added to the controls game."
   [{:props {:moveable? true}
-    :cells [{:y -1} {:x -1} {:anchor true} {:x 1} {:y 1}]}])
+    :cells [{:y -1} {:x -1} {:anchor? true} {:x 1} {:y 1}]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adding Pieces

@@ -79,3 +79,12 @@
     (if (controls/can-player-move? db)
       (controls/rotate-piece db)
       db)))
+
+(rf/reg-event-db
+  ::toggle-debug
+  [(game-db-interceptor :controls-games)]
+  (fn [db _game-opts]
+    (println "toggling debug")
+    (println (:game-opts db))
+    (update-in db [:game-opts :debug?] not)))
+;; TODO how to merge game-opts?

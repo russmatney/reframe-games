@@ -129,7 +129,7 @@
   from walls when attempting to rotate on the edge of the grid."
   [db]
   (let [falling-cells (get-falling-cells db)
-        anchor-cell   (first (filter :anchor falling-cells))]
+        anchor-cell   (first (filter :anchor? falling-cells))]
 
     (if-not anchor-cell
       ;; no anchor-cell, do nothing
@@ -167,7 +167,7 @@
                                            (grid/calc-rotate-target
                                              (update anchor-cell :x #(- % 2)) c)))}]
                    :can-move? #(cell-open? db %)
-                   :cells     (remove :anchor falling-cells)}))))))
+                   :cells     (remove :anchor? falling-cells)}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adding new pieces

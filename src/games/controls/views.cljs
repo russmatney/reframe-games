@@ -46,9 +46,20 @@
 ;; Controls-mini
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn mini-game-cells
+  [{:keys [moveable? x y]}]
+  ^{:key (str x y)}
+  [:div
+   {:style
+    {:height     "48px"
+     :width      "48px"
+     :border     (if moveable? "1px solid white" "1px solid black")
+     :background (if moveable? "green" "white")}}
+   ""])
+
 (def mini-game-defaults
   {:name      :controls-mini-game
-   :debug     false
+   :debug?    false
    :no-walls? true})
 
 ;; Macro for defn that handles zero arity with defaults/merging?
@@ -56,28 +67,61 @@
   "Intended as a div.
   Starts itself.
 
-  Establishes sane defaults for a mini-player."
+  Establishes sane defaults for a mini-player.
+
+  Controls mini game is a useful debugger and sandbox -
+  Click the anchor to toggle debugging.
+  "
   ([] (mini-game {}))
   ([game-opts]
    (let [game-opts (merge mini-game-defaults game-opts)
-         debug     (:debug game-opts)
          grid      @(rf/subscribe [::controls.subs/game-grid game-opts])]
 
      (rf/dispatch [::controls.events/start-game game-opts])
      (grid.views/matrix
        grid
-       {:->cell
-        (fn cell-component
-          [{:keys [moveable? x y] :as cell}]
-          ^{:key (str x y)}
-          [:div
-           {:style
-            {:height     (if debug "148px" "48px")
-             :width      (if debug "148px" "48px")
-             :border     (if moveable? "1px solid white" "1px solid red")
-             :background (if moveable? "green" "white")}}
-           (if debug (str cell) "")])}))))
+       {:->cell mini-game-cells}))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Page Game
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn page-game-cells
+  [{:keys [moveable? x y anchor?] :as cell} {:keys [debug?] :as game-opts}]
+  ^{:key (str x y)}
+  [:div
+   {:on-click
+    (when anchor?
+      #(rf/dispatch [::controls.events/toggle-debug game-opts]))
+    :style
+    {:height     (if debug? "148px" "48px")
+     :width      (if debug? "148px" "48px")
+     :border     (if moveable? "1px solid white" "1px solid red")
+     :background (cond
+                   anchor? "blue"
+                   moveable? "green"
+                   :else     "white")}}
+   (if debug? (str cell) "")])
+
+(def page-game-defaults
+  {:name      :controls-page-game
+   :debug?    true
+   :no-walls? true})
+
+(defn page-game
+  "Intended as a full page.
+  Useful as a debugger and sandbox, for implementing fancy features.
+  Click the anchor cell to toggle `debug`.
+  "
+  ([] (page-game {}))
+  ([game-opts]
+   (let [game-opts (merge page-game-defaults game-opts)
+         grid      @(rf/subscribe [::controls.subs/game-grid game-opts])
+         game-opts @(rf/subscribe [::controls.subs/game-opts game-opts])]
+
+     (rf/dispatch [::controls.events/start-game game-opts])
+
+     (grid.views/matrix grid {:->cell #(page-game-cells % game-opts)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls Pages
@@ -99,7 +143,9 @@
   [components/page
    {:direction    :row
     :full-height? true}
+   ^{:key "controls-header"}
    [components/widget
     {:style {:width "100%"}
      :label "Controls"}]
-   [mini-game]])
+   ^{:key "controls-game"}
+   [page-game]])

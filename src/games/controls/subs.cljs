@@ -6,3 +6,9 @@
   ::game-grid
   (fn [db [_ game-opts]]
     (-> db :controls-games (get (:name game-opts)) :game-grid)))
+
+(rf/reg-sub
+  ::game-opts
+  (fn [db [_ game-opts]]
+    (-> db :controls-games (get (:name game-opts)) :game-opts)))
+

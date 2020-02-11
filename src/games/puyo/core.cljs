@@ -123,7 +123,7 @@
 (defn rotate-piece
   [db]
   (let [falling-cells (get-falling-cells db)
-        anchor-cell   (first (filter :anchor falling-cells))]
+        anchor-cell   (first (filter :anchor? falling-cells))]
 
     (if-not anchor-cell
       ;; no anchor-cell, do nothing
@@ -147,7 +147,7 @@
                                            (grid/calc-rotate-target
                                              (update anchor-cell :x dec) c)))}]
                    :can-move? #(cell-open? db %)
-                   :cells     (remove :anchor falling-cells)}))))))
+                   :cells     (remove :anchor? falling-cells)}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adding Pieces
@@ -237,7 +237,7 @@
                   grid
                   (fn [cell]
                     (seq (filter #(contains? % cell) groups)))
-                  #(dissoc % :occupied :color :anchor))))
+                  #(dissoc % :occupied :color :anchor?))))
 
       ;; prevent other fallers from being held
       (assoc :hold-lock true)
