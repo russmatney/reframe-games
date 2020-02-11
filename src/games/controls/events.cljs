@@ -2,6 +2,7 @@
   (:require
    [re-frame.core :as rf]
    [re-pressed.core :as rp]
+   [games.controls.re-pressed :as controls.rp]
    [games.events.interceptors :refer [game-db-interceptor]]
    [games.controls.core :as controls]
    [games.controls.db :as controls.db]))
@@ -28,8 +29,8 @@
   [rf/trim-v]
   (fn [{:keys [db]} [controls]]
     (let [controls   (merge controls.db/global-controls (or controls {}))
-          event-keys (controls/controls->rp-event-keys controls)
-          all-keys   (controls/controls->rp-all-keys controls)]
+          event-keys (controls.rp/controls->rp-event-keys controls)
+          all-keys   (controls.rp/controls->rp-all-keys controls)]
       {:db (assoc db :controls controls)
        :dispatch
        [::rp/set-keydown-rules
@@ -87,4 +88,3 @@
     (println "toggling debug")
     (println (:game-opts db))
     (update-in db [:game-opts :debug?] not)))
-;; TODO how to merge game-opts?
