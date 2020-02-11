@@ -132,16 +132,18 @@
 ;; Controls Pages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn two-games-page []
-  [:div
-   {:style {:width           "100%"
-            :display         "flex"
-            :justify-content "space-between"}}
-   ^{:key "game-1"}
-   [debug-game {:name :controls-debug-game-1}]
-
-   ^{:key "game-2"}
-   [debug-game {:name :controls-debug-game-2}]])
+(defn n-games-page []
+  (let [
+        debug-game-opts @(rf/subscribe [::controls.subs/debug-game-opts])
+        ]
+    [:div
+     {:style {:width           "100%"
+              :display         "flex"
+              :justify-content "space-between"}}
+     (for [opts debug-game-opts]
+       ^{:key (:name opts)}
+       [debug-game opts])
+     ]))
 
 (defn page []
   [components/page
@@ -156,5 +158,5 @@
    ;; ^{:key "debug-game"}
    ;; [debug-game]
    ^{:key "two-games"}
-   [two-games-page]
+   [n-games-page]
    ])

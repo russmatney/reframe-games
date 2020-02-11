@@ -104,17 +104,6 @@
       (initial-game-db)
       (controls/add-piece)))
 
-(def debug-game-db
-  (make-debug-game-db :controls-debug-game {:debug? true}))
-(def debug-game-db-1
-  (make-debug-game-db :controls-debug-game-1 {:debug? false}))
-(def debug-game-db-2
-  (make-debug-game-db
-    :controls-debug-game-2
-    {:game-grid {:height 5
-                 :width  5}
-     :debug?    false}))
-
 (def default-db
   (-> {:name :default}
       (initial-game-db)))
@@ -122,9 +111,23 @@
 (def game-dbs
   [mini-game-db
    page-game-db
-   debug-game-db
-   debug-game-db-1
-   debug-game-db-2
+   (make-debug-game-db
+     :controls-debug-game
+     {:debug? true})
+   (make-debug-game-db
+     :controls-debug-game-1
+     {:debug-game? true
+      :debug?      false})
+   (make-debug-game-db
+     :controls-debug-game-2
+     {:game-grid   {:height 5 :width 5}
+      :debug-game? true
+      :debug?      false})
+   (make-debug-game-db
+     :controls-debug-game-3
+     {:game-grid   {:height 4 :width 4}
+      :debug-game? true
+      :debug?      false})
    default-db])
 
 (def game-dbs-map

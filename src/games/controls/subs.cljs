@@ -21,3 +21,10 @@
   ::debug?
   (fn [db [_ game-opts]]
     (:debug? (->db db game-opts :game-opts))))
+
+(rf/reg-sub
+  ::debug-game-opts
+  (fn [db]
+    (let [games     (vals (:controls-games db))
+          game-opts (map :game-opts games)]
+      (filter :debug-game? game-opts))))
