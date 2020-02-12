@@ -11,3 +11,4 @@ out
 .shadow-cljs/
 node_modules/
 reframe-games.zip
+.cpcache/

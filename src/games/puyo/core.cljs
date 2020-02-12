@@ -320,7 +320,7 @@
       ;; TODO gameover event, score event?
       (gameover? db)
       (case (-> game-opts :on-gameover)
-        :restart (puyo.db/initial-db game-opts)
+        :restart (puyo.db/game-db game-opts)
         nil      (assoc db :gameover? true))
 
       (should-advance-level? db)

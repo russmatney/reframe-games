@@ -41,8 +41,7 @@
   ::start-game
   [(game-db-interceptor ::puyo.db/db)]
   (fn [_cofx game-opts]
-    {:db         (puyo.db/initial-db game-opts)
-     :dispatch-n [[::set-controls game-opts]
+    {:dispatch-n [[::set-controls game-opts]
                   [::step game-opts]
                   [::game-timer game-opts]]}))
 

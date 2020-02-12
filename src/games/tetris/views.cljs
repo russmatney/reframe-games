@@ -17,17 +17,16 @@
 
 (defn matrix
   "Returns the rows of cells."
-  [grid {:keys [cell-style] :as game-opts}]
-  (let []
-    (grid.views/matrix
-      grid
-      {:cell->style
-       (fn [c]
-         (merge
-           (or cell-style {})
-           (if (:style c)
-             (:style c)
-             {:background board-black})))})))
+  [grid {:keys [cell-style]}]
+  (grid.views/matrix
+    grid
+    {:cell->style
+     (fn [c]
+       (merge
+         (or cell-style {})
+         (if (:style c)
+           (:style c)
+           {:background board-black})))}))
 
 (defn center-panel [game-opts]
   (let [grid      @(rf/subscribe [::tetris.subs/game-grid game-opts])

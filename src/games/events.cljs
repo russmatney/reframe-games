@@ -21,6 +21,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Dispatch start-games events into game event modules
+;; Might be better as an start/stop/pause games event?
 (rf/reg-event-fx
   ::start-games
   (fn [_cofx]
@@ -36,7 +37,8 @@
 (rf/reg-event-fx
   ::set-page
   (fn [{:keys [db]} [_ page]]
-    {:db (assoc db :current-page page)}))
+    {:db       (assoc db :current-page page)
+     :dispatch [::start-games]}))
 
 ;; TODO update to dispatch broader start/stop games events
 ;; might even dispatch navigation events to game event modules

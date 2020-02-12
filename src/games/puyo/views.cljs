@@ -49,26 +49,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn matrix
-  ([] [matrix {:name :default}])
-  ([{:keys [cell-style] :as game-opts}]
-   (let [grid          @(rf/subscribe [::puyo.subs/game-grid game-opts])
-         spin?         @(rf/subscribe [::puyo.subs/puyo-db game-opts :spin-the-bottle?])
-         pieces-played @(rf/subscribe [::puyo.subs/puyo-db game-opts :pieces-played])
+  [grid {:keys [cell-style] :as game-opts}]
+  (let [spin?         @(rf/subscribe [::puyo.subs/puyo-db game-opts :spin-the-bottle?])
+        pieces-played @(rf/subscribe [::puyo.subs/puyo-db game-opts :pieces-played])
 
-         grid
-         (cond-> grid
-           spin?
-           (grid/spin {:reverse-y? (contains? #{1 2 3} (mod pieces-played 6))
-                       :reverse-x? (contains? #{2 3 4} (mod pieces-played 6))}))]
-     [grid.views/matrix
-      grid
-      {:cell->style
-       (fn [{:keys [color] :as c}]
-         (merge
-           (or cell-style {})
-           (if color
-             {:background (cell->piece-color c)}
-             {:background (cell->background c)})))}])))
+        grid
+        (cond-> grid
+          spin?
+          (grid/spin {:reverse-y? (contains? #{1 2 3} (mod pieces-played 6))
+                      :reverse-x? (contains? #{2 3 4} (mod pieces-played 6))}))]
+    [grid.views/matrix
+     grid
+     {:cell->style
+      (fn [{:keys [color] :as c}]
+        (merge
+          (or cell-style {})
+          (if color
+            {:background (cell->piece-color c)}
+            {:background (cell->background c)})))}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Center Panel
@@ -88,7 +86,8 @@
    "Click here to restart."])
 
 (defn center-panel [game-opts]
-  (let [gameover? @(rf/subscribe [::puyo.subs/gameover? game-opts])]
+  (let [grid      @(rf/subscribe [::puyo.subs/game-grid game-opts])
+        gameover? @(rf/subscribe [::puyo.subs/gameover? game-opts])]
     [:div.center-panel
      {:style
       {:display "flex"
@@ -97,7 +96,7 @@
       {:style {:flex "1"}}
 
       (when gameover? [gameover])
-      ^{:key "matrix"} [matrix game-opts]
+      ^{:key "matrix"} [matrix grid game-opts]
       (when gameover? [restart game-opts])]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -189,46 +188,34 @@
 ;; Mini-game
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def mini-game-defaults
-  {:name      :default
-   :game-grid {:entry-cell {:x 1 :y 0}
-               :height     8
-               :width      4}})
-
 (defn mini-game
   "Intended as a div.
   Starts itself.
 
   Establishes sane defaults for a mini-player."
-  ([] (mini-game {}))
+  ([] (mini-game {:name :puyo-mini-game}))
   ([game-opts]
-   (let [game-opts (merge mini-game-defaults game-opts)]
-     (rf/dispatch [::puyo.events/start-game game-opts])
+   (let [grid      @(rf/subscribe [::puyo.subs/game-grid game-opts])
+         game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])]
      [:div
-      [matrix game-opts]])))
+      [matrix grid game-opts]])))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Full Page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def page-game-defaults
-  {:name        :default
-   :cell-style  {:width "20px" :height "20px"}
-   :no-walls-x? true
-   :game-grid   {:entry-cell {:x 3 :y -1}
-                 :height     16
-                 :width      8}})
-
 (defn page
-  ([] (page {}))
+  ([] (page {:name :puyo-page-game}))
   ([game-opts]
-   (let [game-opts (merge page-game-defaults game-opts)]
-     (rf/dispatch [::puyo.events/start-game game-opts])
+   (let [game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])]
      [components/page
       {:direction    :row
        :full-height? true}
+      ^{:key "left"}
       [left-panel game-opts]
+      ^{:key "center"}
       [center-panel game-opts]
+      ^{:key "right"}
       [right-panel game-opts]
       ])))

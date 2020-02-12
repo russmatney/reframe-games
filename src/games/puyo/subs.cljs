@@ -12,6 +12,11 @@
       2 (let [[_e n] evt] (-> db ::puyo.db/db (get n)))
       3 (let [[_e n k] evt] (-> db ::puyo.db/db (get n) (get k))))))
 
+(rf/reg-sub
+  ::game-opts
+  (fn [db [_ game-opts]]
+    (-> db ::puyo.db/db (get (:name game-opts)) :game-opts)))
+
 
 (defn game-opts->db
   ([db {:keys [name] :as _game-opts}]
