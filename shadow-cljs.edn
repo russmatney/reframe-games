@@ -1,23 +1,24 @@
-{:dependencies
- [[org.clojure/clojure "1.10.1"]
-  [org.clojure/clojurescript "1.10.597"]
-  [reagent "0.9.1"]
-  [re-frame "0.11.0-rc4"]
-  [cider/cider-nrepl "0.22.0"]
-  [re-pressed "0.3.1"]]
+{:deps {:aliases [:nrepl :cljs]}
 
  :source-paths ["src"]
 
- :nrepl {:port 2988}
+ :nrepl {:port 2988
+         :middleware
+         [cider-nrepl.plugin/middleware
+          refactor-nrepl.middleware/wrap-refactor]}
 
- :builds {
-          :app
-          {:target          :browser
-           :modules         {:main {:entries [games.core]}}
-           :output-dir      "public/js/compiled"
-           :asset-path      "/js/compiled"
-           :closure-defines {}
-           :devtools        {:http-root   "public"
-                             :http-port   2989
-                             :loader-mode :eval
-                             :after-load  games.core/mount-root}}}}
+ :builds
+ {:app {:target     :browser
+        :modules    {:main {:entries [games.core]}}
+        :output-dir "public/js/compiled"
+        :asset-path "/js/compiled"
+        :closure-defines
+        {re_frame.trace.trace_enabled?        true
+         day8.re_frame.tracing.trace_enabled? true}
+        :devtools
+        {:http-root   "public"
+         :http-port   2989
+         :loader-mode :eval
+         :after-load  games.core/mount-root
+         :preloads    [devtools.preload
+                       day8.re-frame-10x.preload]}}}}
