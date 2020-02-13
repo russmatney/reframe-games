@@ -87,13 +87,13 @@
   (-> {:name  :controls-mini-game
        :pages #{:select}}
       (initial-game-db)
-      (controls/add-piece)))
+      (controls/add-pieces)))
 
 (def page-game-db
   (-> {:name  :controls-page-game
        :pages #{:controls}}
       (initial-game-db)
-      (controls/add-piece)))
+      (controls/add-pieces)))
 
 (defn make-debug-game-db
   [name opts]
@@ -102,7 +102,7 @@
          :pages #{:controls}}
         opts)
       (initial-game-db)
-      (controls/add-piece)))
+      (controls/add-pieces)))
 
 (def default-db
   (-> {:name :default}

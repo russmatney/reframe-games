@@ -11,8 +11,12 @@
 
 (def shapes
   "Shapes added to the controls game."
-  [{:props {:moveable? true}
-    :cells [{:y -1} {:x -1} {:anchor? true} {:x 1} {:y 1}]}])
+  [
+   ;; {:props {:moveable? true}
+   ;;  :cells [{:y -1} {:x -1} {:anchor? true} {:x 1} {:y 1}]}
+   {:props {:moveable? true}
+    :cells [{:y -1} {:x -1} {:anchor? true}]}
+   ])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adding Pieces
@@ -26,7 +30,7 @@
                  (grid/relative ec cell)))
              cells)))
 
-(defn add-piece
+(defn add-pieces
   [db]
   (let [ec->cell-fns (map shape->cells shapes)]
     (update db :game-grid
@@ -60,4 +64,16 @@
         db             (assoc db :game-grid updated-grid)]
     db))
 
-(defn rotate-piece [db] db)
+(defn rotate-piece [{:keys [game-grid] :as db}]
+  (let [cells       (grid/get-cells game-grid :props)
+        anchor-cell (first (filter :anchor? cells))]
+    (if-not anchor-cell
+      ;; no anchor-cell, do nothing
+      db
+      (update db :game-grid
+              (fn [grid]
+                (grid/move-cells
+                  grid
+                  {:move-f    #(grid/calc-rotate-target anchor-cell %)
+                   :can-move? (fn [_] true)
+                   :cells     (remove :anchor? cells)}))))))

@@ -15,16 +15,13 @@
   (fn [_cofx]
     {:dispatch-n
      [[::rp/add-keyboard-event-listener "keydown"]
-      ;; init global controls
-      ;; TODO should this add all controls? controls based on the view?
-      [::set]]}))
+      [::controls.rp/register-key-listeners]
+      [::controls.rp/register-key-dispatchers]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public event to set controls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO update to support multiple events from seperate key bindings
-;; to support sending keys to multiple keys at once
 (rf/reg-event-fx
   ::set
   [rf/trim-v]
@@ -32,19 +29,12 @@
     ;; currently merges controls into db
     ;; might want to keep globals only...
     ;; maybe preserve globals with a :global? flag ?
-    (let [controls      (concat (:controls db) (or controls []))
-          id-events-map (controls.rp/controls->id-events-map controls)
-          event-keys    (controls.rp/controls->rp-event-keys controls)
-          all-keys      (controls.rp/controls->rp-all-keys controls)]
+    (let [controls (concat (:controls db) (or controls []))
+          by-key   (controls.rp/controls->by-key controls)]
 
-      ;; TODO reckless! create a cofx
-      (controls.rp/register-dispatchers id-events-map)
-
-      {:db (assoc db :controls controls)
-       :dispatch
-       [::rp/set-keydown-rules
-        {:event-keys           event-keys
-         :prevent-default-keys all-keys}]})))
+      {:db (assoc db
+                  :controls controls
+                  :controls-by-key by-key)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Start-games
@@ -91,8 +81,8 @@
 (rf/reg-event-db
   ::add-piece
   [(game-db-interceptor :controls-games)]
-  (fn [db [_game-opts]]
-    (controls/add-piece db)))
+  (fn [db _game-opts]
+    (controls/add-pieces db)))
 
 (rf/reg-event-db
   ::move-piece
@@ -105,7 +95,8 @@
 (rf/reg-event-db
   ::rotate-piece
   [(game-db-interceptor :controls-games)]
-  (fn [db [_game-opts]]
+  (fn [db _game-opts]
+    (println "rotating controls game" (:name _game-opts))
     (if (controls/can-player-move? db)
       (controls/rotate-piece db)
       db)))

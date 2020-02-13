@@ -17,7 +17,7 @@
   (let [colorA (rand-nth colors)
         colorB (rand-nth colors)]
     (fn [{x :x y :y}]
-      [{:x x :y y :anchor true :color colorA}
+      [{:x x :y y :anchor? true :color colorA}
        {:x x :y (- y 1) :color colorB}])))
 
 

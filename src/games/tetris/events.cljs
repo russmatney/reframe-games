@@ -43,7 +43,6 @@
   ::start-game
   [(game-db-interceptor ::tetris.db/db)]
   (fn [_cofx game-opts]
-    (println "starting tetris: " (:name game-opts))
     {:dispatch-n [[::set-controls game-opts]
                   [::step game-opts]
                   [::game-timer game-opts]]}))

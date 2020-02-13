@@ -8,12 +8,12 @@
 
 (def shapes
   [{:k :square :cells [{:x 1 :y -1} {:x 1} {:y -1} {}]}
-   {:k :line :cells [{:x 2} {:x 1} {:anchor true} {:x -1}]}
+   {:k :line :cells [{:x 2} {:x 1} {:anchor? true} {:x -1}]}
    {:k :t :cells [{:x -1} {:x 1} {} {:y -1}]}
-   {:k :z :cells [{:x -1 :y -1} {:x 1} {:anchor true} {:x -1}]}
-   {:k :s :cells [{:x 1 :y -1} {:y -1} {:anchor true} {:x -1}]}
-   {:k :r :cells [{:x -1 :y -1} {:y -1} {:anchor true} {:x -1}]}
-   {:k :l :cells [{:x -1 :y -1} {:x 1} {:anchor true} {:y -1}]}])
+   {:k :z :cells [{:x -1 :y -1} {:x 1} {:anchor? true} {:x -1}]}
+   {:k :s :cells [{:x 1 :y -1} {:y -1} {:anchor? true} {:x -1}]}
+   {:k :r :cells [{:x -1 :y -1} {:y -1} {:anchor? true} {:x -1}]}
+   {:k :l :cells [{:x -1 :y -1} {:x 1} {:anchor? true} {:y -1}]}])
 
 (def shapes-map
   "The above `shapes` as a map by its `:key`"

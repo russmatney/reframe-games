@@ -88,7 +88,7 @@
 (rf/reg-event-db
   ::rotate-piece
   [(game-db-interceptor ::puyo.db/db)]
-  (fn [db [_game-opts]]
+  (fn [db _game-opts]
     (if (puyo/can-player-move? db)
       (puyo/rotate-piece db)
       db)))
@@ -101,7 +101,7 @@
 (rf/reg-event-db
   ::hold-and-swap-piece
   [(game-db-interceptor ::puyo.db/db)]
-  (fn [db [_game-opts]]
+  (fn [db _game-opts]
     ;; if there is a hold, move current hold to front of piece-queue
     ;; remove current falling piece from board, move it to hold
     (let [{:keys [held-shape-fn falling-shape-fn hold-lock paused?]} db]

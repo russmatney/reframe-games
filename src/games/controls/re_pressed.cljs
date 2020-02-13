@@ -1,8 +1,10 @@
 (ns games.controls.re-pressed
-  (:require [re-frame.core :as rf]))
+  (:require
+   [re-frame.core :as rf]
+   [re-pressed.core :as rp]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; re-pressed helpers
+;; Key Data and maps
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def key-label->re-pressed-key
@@ -71,61 +73,103 @@
    "]"  {:keyCode 221}
    "}"  {:keyCode 221}
    "'"  {:keyCode 222}
-   "\"" {:keyCode 222}})
+   "\"" {:keyCode 222}
+   })
 
 (def supported-keys (set (keys key-label->re-pressed-key)))
 
-(defn mk-control-event-name [id]
-  (keyword :games.controls id))
 
-(defn controls->id-events-map
-  "Builds a map of :id to a list of events"
-  [controls]
-  (let [controls-by-id (group-by :id controls)]
-    (into {}
-          (map (fn [[k ctrls]]
-                 [k (map :event ctrls)])
-               controls-by-id))))
+(defn str-key->event-name [id]
+  (keyword :games.controls.key-press id))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Transforms over key data
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ->rp-event
+  "Only supports one key press per event.
+  Returns [event[kbd]], assumes passed `:event` is already a vector."
+  [{:keys [event kbd]}]
+  [event [kbd]])
+
+(def rp-event-keys
+  "Converts the supported keys into a re-pressed `[[::event][kbd1][kbd2]]` list."
+  (into [] (map
+             (fn [[str-key rp-key]]
+               (->rp-event {:kbd   rp-key
+                            :event [(str-key->event-name str-key)]}))
+             key-label->re-pressed-key)))
+
+(def rp-all-keys
+  "Converts the passed controls-db into a re-pressed `[kbd1 kbd2]` list."
+  (into []
+        (vals key-label->re-pressed-key)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Key-press listener events
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Registers each listener with re-pressed's listener
+(rf/reg-event-fx
+  ::register-key-listeners
+  (fn [_cofx _evt]
+    {:dispatch
+     [::rp/set-keydown-rules
+      {:event-keys           rp-event-keys
+       :prevent-default-keys rp-all-keys}]}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Key-press handler and registration
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn key-press-handler
+  [str-key cofx _event]
+  (let [controls (get-in cofx [:db :controls-by-key str-key])]
+    {:dispatch-n (map :event controls)}))
+
+(defn register-dispatcher
+  [[str-key _]]
+  (rf/reg-event-fx
+    (str-key->event-name str-key)
+    (partial key-press-handler str-key)))
 
 (defn register-dispatchers
-  [id-events-map]
-  (doall
-    (map
-      (fn [[id events]]
-        (rf/reg-event-fx
-          (mk-control-event-name id)
-          (fn [_cofx _evt]
-            {:dispatch-n (distinct events)})))
-      id-events-map)))
+  "Registers an internal (games) event for every key in `supported-keys`"
+  []
+  (doall (map register-dispatcher key-label->re-pressed-key)))
 
-(defn controls->rp-event-keys
-  "Converts the passed controls-db into a
-  re-pressed `[[::event][kbd1][kbd2]]` list.
-  TODO join `keys` from same :id events
+;; Registers handler for with re-pressed's events
+(rf/reg-event-fx
+  ::register-key-dispatchers
+  (fn [_cofx _evt]
+    (register-dispatchers)
+    {}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Controls->controls by key
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn controls->by-key
+  "Converts controls from a list of control maps like
+  `{:keys #{k1 k2} :event [evt]}`
+  into a map of controls by key, like:
+  `{k1 {:keys #{k1 k2} :event [evt]}
+    k2 {:keys #{k1 k2} :event [evt]}}`
+
+  Supports looking up events to dispatch by keys pressed in above handler.
+  Called at control registration time.
   "
   [controls]
-  (into
-    []
-    (map
-      (fn [{:keys [id event keys]}]
-        (into
-          []
-          (cons
-            [(mk-control-event-name id)] ;; using id as event name
-            (map (fn [k]
-                   (when-not k
-                     (print "Alert! Unsupported key passed for event " event))
-                   [(key-label->re-pressed-key k)])
-                 keys))))
-      controls)))
+  (reduce
+    (fn [by-key {:keys [keys] :as control}]
+      (reduce
+        (fn [by-key str-key]
+          (let [controls (get by-key str-key)]
+            (assoc by-key str-key (conj controls control))))
+        by-key
+        keys))
+    {}
+    controls))
 
-(defn controls->rp-all-keys
-  "Converts the passed controls-db into a
-  re-pressed `[[kbd1][kbd2]]` list.
-  "
-  [controls]
-  (into []
-        (mapcat
-          (fn [{:keys [keys]}]
-            (map key-label->re-pressed-key keys))
-          controls)))
+(comment
+  (assoc {} "p" "somethign"))

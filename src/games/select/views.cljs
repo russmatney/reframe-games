@@ -19,7 +19,10 @@
     :component [tetris.views/mini-game]}
    {:label     "Puyo"
     :on-click  #(rf/dispatch [::events/set-page :puyo])
-    :component [puyo.views/mini-game]}])
+    :component [puyo.views/mini-game]}
+   {:label     "Controls"
+    :on-click  #(rf/dispatch [::events/set-page :controls])
+    :component [controls.views/mini-game]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Selections
@@ -49,9 +52,7 @@
      :display "flex"}}
    (for [{:keys [label] :as game} selectable-games]
      ^{:key label}
-     (selection game))
-   ^{:key "controls-mini-game"}
-   [controls.views/mini-game]])
+     (selection game))])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
