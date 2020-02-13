@@ -6,12 +6,8 @@ Games built in ClojureScript, with [[https://github.com/reagent-project/reagent]
 This repo will be expanded to include other games, but for now, it's just a
 Tetris clone. Check out the live game at [[https://russmatney.itch.io/tetruss][russmatney.itch.io/tetruss]].
 
-* Tetruss
-The [[https://tetris.wiki][Tetris Wiki]] has some great Tetris related resources.
-
-**** Ideas, Version 2, and Punted Features/Issues
-**** Build and Deploy
-***** Building the release
+* Release
+** Building the release
 #+BEGIN_SRC sh
 # remove 'complied' dir from dev-mode
 rm -rf public/js/compiled
@@ -19,13 +15,13 @@ rm -rf public/js/compiled
 # build release version
 shadow-cljs release app
 #+END_SRC
-***** Deploying to s3
+** Deploying to s3
 #+BEGIN_SRC sh
 # deploy to s3
 aws s3 sync public/ s3://games.russmatney.com
 #+END_SRC
 
-******* Requires aws cli tool:
+**** Requires aws cli tool:
 #+BEGIN_SRC zsh
 yay -S aws-cli
 
@@ -33,7 +29,7 @@ yay -S aws-cli
 aws configure
 #+END_SRC
 
-***** Packaging for itch.io
+** Packaging for itch.io
 Itch.io requires a .zip of the web-app.
 
 Build as described above, then zip it up.
@@ -41,45 +37,18 @@ Build as described above, then zip it up.
 #+BEGIN_SRC sh
 zip -r reframe-games.zip public
 #+END_SRC
-* [X] Mean-bean Machine clone
-**** V1
-***** [X] engine basics
-***** [X] controls: hold
-***** [X] controls: no movement after initial contact
-***** [X] score calculated
-***** [X] presentation: hold
-***** [X] presentation: queue
-***** [X] presentation: score
-***** [X] presentation: controls
-**** [X] ship mvp
-***** [X] highlight selected game with mouse
-add garden, herb, css live-reload
-***** [X] remove highlight from puyo background
-***** [X] navigate back to select page from game page (x)
-***** [X] restore tetris controls
-***** [X] global navigation controls
-***** [X] link selection-view to about page
-or shows about content
-****** [X] make `about` a global event
-****** [X] remove about from both games
-***** [X] remove about link from game page (in favor of `exit`)
-***** [X] set proper cell sizes in all screens
-***** [X] set proper board sizes in all screens
-***** [X] gameover enabled in page, not in mini player
-***** [X] ensure all puyo features (score?)
-***** [X] expose controls, about views on main menu
-***** [X] build and post update on itch!
 * misc todos
 **** [X] move entrypoints into grids
 **** [X] clean up 'widget' api
 **** [X] dry up views into grid/views namespace
 **** [X] break build process apart to support multiple apps
-**** [ ] dry up timers and pause helpers
-**** [ ] dry up db events with helper cofx for sub dbs
-**** [ ] add models/model generators and unit-tests
-likely with malli
+**** [X] dry up timers and pause helpers
+**** [ ] refactor colors into view, rather than attached to cells
 **** [ ] locked-falls should be instant-falls
 **** [ ] manual-down should be instant-down
+**** [ ] dry up controls and game-db events
+**** [ ] add models/model generators and unit-tests
+likely with malli
 **** [ ] display directional controls more prominently
 redo controls view, maybe just show when paused
 **** [ ] dry up @rf/subscribe usage with suggested subscribe macro `(<-sub! ::s/current-page])`?
@@ -110,7 +79,6 @@ redo controls view, maybe just show when paused
 **** [ ] controls: instant-drop
 **** [ ] high-score, custom controls preserved across re-fresh
 **** [ ] rows-to-next-level visual indication
-**** [ ] refactor colors into view, rather than attached to cells
 **** [ ] 'doom' face - show emotion during left/right/rotate/score
 **** [ ] Add achievements
 **** [ ] poster-ized level clears (gunn style)
@@ -128,6 +96,9 @@ just overwrite for now? or fire both controls? both i think?
 make it easy to register/deregister them.
 **** [ ] create controls page for connecting events and keys
 let the user write the controls/db.cljs
+* Resources
+** Tetris
+The [[https://tetris.wiki][Tetris Wiki]] has some great Tetris related resources.
 * Contributing
 My intention for this repository is to build some things from scratch on my
 own - selfishly, I'm somewhat closed-minded to contributions.
