@@ -133,7 +133,6 @@
                  {:x (:x c)
                   :y (:y c)})))
 
-;; TODO Unit tests to make sure these funcs at least return the db
 (defn add-cells
   "Adds the passed cells to the passed grid"
   [{:keys [entry-cell] :as db} {:keys [make-cells update-cell]}]

@@ -43,7 +43,7 @@ zip -r reframe-games.zip public
 **** [X] dry up views into grid/views namespace
 **** [X] break build process apart to support multiple apps
 **** [X] dry up timers and pause helpers
-**** [ ] refactor colors into view, rather than attached to cells
+**** [X] refactor colors into view, rather than attached to cells
 **** [ ] locked-falls should be instant-falls
 **** [ ] manual-down should be instant-down
 **** [ ] dry up controls and game-db events
@@ -96,6 +96,9 @@ just overwrite for now? or fire both controls? both i think?
 make it easy to register/deregister them.
 **** [ ] create controls page for connecting events and keys
 let the user write the controls/db.cljs
+**** [ ] Write a metadata component
+include: current combo, highest combo, combos to next level, highest level
+pieces played, combos scored, items available
 * Resources
 ** Tetris
 The [[https://tetris.wiki][Tetris Wiki]] has some great Tetris related resources.

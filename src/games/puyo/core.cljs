@@ -156,16 +156,16 @@
 (defn next-bag
   "'bag' terminology carried over from tetris."
   [_]
-  (repeatedly 5 puyo.db/build-piece-fn))
+  (repeat 5 puyo.db/build-piece-fn))
 
 (defn add-preview-piece
   "Rebuilds a passed preview grid and adds the passed piece (func) to it."
-  [grid piece]
+  [grid piece-fn]
   (-> grid
       (grid/build-grid)
       (grid/add-cells
         {:update-cell #(assoc % :preview true)
-         :make-cells  piece})))
+         :make-cells  piece-fn})))
 
 (defn add-new-piece
   "Adds a new cell to the grid.
@@ -177,7 +177,8 @@
   "
   [{:keys [piece-queue min-queue-size] :as db}]
   (let [next-three (take 3 (drop 1 piece-queue))
-        make-cells (first piece-queue)]
+        make-cells (first piece-queue)
+        game-opts  (:game-opts db)]
     (-> ;; this also indicates that the pieces has been played, so we increment
       db
       (update :current-piece-num inc)
@@ -200,15 +201,15 @@
               (fn [g]
                 (grid/add-cells g
                                 {:update-cell #(assoc % :falling true)
-                                 :make-cells  make-cells})))
+                                 :make-cells  (make-cells game-opts)})))
 
       (update :preview-grids
               (fn [gs]
                 (let [[g1 g2 g3] gs
                       [p1 p2 p3] next-three]
-                  [(add-preview-piece g1 p1)
-                   (add-preview-piece g2 p2)
-                   (add-preview-piece g3 p3)]))))))
+                  [(add-preview-piece g1 (p1 game-opts))
+                   (add-preview-piece g2 (p2 game-opts))
+                   (add-preview-piece g3 (p3 game-opts))]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clearing pieces and cells

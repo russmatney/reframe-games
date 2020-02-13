@@ -6,20 +6,14 @@
 ;; Piece Types
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def colors
-  [:red
-   :green
-   :yellow
-   :blue])
-
-;; TODO come off the db, or operate over passed colors or the db itself
-(defn build-piece-fn []
-  (let [colorA (rand-nth colors)
+;; TODO move to puyo core?
+(defn build-piece-fn [game-opts]
+  (let [colors (:colors game-opts)
+        colorA (rand-nth colors)
         colorB (rand-nth colors)]
     (fn [{x :x y :y}]
       [{:x x :y y :anchor? true :color colorA}
        {:x x :y (- y 1) :color colorB}])))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Initial Controls
@@ -62,7 +56,12 @@
 
 (def defaults
   {:step-timeout    500
-   :ignore-controls false})
+   :ignore-controls false
+   :colors
+   [:red
+    :green
+    :yellow
+    :blue]})
 
 (defn game-db
   "Creates an initial puyo game state."
@@ -96,7 +95,7 @@
       :time 0
 
       ;; queue
-      :piece-queue    (repeatedly 5 build-piece-fn)
+      :piece-queue    (repeat 5 build-piece-fn)
       :min-queue-size 5
       :preview-grids  (repeat 3 piece-grid)
 

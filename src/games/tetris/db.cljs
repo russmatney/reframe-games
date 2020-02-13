@@ -7,13 +7,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def shapes
-  [{:k :square :cells [{:x 1 :y -1} {:x 1} {:y -1} {}]}
+  [{:k :square :cells [{:x 1 :y -1} {:x 1} {:y -1} {:anchor? true}]}
    {:k :line :cells [{:x 2} {:x 1} {:anchor? true} {:x -1}]}
-   {:k :t :cells [{:x -1} {:x 1} {} {:y -1}]}
-   {:k :z :cells [{:x -1 :y -1} {:x 1} {:anchor? true} {:x -1}]}
+   {:k :t :cells [{:x -1} {:x 1} {:anchor? true} {:y -1}]}
+   {:k :z :cells [{:x -1 :y -1} {:y -1} {:anchor? true} {:x 1}]}
    {:k :s :cells [{:x 1 :y -1} {:y -1} {:anchor? true} {:x -1}]}
-   {:k :r :cells [{:x -1 :y -1} {:y -1} {:anchor? true} {:x -1}]}
-   {:k :l :cells [{:x -1 :y -1} {:x 1} {:anchor? true} {:y -1}]}])
+   {:k :r :cells [{:x -1 :y -1} {:x 1} {:anchor? true} {:x -1}]}
+   {:k :l :cells [{:x 1 :y -1} {:x 1} {:anchor? true} {:x -1}]}])
 
 (def shapes-map
   "The above `shapes` as a map by its `:key`"
@@ -21,37 +21,20 @@
 
 (defn cell->props [shape]
   (case (:k shape)
-    :line   {:color :light-blue :type :line}
-    :square {:color :yellow :type :square}
-    :l      {:color :orange :type :l}
-    :r      {:color :blue :type :r}
-    :s      {:color :red :type :s}
-    :z      {:color :red :type :z}
-    :t      {:aka   #{"mr. t"}
-             :color :magenta
-             :type  :t}))
-
-;; TODO move to tetris views
-(defn cell->style [shape]
-  (case (:k shape)
-    :line   {:background "#6EBFF5"}
-    :square {:background "rgb(247,213,29)"}
-    :l      {:background "rgb(146,204,65)"}
-    :r      {:background "#209CEE"}
-    :s      {:background "#FE493C"}
-    :z      {:background "rgb(231,110,85)"}
-    :t      {:background "#B564D4"}
-    ;; TODO add 'log' function
-    nil     (println "shape missing" shape)))
+    :square {:color :yellow}
+    :line   {:color :light-blue}
+    :l      {:color :orange}
+    :r      {:color :blue}
+    :s      {:color :green}
+    :z      {:color :red}
+    :t      {:color :magenta}))
 
 (defn shape->ec->cell
   [{:keys [cells] :as shape}]
-  (let [style (cell->style shape)
-        props (cell->props shape)]
+  (let [props (cell->props shape)]
     (fn [ec]
       (map (comp
-             #(assoc % :props props)
-             #(assoc % :style style)
+             #(merge % props)
              #(grid/relative ec %))
            cells))))
 

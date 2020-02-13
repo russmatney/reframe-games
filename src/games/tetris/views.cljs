@@ -7,26 +7,31 @@
    [games.controls.views :as controls.views]
    [games.subs :as subs]
    [games.tetris.subs :as tetris.subs]
-   [games.tetris.events :as tetris.events]))
+   [games.tetris.events :as tetris.events]
+   [games.color :as color]))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cells
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn cell->style [game-opts {:keys [color] :as c}]
+  (merge
+    (or (:cell-style game-opts) {})
+    (if color
+      {:background (color/cell->piece-color c)}
+      {:background (color/cell->background c)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def board-black "#212529")
-
 (defn matrix
   "Returns the rows of cells."
-  [grid {:keys [cell-style]}]
+  [grid game-opts]
   (grid.views/matrix
     grid
-    {:cell->style
-     (fn [c]
-       (merge
-         (or cell-style {})
-         (if (:style c)
-           (:style c)
-           {:background board-black})))}))
+    {:cell->style (partial cell->style game-opts)}))
 
 (defn center-panel [game-opts]
   (let [grid      @(rf/subscribe [::tetris.subs/game-grid game-opts])
@@ -88,11 +93,7 @@
   (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids game-opts])]
     (grid.views/piece-list
       {:label       "Queue"
-       :cell->style
-       (fn [c]
-         (merge
-           (or (:cell-style game-opts) {})
-           (:style c)))
+       :cell->style (partial cell->style game-opts)
        :piece-grids preview-grids})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

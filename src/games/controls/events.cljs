@@ -96,7 +96,6 @@
   ::rotate-piece
   [(game-db-interceptor :controls-games)]
   (fn [db _game-opts]
-    (println "rotating controls game" (:name _game-opts))
     (if (controls/can-player-move? db)
       (controls/rotate-piece db)
       db)))

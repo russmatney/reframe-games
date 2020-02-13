@@ -8,48 +8,26 @@
    [games.grid.views :as grid.views]
    [games.puyo.events :as puyo.events]
    [games.subs :as subs]
+   [games.color :as color]
    [games.puyo.subs :as puyo.subs]))
 
-;; Write a metadata component
-;;
-;; include: current combo, highest combo, combos to next level, highest level
-;; pieces played, combos scored, items available
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cell
+;; Cells
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO rewrite into 'shapes' style?
-(def board-black "#212529")
-
-(def green "#92CC41")
-(def red "#FE493C") ;;"#B564D4"
-(def blue "#209CEE") ;;#6ebff5
-(def yellow "#F7D51D")
-
-(def color->piece-color
-  {:green  green
-   :red    red
-   :blue   blue
-   :yellow yellow})
-
-(defn cell->piece-color
-  [c]
-  (-> c :color (color->piece-color)))
-
-(defn cell->background
-  ;; [{:keys [x y]}]
-  [_]
-  board-black
-  ;; (str "rgba(" (* x 20) ", 100, " (* x 20) ", " (- 1 (/ y 10)) ")")
-  )
+(defn cell->style [game-opts {:keys [color] :as c}]
+  (merge
+    (or (:cell-style game-opts) {})
+    (if color
+      {:background (color/cell->piece-color c)}
+      {:background (color/cell->background c)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn matrix
-  [grid {:keys [cell-style] :as game-opts}]
+  [grid game-opts]
   (let [spin?         @(rf/subscribe [::puyo.subs/puyo-db game-opts :spin-the-bottle?])
         pieces-played @(rf/subscribe [::puyo.subs/puyo-db game-opts :pieces-played])
 
@@ -60,13 +38,7 @@
                       :reverse-x? (contains? #{2 3 4} (mod pieces-played 6))}))]
     [grid.views/matrix
      grid
-     {:cell->style
-      (fn [{:keys [color] :as c}]
-        (merge
-          (or cell-style {})
-          (if color
-            {:background (cell->piece-color c)}
-            {:background (cell->background c)})))}]))
+     {:cell->style (partial cell->style game-opts)}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Center Panel
@@ -144,7 +116,7 @@
       (fn [c]
         (merge
           (or cell-style {})
-          {:background (cell->piece-color c)}))}]))
+          {:background (color/cell->piece-color c)}))}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Held Piece
@@ -166,7 +138,7 @@
          (merge
            (or cell-style {})
            (if color
-             {:background (cell->piece-color c)}
+             {:background (color/cell->piece-color c)}
              {:background "transparent"})))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
