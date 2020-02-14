@@ -1,7 +1,8 @@
 (ns games.tetris.core
   (:require
+   [games.grid.core :as grid]
    [games.tetris.db :as tetris.db]
-   [games.grid.core :as grid]))
+   [games.tetris.shapes :as tetris.shapes]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Predicates and game logic
@@ -175,13 +176,6 @@
 ;; Adding new pieces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn next-bag
-  "Returns a shuffled group of the allowed shapes.
-  https://tetris.wiki/Random_Generator
-  "
-  [{:keys [allowed-shape-fns]}]
-  (shuffle allowed-shape-fns))
-
 (defn add-preview-piece [grid piece]
   (-> grid
       (grid/build-grid)
@@ -201,7 +195,7 @@
                 (fn [q]
                   (let [q (drop 1 q)]
                     (if (< (count q) min-queue-size)
-                      (concat q (next-bag db))
+                      (concat q (tetris.shapes/next-bag db))
                       q))))
 
         (assoc :falling-shape-fn make-cells)

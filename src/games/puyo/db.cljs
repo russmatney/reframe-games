@@ -1,58 +1,18 @@
 (ns games.puyo.db
   (:require
-   [games.grid.core :as grid]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Piece Types
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO move to puyo core?
-(defn build-piece-fn [game-opts]
-  (let [colors (:colors game-opts)
-        colorA (rand-nth colors)
-        colorB (rand-nth colors)]
-    (fn [{x :x y :y}]
-      [{:x x :y y :anchor? true :color colorA}
-       {:x x :y (- y 1) :color colorB}])))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Initial Controls
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn initial-controls
-  [game-opts]
-  [{:id    :move-left
-    :label "Move Left"
-    :keys  (set ["left" "h" "a"])
-    :event [:games.puyo.events/move-piece game-opts :left]}
-   {:id    :move-down
-    :label "Move Down"
-    :keys  (set ["down" "j" "s"])
-    :event [:games.puyo.events/move-piece game-opts :down]}
-   {:id    :move-right
-    :label "Move Right"
-    :keys  (set ["right" "l" "d"])
-    :event [:games.puyo.events/move-piece game-opts :right]}
-   {:id    :hold
-    :label "Hold"
-    :keys  (set ["space"])
-    :event [:games.puyo.events/hold-and-swap-piece game-opts]}
-   {:id    :rotate
-    :label "Rotate"
-    :keys  (set ["up" "k" "w"])
-    :event [:games.puyo.events/rotate-piece game-opts]}
-   {:id    :pause
-    :label "Pause"
-    :keys  (set ["enter"])
-    :event [:games.puyo.events/toggle-pause game-opts]}])
+   [games.grid.core :as grid]
+   [games.puyo.shapes :as puyo.shapes]
+   [games.puyo.controls :as puyo.controls]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game DB
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def piece-grid (grid/build-grid {:height     2
-                                  :width      1
-                                  :entry-cell {:x 0 :y 1}}))
+(def shape-grid
+  (grid/build-grid
+    {:height     2
+     :width      1
+     :entry-cell {:x 0 :y 1}}))
 
 (def defaults
   {:step-timeout    500
@@ -65,64 +25,62 @@
 
 (defn game-db
   "Creates an initial puyo game state."
-  ([] (game-db {:name :default}))
+  [game-opts]
+  (let [{:keys [name game-grid step-timeout ignore-controls] :as game-opts}
+        (merge defaults game-opts)]
+    {:name      name
+     :game-opts game-opts
 
-  ([game-opts]
-   (let [{:keys [name game-grid step-timeout ignore-controls] :as game-opts}
-         (merge defaults game-opts)]
-     {:name      name
-      :game-opts game-opts
+     ;; game (matrix)
+     :game-grid
+     (grid/build-grid
+       (merge
+         {:height       10
+          :width        10
+          :phantom-rows 2
+          :entry-cell   {:x 4 :y -1}}
+         game-grid))
 
-      ;; game (matrix)
-      :game-grid
-      (grid/build-grid
-        (merge
-          {:height       10
-           :width        10
-           :phantom-rows 2
-           :entry-cell   {:x 4 :y -1}}
-          game-grid))
+     ;; game logic
+     :group-size        4 ;; number of puyos in a group to be removed
+     :step-timeout      step-timeout
+     :paused?           false
+     :gameover?         false
+     :waiting-for-fall? false
+     :current-piece-num 0
 
-      ;; game logic
-      :group-size        4 ;; number of puyos in a group to be removed
-      :step-timeout      step-timeout
-      :paused?           false
-      :gameover?         false
-      :waiting-for-fall? false
-      :current-piece-num 0
+     ;; timer
+     :time 0
 
-      ;; timer
-      :time 0
+     ;; queue
+     :piece-queue    (repeat 5 puyo.shapes/build-piece-fn)
+     :min-queue-size 5
+     :preview-grids  (repeat 3 shape-grid)
 
-      ;; queue
-      :piece-queue    (repeat 5 build-piece-fn)
-      :min-queue-size 5
-      :preview-grids  (repeat 3 piece-grid)
+     ;; controls
+     :controls        (puyo.controls/initial game-opts)
+     :ignore-controls ignore-controls
 
-      ;; controls
-      :controls        (initial-controls game-opts)
-      :ignore-controls ignore-controls
+     ;; hold/swap
+     :falling-shape-fn nil
+     :held-shape-fn    nil
+     :held-grid        shape-grid
+     :hold-lock        false
 
-      ;; hold/swap
-      :falling-shape-fn nil
-      :held-shape-fn    nil
-      :held-grid        piece-grid
-      :hold-lock        false
+     ;; modes
+     :spin-the-bottle? false ;; rotate the board on every piece
+     :pacman-sides     true  ;; travel across the walls
+     :fancy-pants      false ;; travel between games
+     :mirror-mode      false ;; reverse left/right
 
-      ;; modes
-      :spin-the-bottle? false ;; rotate the board on every piece
-      :pacman-sides     true  ;; travel across the walls
-      :fancy-pants      false ;; travel between games
-      :mirror-mode      false ;; reverse left/right
-
-      ;; level/score
-      :level                 1
-      :groups-per-level      5
-      :groups-cleared        0
-      :score                 0
-      :score-per-group-clear 10
-      :groups-in-combo       0
-      :last-combo-piece-num  nil})))
+     ;; level/score
+     :level                 1
+     :groups-per-level      5
+     :groups-cleared        0
+     :score                 0
+     :score-per-group-clear 10
+     :groups-in-combo       0
+     :last-combo-piece-num  nil}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game DBs
@@ -139,8 +97,8 @@
                    :width      8}}
     (game-db)))
 
-(def mini-game-db
-  (-> {:name         :puyo-mini-game
+(def select-game-db
+  (-> {:name         :puyo-select-game
        :pages        #{:select}
        :tick-timeout 500
        :on-gameover  :restart
@@ -150,13 +108,8 @@
                       :width      5}}
       (game-db)))
 
-(def default-db
-  (-> {:name :default}
-      (game-db)))
-
 (def game-dbs
-  [default-db
-   mini-game-db
+  [select-game-db
    classic-game-db])
 
 ;; TODO dry up

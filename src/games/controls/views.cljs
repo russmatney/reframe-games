@@ -27,7 +27,9 @@
 ;; Controls-mini
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn mini [{:keys [controls]}]
+(defn mini-text
+  "Lists passed controls in text"
+  [{:keys [controls]}]
   [components/widget
    {:style
     {:padding "0.9rem"
@@ -44,10 +46,10 @@
             (str label " (" (first keys) ")")]))))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Controls-mini
+;; Select Controls game
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn mini-game-cells
+(defn select-game-cells
   [{:keys [moveable? x y]}]
   ^{:key (str x y)}
   [:div
@@ -58,21 +60,13 @@
      :background (if moveable? "green" "white")}}
    ""])
 
-;; TODO handle game-opts with no name warning
-(defn mini-game
-  "Intended as a div.
-  Starts itself.
-
-  Establishes sane defaults for a mini-player.
-
-  Controls mini game is a useful debugger and sandbox -
-  Click the anchor to toggle debugging.
-  "
-  ([] (mini-game {:name :controls-mini-game}))
-  ([game-opts]
-   (let [grid @(rf/subscribe [::controls.subs/game-grid game-opts])]
-     [grid.views/matrix grid
-      {:->cell mini-game-cells}])))
+(defn select-game
+  "Intended as a div. Starts itself."
+  []
+  (let [game-opts {:name :controls-select-game}
+        grid      @(rf/subscribe [::controls.subs/game-grid game-opts])]
+    [grid.views/matrix grid
+     {:->cell select-game-cells}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Debug game
@@ -120,17 +114,6 @@
      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Page game
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn page-game
-  ([] (page-game {:name :controls-page-game}))
-  ([game-opts]
-   (let [grid      @(rf/subscribe [::controls.subs/game-grid game-opts])
-         game-opts @(rf/subscribe [::controls.subs/game-opts game-opts])]
-     [grid.views/matrix grid {:->cell #(debug-cells % game-opts)}])))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls Pages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -154,8 +137,6 @@
    [components/widget
     {:style {:width "100%"}
      :label "Controls"}]
-   ;; ^{:key "page-game"}
-   ;; [page-game]
    ;; ^{:key "debug-game"}
    ;; [debug-game]
    ^{:key "two-games"}

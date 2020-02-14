@@ -1,8 +1,9 @@
 (ns games.puyo.core
   (:require
-   [games.puyo.db :as puyo.db]
+   [clojure.set :as set]
    [games.grid.core :as grid]
-   [clojure.set :as set]))
+   [games.puyo.db :as puyo.db]
+   [games.puyo.shapes :as puyo.shapes]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game logic, predicates, helpers
@@ -153,11 +154,6 @@
 ;; Adding Pieces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn next-bag
-  "'bag' terminology carried over from tetris."
-  [_]
-  (repeat 5 puyo.db/build-piece-fn))
-
 (defn add-preview-piece
   "Rebuilds a passed preview grid and adds the passed piece (func) to it."
   [grid piece-fn]
@@ -187,7 +183,7 @@
               (fn [q]
                 (let [q (drop 1 q)]
                   (if (< (count q) min-queue-size)
-                    (concat q (next-bag db))
+                    (concat q (puyo.shapes/next-bag db))
                     q))))
 
       ;; update the current falling fn

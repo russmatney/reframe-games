@@ -1,83 +1,18 @@
 (ns games.tetris.db
   (:require
+   [games.tetris.shapes :as tetris.shapes]
+   [games.tetris.controls :as tetris.controls]
    [games.grid.core :as grid]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Piece Shapes
+;; Game DB
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def shapes
-  [{:k :square :cells [{:x 1 :y -1} {:x 1} {:y -1} {:anchor? true}]}
-   {:k :line :cells [{:x 2} {:x 1} {:anchor? true} {:x -1}]}
-   {:k :t :cells [{:x -1} {:x 1} {:anchor? true} {:y -1}]}
-   {:k :z :cells [{:x -1 :y -1} {:y -1} {:anchor? true} {:x 1}]}
-   {:k :s :cells [{:x 1 :y -1} {:y -1} {:anchor? true} {:x -1}]}
-   {:k :r :cells [{:x -1 :y -1} {:x 1} {:anchor? true} {:x -1}]}
-   {:k :l :cells [{:x 1 :y -1} {:x 1} {:anchor? true} {:x -1}]}])
-
-(def shapes-map
-  "The above `shapes` as a map by its `:key`"
-  (into {} (map (fn [{k :k :as s}] [k s]) shapes)))
-
-(defn cell->props [shape]
-  (case (:k shape)
-    :square {:color :yellow}
-    :line   {:color :light-blue}
-    :l      {:color :orange}
-    :r      {:color :blue}
-    :s      {:color :green}
-    :z      {:color :red}
-    :t      {:color :magenta}))
-
-(defn shape->ec->cell
-  [{:keys [cells] :as shape}]
-  (let [props (cell->props shape)]
-    (fn [ec]
-      (map (comp
-             #(merge % props)
-             #(grid/relative ec %))
-           cells))))
-
-(defn single-cell-shape [entry-cell]
-  [entry-cell])
-
-(def allowed-shape-fns
-  (map shape->ec->cell shapes))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Initial DB
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn initial-controls
-  [game-opts]
-  [{:id    :move-left
-    :label "Move Left"
-    :keys  (set ["left" "h" "a"])
-    :event [:games.tetris.events/move-piece game-opts :left]}
-   {:id    :move-down
-    :label "Move Down"
-    :keys  (set ["down" "j" "s"])
-    :event [:games.tetris.events/move-piece game-opts :down]}
-   {:id    :move-right
-    :label "Move Right"
-    :keys  (set ["right" "l" "d"])
-    :event [:games.tetris.events/move-piece game-opts :right]}
-   {:id    :hold
-    :label "Hold"
-    :keys  (set ["space"])
-    :event [:games.tetris.events/hold-and-swap-piece game-opts]}
-   {:id    :rotate
-    :label "Rotate"
-    :keys  (set ["up" "k" "w"])
-    :event [:games.tetris.events/rotate-piece game-opts]}
-   {:id    :pause
-    :label "Pause"
-    :keys  (set ["enter"])
-    :event [:games.tetris.events/toggle-pause game-opts]}])
-
-(def piece-grid (grid/build-grid {:height     2
-                                  :width      4
-                                  :entry-cell {:x 1 :y 1}}))
+(def shape-grid
+  (grid/build-grid
+    {:height     2
+     :width      4
+     :entry-cell {:x 1 :y 1}}))
 
 (def defaults
   {:step-timeout    500
@@ -85,58 +20,56 @@
 
 (defn game-db
   "Creates an initial tetris game-state."
-  ([] (game-db {:name :default}))
+  [game-opts]
+  (let [{:keys [name game-grid step-timeout ignore-controls] :as game-opts}
+        (merge defaults game-opts)]
+    {:name      name
+     :game-opts game-opts
 
-  ([game-opts]
-   (let [{:keys [name game-grid step-timeout ignore-controls] :as game-opts}
-         (merge defaults game-opts)]
-     {:name      name
-      :game-opts game-opts
+     ;; game matrix
+     :game-grid
+     (grid/build-grid
+       (merge
+         {:height       10
+          :width        10
+          :phantom-rows 2
+          :entry-cell   {:x 5 :y -1}}
+         game-grid))
 
-      ;; game matrix
-      :game-grid
-      (grid/build-grid
-        (merge
-          {:height       10
-           :width        10
-           :phantom-rows 2
-           :entry-cell   {:x 5 :y -1}}
-          game-grid))
+     ;; game logic
+     :step-timeout step-timeout
+     :paused?      false
+     :gameover?    false
 
-      ;; game logic
-      :step-timeout step-timeout
-      :paused?      false
-      :gameover?    false
+     ;; queue
+     :piece-queue       (shuffle tetris.shapes/allowed-shape-fns)
+     :min-queue-size    5
+     :allowed-shape-fns tetris.shapes/allowed-shape-fns
+     :preview-grids     (repeat 3 shape-grid)
 
-      ;; queue
-      :piece-queue       (shuffle allowed-shape-fns)
-      :min-queue-size    5
-      :allowed-shape-fns allowed-shape-fns
-      :preview-grids     (repeat 3 piece-grid)
+     ;; controls
+     :controls        (tetris.controls/initial game-opts)
+     :ignore-controls ignore-controls
 
-      ;; controls
-      :controls        (initial-controls game-opts)
-      :ignore-controls ignore-controls
+     ;; hold/swap
+     :falling-shape-fn nil
+     :held-shape-fn    nil
+     :held-grid        shape-grid
+     :hold-lock        false
 
-      ;; hold/swap
-      :falling-shape-fn nil
-      :held-shape-fn    nil
-      :held-grid        piece-grid
-      :hold-lock        false
+     ;; timer
+     :time 0
 
-      ;; timer
-      :time 0
-
-      ;; level/score
-      :level                1
-      :rows-per-level       5
-      :rows-cleared         0
-      :pieces-played        0
-      :score                0
-      :score-per-row-clear  10
-      :rows-in-combo        0
-      :last-combo-piece-num nil
-      })))
+     ;; level/score
+     :level                1
+     :rows-per-level       5
+     :rows-cleared         0
+     :pieces-played        0
+     :score                0
+     :score-per-row-clear  10
+     :rows-in-combo        0
+     :last-combo-piece-num nil
+     }))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game DBs
@@ -152,8 +85,8 @@
                   :width      10}}
     (game-db)))
 
-(def mini-game-db
-  (-> {:name         :tetris-mini-game
+(def select-game-db
+  (-> {:name         :tetris-select-game
        :pages        #{:select}
        :tick-timeout 500
        :on-gameover  :restart
@@ -161,13 +94,8 @@
        :game-grid    {:height 10 :width 5 :entry-cell {:x 2 :y -1}}}
       (game-db)))
 
-(def default-db
-  (-> {:name :default}
-      (game-db)))
-
 (def game-dbs
-  [default-db
-   mini-game-db
+  [select-game-db
    classic-game-db])
 
 ;; TODO dry up

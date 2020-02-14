@@ -83,15 +83,9 @@
 ;; Game DBs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def mini-game-db
-  (-> {:name  :controls-mini-game
+(def select-game-db
+  (-> {:name  :controls-select-game
        :pages #{:select}}
-      (initial-game-db)
-      (controls/add-pieces)))
-
-(def page-game-db
-  (-> {:name  :controls-page-game
-       :pages #{:controls}}
       (initial-game-db)
       (controls/add-pieces)))
 
@@ -109,8 +103,7 @@
       (initial-game-db)))
 
 (def game-dbs
-  [mini-game-db
-   page-game-db
+  [select-game-db
    (make-debug-game-db
      :controls-debug-game
      {:debug? true})

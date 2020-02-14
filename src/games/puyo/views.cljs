@@ -153,28 +153,25 @@
      :flex-direction "column"}}
    [piece-queue game-opts]
    [held-piece game-opts]
-   [controls.views/mini
+   [controls.views/mini-text
     {:controls [:pause :hold :rotate]}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Mini-game
+;; Selectable game
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn mini-game
-  "Intended as a div.
-  Starts itself.
-
-  Establishes sane defaults for a mini-player."
-  ([] (mini-game {:name :puyo-mini-game}))
-  ([game-opts]
-   (let [grid      @(rf/subscribe [::puyo.subs/game-grid game-opts])
-         game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])]
-     [:div
-      [matrix grid game-opts]])))
+(defn select-game
+  "Intended as a selectable game (from a list)."
+  []
+  (let [game-opts {:name :puyo-select-game}
+        grid      @(rf/subscribe [::puyo.subs/game-grid game-opts])
+        game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])]
+    [:div
+     [matrix grid game-opts]]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Full Page
+;; Classic Game
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn classic-game
@@ -190,6 +187,10 @@
       [center-panel game-opts]
       ^{:key "right"}
       [right-panel game-opts])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Page
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn page
   []

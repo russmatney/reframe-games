@@ -16,13 +16,13 @@
   ;; TODO specify easier pieces, fewer colors
   [{:label     "Tetris"
     :on-click  #(rf/dispatch [::events/set-page :tetris])
-    :component [tetris.views/mini-game]}
+    :component [tetris.views/select-game]}
    {:label     "Puyo"
     :on-click  #(rf/dispatch [::events/set-page :puyo])
-    :component [puyo.views/mini-game]}
+    :component [puyo.views/select-game]}
    {:label     "Controls"
     :on-click  #(rf/dispatch [::events/set-page :controls])
-    :component [controls.views/mini-game]}])
+    :component [controls.views/select-game]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Selections

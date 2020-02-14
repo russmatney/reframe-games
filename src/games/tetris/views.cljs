@@ -59,6 +59,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Left panel
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn left-panel [game-opts]
   (let [score   @(rf/subscribe [::tetris.subs/score game-opts])
@@ -129,24 +130,21 @@
      :flex-direction "column"}}
    [piece-queue game-opts]
    [held-piece game-opts]
-   [controls.views/mini
+   [controls.views/mini-text
     {:controls [:pause :hold :rotate]}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Mini-player
+;; Select game
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn mini-game
-  "Intended as a div.
-  Starts itself.
-
-  Establishes sane defaults for a mini-player."
-  ([] (mini-game {:name :tetris-mini-game}))
-  ([game-opts]
-   (let [grid      @(rf/subscribe [::tetris.subs/game-grid game-opts])
-         game-opts @(rf/subscribe [::tetris.subs/game-opts game-opts])]
-     [:div
-      [matrix grid game-opts]])))
+(defn select-game
+  "Intended as a mini-game to be used when choosing a game to play."
+  []
+  (let [game-opts {:name :tetris-select-game}
+        grid      @(rf/subscribe [::tetris.subs/game-grid game-opts])
+        game-opts @(rf/subscribe [::tetris.subs/game-opts game-opts])]
+    [:div
+     [matrix grid game-opts]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Classic game
