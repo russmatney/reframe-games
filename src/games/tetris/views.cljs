@@ -149,22 +149,29 @@
       [matrix grid game-opts]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Classic game
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn classic-game
+  []
+  (let [game-opts {:name :tetris-classic-game}
+        game-opts @(rf/subscribe [::tetris.subs/game-opts game-opts])]
+    [components/page
+     {:direction    :row
+      :full-height? true}
+     ^{:key "left"}
+     [left-panel game-opts]
+
+     ^{:key "center"}
+     [center-panel game-opts]
+
+     ^{:key "right"}
+     [right-panel game-opts]]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Main page component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn page
-  "Intended for a full browser window
-  Expects to be started itself."
-  ([] (page {:name :tetris-page-game}))
-  ([game-opts]
-   (let [game-opts @(rf/subscribe [::tetris.subs/game-opts game-opts])]
-     [components/page {:direction    :row
-                       :full-height? true}
-      ^{:key "left"}
-      [left-panel game-opts]
-
-      ^{:key "center"}
-      [center-panel game-opts]
-
-      ^{:key "right"}
-      [right-panel game-opts]])))
+  []
+  [classic-game])

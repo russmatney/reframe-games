@@ -96,11 +96,11 @@
 
 (defn page
   ([{:keys [class style empty-bg? direction header] :as opts} & children]
-   (let [opts (dissoc opts
-                      :style
-                      :class
-                      :header
-                      :full-height?)]
+   (let [div-opts (dissoc opts
+                          :style
+                          :class
+                          :header
+                          :full-height?)]
      [:div
       (merge
         {:class (str "page " class)
@@ -113,7 +113,7 @@
             :flex-direction "column"}
            (if empty-bg? {} global-bg)
            style)}
-        opts)
+        div-opts)
 
       (when header header)
 

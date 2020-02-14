@@ -35,7 +35,7 @@
   "
   [{:keys
     [game-map-key
-     n
+     n ;; TODO might need a game-name too, not just a namespace
      timers]}]
   (let [pause-evt      (keyword n :pause-game)
         resume-evt     (keyword n :resume-game)
@@ -75,6 +75,7 @@
             ;; pause
             {:dispatch [pause-evt game-opts]}))))
 
+    ;; TODO appears broken for tetris page game
     (rf/reg-event-fx
       game-timer-evt
       [(game-db-interceptor game-map-key)]

@@ -128,9 +128,9 @@
 ;; Game DBs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def page-game-db
+(def classic-game-db
   (->
-    {:name        :puyo-page-game
+    {:name        :puyo-classic-game
      :cell-style  {:width "20px" :height "20px"}
      :pages       #{:puyo}
      :no-walls-x? true
@@ -157,7 +157,7 @@
 (def game-dbs
   [default-db
    mini-game-db
-   page-game-db])
+   classic-game-db])
 
 ;; TODO dry up
 (def game-dbs-map

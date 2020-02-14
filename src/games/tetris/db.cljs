@@ -142,9 +142,9 @@
 ;; Game DBs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def page-game-db
+(def classic-game-db
   (->
-    {:name       :tetris-page-game
+    {:name       :tetris-classic-game
      :cell-style {:width "20px" :height "20px"}
      :pages      #{:tetris}
      :game-grid  {:entry-cell {:x 4 :y -1}
@@ -168,7 +168,7 @@
 (def game-dbs
   [default-db
    mini-game-db
-   page-game-db])
+   classic-game-db])
 
 ;; TODO dry up
 (def game-dbs-map

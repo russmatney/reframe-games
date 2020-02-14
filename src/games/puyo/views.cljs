@@ -177,11 +177,11 @@
 ;; Full Page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn page
-  ([] (page {:name :puyo-page-game}))
-  ([game-opts]
-   (let [game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])]
-     [components/page
+(defn classic-game
+  []
+  (let [game-opts {:name :puyo-classic-game}
+        game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])]
+    (components/page
       {:direction    :row
        :full-height? true}
       ^{:key "left"}
@@ -189,5 +189,8 @@
       ^{:key "center"}
       [center-panel game-opts]
       ^{:key "right"}
-      [right-panel game-opts]
-      ])))
+      [right-panel game-opts])))
+
+(defn page
+  []
+  [classic-game])
