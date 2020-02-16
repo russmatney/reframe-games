@@ -16,4 +16,4 @@
     tetris.db/db
     puyo.db/db
     {;; NOTE also the initial page
-     :current-page :select}))
+     :current-page :controls}))

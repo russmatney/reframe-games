@@ -88,15 +88,23 @@
   ::move-piece
   [(game-db-interceptor :controls-games)]
   (fn [db [_game-opts direction]]
-    (if (controls/can-player-move? db)
+    (if (controls/move-allowed? db)
       (controls/move-piece db direction)
+      db)))
+
+(rf/reg-event-db
+  ::instant-down
+  [(game-db-interceptor :controls-games)]
+  (fn [db _game-opts]
+    (if (controls/move-allowed? db)
+      (controls/instant-down db)
       db)))
 
 (rf/reg-event-db
   ::rotate-piece
   [(game-db-interceptor :controls-games)]
   (fn [db _game-opts]
-    (if (controls/can-player-move? db)
+    (if (controls/move-allowed? db)
       (controls/rotate-piece db)
       db)))
 

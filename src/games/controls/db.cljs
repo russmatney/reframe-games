@@ -41,10 +41,14 @@
     :label "Move Left"
     :keys  (set ["left" "h" "a"])
     :event [:games.controls.events/move-piece game-opts :left]}
+   ;; {:id    :move-down
+   ;;  :label "Move Down"
+   ;;  :keys  (set ["down" "j" "s"])
+   ;;  :event [:games.controls.events/move-piece game-opts :down]}
    {:id    :move-down
     :label "Move Down"
     :keys  (set ["down" "j" "s"])
-    :event [:games.controls.events/move-piece game-opts :down]}
+    :event [:games.controls.events/instant-down game-opts]}
    {:id    :move-right
     :label "Move Right"
     :keys  (set ["right" "l" "d"])

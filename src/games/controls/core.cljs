@@ -45,7 +45,9 @@
 ;; Move Logic
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn can-player-move?
+(defn move-allowed?
+  "True if user-interaction with the piece is allowed
+  (i.e. the game is not paused or otherwise disabled.)"
   [_db]
   true)
 
@@ -61,6 +63,19 @@
                          {:move-f    move-f
                           :cells     moveable-cells
                           :can-move? (fn [_] true)})
+        db             (assoc db :game-grid updated-grid)]
+    db))
+
+(defn instant-down
+  "Gathers `:moveable?` cells and moves them with `grid/instant-down`"
+  [{:keys [game-grid] :as db}]
+  (let [moveable-cells (grid/get-cells game-grid :moveable?)
+        updated-grid   (grid/instant-down
+                         game-grid
+                         {:cells       moveable-cells
+                          :keep-shape? true
+                          :can-move?   ;; can the cell be merged into?
+                          (fn [_] true)})
         db             (assoc db :game-grid updated-grid)]
     db))
 

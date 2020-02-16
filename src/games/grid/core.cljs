@@ -269,7 +269,7 @@
   (pred (get-cell db entry-cell)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cell 'Movement'
+;; Cell Movement
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn grid-min-max
@@ -356,6 +356,27 @@
                 (assoc :fallback-moves fallback-moves)))))
 
       :else db)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell Instant Down
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; usage
+;; (grid/instant-down
+;;   game-grid
+;;   {:cells       moveable-cells
+;;    :keep-shape? true
+;;    :can-move?   ;; can the cell be merged into?
+;;    (fn [_] true)})
+
+(defn instant-down
+  [db {:keys [cells keep-shape? can-move?]}]
+  (let []
+    (println "instant-down")
+    (map #(move-cell {:grid   db
+                      :cell   %
+                      :y-diff :until-blocked}) cells)
+    db))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell rotation helpers

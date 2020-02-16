@@ -127,16 +127,16 @@
               :justify-content "space-around"}}
      (for [opts debug-game-opts]
        ^{:key (:name opts)}
-       [debug-game opts])]))
+       [components/widget
+        {:label (:name opts)}
+        [debug-game opts]])]))
 
 (defn page []
   [components/page
    {:direction    :row
-    :full-height? true}
-   ^{:key "controls-header"}
-   [components/widget
-    {:style {:width "100%"}
-     :label "Controls"}]
+    :full-height? true
+    :header       [components/widget {:label "Controls"}]
+    }
    ;; ^{:key "debug-game"}
    ;; [debug-game]
    ^{:key "two-games"}
