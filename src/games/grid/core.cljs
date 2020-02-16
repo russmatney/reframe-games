@@ -497,6 +497,7 @@
                            (:up :left)    <
                            (:down :right) >)
                          cells)]
+      (println "sorted for drop" sorted-cells)
       ;; order is important - go from the direction passed
       ;; (:down -> start from bottom of grid (decreasing y))
       (reduce
@@ -504,6 +505,7 @@
           (let [{:keys [diff target]}
                 (->diff-and-magnitude
                   (->cell-and-target db cell move-opts))]
+            (println "dropping cell " cell " to target " target)
             (if-not target
               db
               (move-cells

@@ -11,14 +11,22 @@
 
 (defn can-player-move?
   "Returns true if the game should accept player movement input."
-  [{:keys [paused? fall-lock]}]
+  [{:keys [paused? fall-lock?]}]
   (and
-    (not paused?)
-    (not fall-lock)))
+    (not fall-lock?)
+    (not paused?)))
 
 (defn cell-occupied?
   [{:keys [game-grid]} cell]
   (:occupied (grid/get-cell game-grid cell)))
+
+(defn cell-falling?
+  [{:keys [game-grid]} cell]
+  (:falling (grid/get-cell game-grid cell)))
+
+(defn cell-within-bounds?
+  [{:keys [game-grid] :as db} cell]
+  (grid/within-bounds? game-grid cell))
 
 (defn cell-open?
   "Returns true if the indicated cell is within the grid's bounds AND not
@@ -27,6 +35,15 @@
   (and
     (grid/within-bounds? game-grid cell)
     (not (cell-occupied? db cell))))
+
+(defn can-overwrite-cell?
+  "Returns true if the indicated cell is within the grid's bounds AND not
+  occupied."
+  [{:keys [game-grid] :as db} cell]
+  (and
+    (grid/within-bounds? game-grid cell)
+    (not (cell-occupied? db cell))
+    (not (cell-falling? db cell))))
 
 (defn any-falling?
   "Returns true if there is a falling cell anywhere in the grid."
@@ -38,15 +55,22 @@
   [{:keys [game-grid]}]
   (grid/get-cells game-grid :falling))
 
+(defn do-mark-cell-occupied
+  [c]
+  (-> c
+      (assoc :occupied true)
+      (dissoc :falling)))
+
 (defn mark-cell-occupied
   "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.
   Returns an updated db."
   [db cell]
-  (update db :game-grid
-          #(grid/update-cell % cell
-                             (fn [c] (-> c
-                                         (assoc :occupied true)
-                                         (dissoc :falling))))))
+  (update db :game-grid #(grid/update-cell % cell do-mark-cell-occupied)))
+
+(defn mark-cells-occupied
+  [db cells]
+  (println "marking cells occupied" cells)
+  (reduce (fn [db cell] (mark-cell-occupied db cell)) db cells))
 
 (defn gameover?
   "Returns true if any cell of the grid has a y < 0.
@@ -61,80 +85,68 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn instant-fall
-  "Gathers `:falling?` cells and moves them with `grid/instant-fall`"
-  [{:keys [game-opts] :as db} direction]
-  (update
-    db :game-grid
-    (fn [g]
-      (grid/instant-fall
-        g
-        {:direction   direction
-         :cells       (get-falling-cells db)
-         :keep-shape? (or false (:keep-shape? game-opts))
-         ;; TODO fix this to not need the db
-         ;; works for now b/c it only checks bounds and :occupied
-         :can-move?   #(cell-open? db %)}))))
+  "Gathers `:falling` cells and moves them with `grid/instant-fall`"
+  [db direction]
+  (let [falling-cells (get-falling-cells db)
+        updated-db    (update db
+                              :game-grid
+                              (fn [g]
+                                (grid/instant-fall
+                                  g
+                                  {:direction   direction
+                                   :cells       falling-cells
+                                   :keep-shape? false
+                                   ;; TODO fix this to not need the db (should be handled underneath, this
+                                   ;; can          be a cheap cell prop check)
+                                   ;; works for now b/c it only checks bounds and :occupied
+                                   ;; TODO investigate/simplify cell-open? usage and :falling flag
+                                   :can-move?   #(can-overwrite-cell? db %)})))]
+    ;; mark new cell coords as occupied
+    (mark-cells-occupied updated-db
+                         (get-falling-cells updated-db))))
 
+(defn ->blocked-cells
+  "Returns only the cells that cannot make the passed `move-f`, because
+  `cell-open?` returns false for the target (new) cell."
+  [db {:keys [cells move-f]}]
+  (remove #(cell-open? db (move-f %)) cells))
+
+(defn handle-blocked-cells
+  "Updates cells after a move. Should only be called if the moved direction was
+  `:down`. It is also assumed that there are blocked-cells passed.
+
+  `Blocked` cells are marked occupied, other falling cells are instant-dropped."
+  [db blocked-cells]
+  (-> (reduce (fn [d cell]
+                (mark-cell-occupied d cell))
+              db blocked-cells)
+      (instant-fall :down)))
+
+(defn- do-move-piece
+  [db move-opts]
+  (update db :game-grid #(grid/move-cells % move-opts)))
 
 (defn move-piece
+  "Moves 'falling' cells in the passed direction.
+  Updates blocked cells and instant-falls after first block via
+  `handle-blocked-cells`."
   [{:keys [game-grid game-opts] :as db} direction]
   (let [falling-cells (get-falling-cells db)
         move-f        #(grid/move-cell-coords
                          % direction
                          (merge game-opts {:grid game-grid}))
-
-        updated-grid
-        (grid/move-cells game-grid
-                         {:move-f    move-f
-                          :can-move? #(cell-open? db %)
-                          :cells     falling-cells})
-
-        db (assoc db :game-grid updated-grid)
-
-        blocked-cells (seq (remove #(cell-open? db (move-f %)) falling-cells))
-
-        all-cells-blocked?
-        (and
-          ;; down-only
-          (= direction :down)
-          ;; any falling cells?
-          falling-cells
-          ;; any falling cells that can't move down?
-          ;; i.e. with occupied cells below them
-          (= (count falling-cells) (count blocked-cells)))
-
-        any-cells-blocked?
-        (and
-          ;; down-only
-          (= direction :down)
-          ;; any falling cells?
-          falling-cells
-          ;; any falling cells that can't move down?
-          ;; i.e. with occupied cells below them
-          blocked-cells)]
-
-    (cond-> db
-      any-cells-blocked?
-      (as-> db
-          ;; mark blocked cells occupied
-          (reduce (fn [d cell]
-                    (if (not (cell-open? d (move-f cell)))
-                      (mark-cell-occupied d cell)
-                      d))
-                  db falling-cells)
-        (instant-fall db :down)
-
-        ;; prevent holds while pieces remain
-        (assoc db :hold-lock true)
-        ;; flag that there may be more to fall
-        (assoc db :fall-lock true))
-
-      all-cells-blocked?
-      (->
-        ;; remove the hold-lock to allow another hold to happen
-        (assoc :hold-lock false)
-        ;; flag that all have fallen
-        (assoc :fall-lock false)))))
+        move-opts     {:move-f    move-f
+                       :can-move? #(cell-open? db %)
+                       :cells     falling-cells}
+        blocked-cells (seq (->blocked-cells db move-opts))
+        db            (do-move-piece db move-opts)]
+    (println "falling cells" falling-cells)
+    (if (and
+          (= :down direction)
+          blocked-cells
+          (seq falling-cells))
+      (handle-blocked-cells db blocked-cells)
+      db)))
 
 ;; TODO think about swapping colors vs 'rotating', especially in narrow
 ;; situations
@@ -206,9 +218,6 @@
       ;; update the current falling fn
       (assoc :falling-shape-fn make-cells)
 
-      ;; should never prevent movement on a new piece
-      (assoc :fall-lock false)
-
       ;; add the cells to the matrix!
       (update :game-grid
               (fn [g]
@@ -254,22 +263,21 @@
                   #(dissoc % :occupied :color :anchor?))))
 
       ;; prevent other fallers from being held
-      (assoc :hold-lock true)
-
-      ;; prevent other fallers from being user-movable
-      (assoc :fall-lock true)))
+      (assoc :hold-lock true)))
 
 (defn update-fallers
   "Updates cells that have had a cell below removed."
   [db groups]
   (let [deepest-by-x (grid/->deepest-by-x (reduce set/union groups))
         should-update?
-        (fn [{:keys [color x y]}]
-          (let [deep-y (:y (get deepest-by-x x))]
-            (and
-              color
-              (not (nil? deep-y))
-              (< y deep-y))))]
+        (fn [{:keys [color x y] :as cell}]
+          (let [deep-y  (:y (get deepest-by-x x))
+                should? (and
+                          color
+                          (not (nil? deep-y))
+                          (< y deep-y))]
+            should?))]
+    (println "updating fallers with deepest-by-x:" deepest-by-x)
     (update db :game-grid
             (fn [grid]
               (grid/update-cells
