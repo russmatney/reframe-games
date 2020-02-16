@@ -46,6 +46,8 @@ zip -r reframe-games.zip public
 **** [X] refactor colors into view, rather than attached to cells
 **** [ ] locked-falls should be instant-falls
 **** [ ] manual-down should be instant-down
+**** [ ] timers broken
+**** [ ] puyo removes extra pieces on group-breaks
 **** [ ] dry up controls and game-db events
 **** [ ] add models/model generators and unit-tests
 likely with malli
