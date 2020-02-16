@@ -56,7 +56,8 @@
      :time 0
 
      ;; queue
-     :piece-queue    (repeat 5 puyo.shapes/build-piece-fn)
+     :piece-queue    (puyo.shapes/next-bag {:game-opts      game-opts
+                                            :min-queue-size 5})
      :min-queue-size 5
      :preview-grids  (repeat 3 shape-grid)
 

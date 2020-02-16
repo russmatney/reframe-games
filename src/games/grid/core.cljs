@@ -444,12 +444,6 @@
                        cells-in-dir)
         target       (:best
                       (reduce (fn [{:keys [best skip?]} next-cell]
-                                (print
-                                  (str "finding best target - best: "
-                                       best " next: " next-cell
-                                       " can-move?(next-cell) "
-                                       (can-move? next-cell)))
-                                (println (str "skip? " skip?))
                                 (cond
                                   skip?
                                   {:skip? true
@@ -473,9 +467,6 @@
                               {:best  nil
                                :skip? false}
                               sorted))]
-    (println "cells-in-dir" cells-in-dir)
-    (println "sorted" sorted)
-    (println "target" target)
     (when (seq cells-in-dir)
       target)))
 
@@ -517,7 +508,6 @@
                            (:up :left)    <
                            (:down :right) >)
                          cells)]
-      (println "sorted for drop" sorted-cells)
       ;; order is important - go from the direction passed
       ;; (:down -> start from bottom of grid (decreasing y))
       (reduce
@@ -525,7 +515,6 @@
           (let [{:keys [diff target]}
                 (->diff-and-magnitude
                   (->cell-and-target db cell move-opts))]
-            (println "dropping cell " cell " to target " target)
             (if-not target
               db
               (move-cells

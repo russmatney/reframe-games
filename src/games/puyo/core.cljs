@@ -71,7 +71,6 @@
 
 (defn mark-cells-occupied
   [db cells]
-  (println "marking cells occupied" cells)
   (reduce (fn [db cell] (mark-cell-occupied db cell)) db cells))
 
 (defn gameover?
@@ -142,7 +141,6 @@
                        :cells     falling-cells}
         blocked-cells (seq (->blocked-cells db move-opts))
         db            (do-move-piece db move-opts)]
-    (println "falling cells" falling-cells)
     (if (and
           (= :down direction)
           blocked-cells
@@ -203,9 +201,9 @@
   prepends the piece-queue to add held pieces back.
   "
   [{:keys [piece-queue min-queue-size] :as db}]
-  (let [next-three (take 3 (drop 1 piece-queue))
-        make-cells (first piece-queue)
-        game-opts  (:game-opts db)]
+  (let [next-three  (take 3 (drop 1 piece-queue))
+        next-colors (first piece-queue)
+        game-opts   (:game-opts db)]
     (-> ;; this also indicates that the pieces has been played, so we increment
       db
       (update :current-piece-num inc)
@@ -218,22 +216,23 @@
                     q))))
 
       ;; update the current falling fn
-      (assoc :falling-shape-fn make-cells)
+      (assoc :falling-shape-fn (puyo.shapes/build-piece-fn next-colors))
 
       ;; add the cells to the matrix!
       (update :game-grid
               (fn [g]
                 (grid/add-cells g
                                 {:update-cell #(assoc % :falling true)
-                                 :make-cells  (make-cells game-opts)})))
+                                 :make-cells
+                                 (puyo.shapes/build-piece-fn next-colors)})))
 
       (update :preview-grids
               (fn [gs]
                 (let [[g1 g2 g3] gs
                       [p1 p2 p3] next-three]
-                  [(add-preview-piece g1 (p1 game-opts))
-                   (add-preview-piece g2 (p2 game-opts))
-                   (add-preview-piece g3 (p3 game-opts))]))))))
+                  [(add-preview-piece g1 (puyo.shapes/build-piece-fn p1))
+                   (add-preview-piece g2 (puyo.shapes/build-piece-fn p2))
+                   (add-preview-piece g3 (puyo.shapes/build-piece-fn p3))]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clearing pieces and cells
@@ -279,7 +278,6 @@
                           (not (nil? deep-y))
                           (< y deep-y))]
             should?))]
-    (println "deepest-by-x:" deepest-by-x)
     (update db :game-grid
             (fn [grid]
               (grid/update-cells

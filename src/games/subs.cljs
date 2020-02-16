@@ -21,16 +21,21 @@
   ::controls-for
   :<- [::controls]
   (fn [controls [_ for]]
-    (-> controls for)))
+    (let [controls-by-id (group-by :id controls)]
+      (-> controls-by-id for first))))
 
 (rf/reg-sub
   ::keys-for
   :<- [::controls]
-  (fn [controls [_ keys-for]]
-    (-> controls keys-for :keys)))
+  (fn [controls [_ for]]
+    (let [controls-by-id (group-by :id controls)]
+      (-> controls-by-id for first :keys))))
 
+;; TODO fix these `first` uses
+;; probably a controls revamp
 (rf/reg-sub
   ::event-for
   :<- [::controls]
-  (fn [controls [_ event-for]]
-    (-> controls event-for :event)))
+  (fn [controls [_ for]]
+    (let [controls-by-id (group-by :id controls)]
+      (-> controls-by-id for first :event))))
