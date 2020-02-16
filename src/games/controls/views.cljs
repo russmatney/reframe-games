@@ -76,8 +76,12 @@
   "Debug cells have clickable `:anchor?`s."
   [{:keys [moveable? x y anchor?] :as cell}
    {:keys [debug? cell-height cell-width] :as game-opts}]
-  (let [cell-width  (or cell-width (if debug? "148px" "48px"))
-        cell-height (or cell-height (if debug? "148px" "48px"))]
+  (let [
+        ;; cell-width  (or cell-width (if debug? "148px" "48px"))
+        ;; cell-height (or cell-height (if debug? "148px" "48px"))
+        cell-width  (or cell-width (if debug? "unset" "48px"))
+        cell-height (or cell-height (if debug? "unset" "48px"))
+        props       (dissoc cell :x :y)]
     ^{:key (str x y)}
     [:div
      {:on-click
@@ -90,8 +94,8 @@
        :background (cond
                      anchor?   "blue"
                      moveable? "green"
-                     :else     "white")}}
-     (if debug? (str cell) "")]))
+                     :else     "gray")}}
+     (if debug? (str "x:" x " y:" y " " (when (seq props) props)) "")]))
 
 (defn debug-game
   "Intended as a full page.
@@ -117,9 +121,10 @@
 ;; Controls Pages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn n-games-page []
+(defn n-games-page [n]
   (let [
         debug-game-opts @(rf/subscribe [::controls.subs/debug-game-opts])
+        debug-game-opts (take n debug-game-opts)
         ]
     [:div
      {:style {:width           "100%"
@@ -140,5 +145,5 @@
    ;; ^{:key "debug-game"}
    ;; [debug-game]
    ^{:key "two-games"}
-   [n-games-page]
+   [n-games-page 3]
    ])

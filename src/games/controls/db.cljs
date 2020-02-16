@@ -75,6 +75,7 @@
       :game-opts game-opts
       :game-grid (grid/build-grid
                    (merge
+                     ;; TODO entry-types like (top, middle, bottom, left, right)
                      {:entry-cell      {:x 0 :y 0}
                       :height          3
                       :width           3
@@ -102,10 +103,6 @@
       (initial-game-db)
       (controls/add-pieces)))
 
-(def default-db
-  (-> {:name :default}
-      (initial-game-db)))
-
 (def game-dbs
   [select-game-db
    (make-debug-game-db
@@ -114,20 +111,22 @@
    (make-debug-game-db
      :controls-debug-game-1
      {:debug-game? true
+      :game-grid   {:height          2 :width        1
+                    :phantom-columns 1 :phantom-rows 1}
       :debug?      false})
    (make-debug-game-db
      :controls-debug-game-2
-     {:game-grid   {:height 5 :width 5}
+     {:game-grid   {:height 3 :width 3}
       :debug-game? true
       :debug?      false})
    (make-debug-game-db
      :controls-debug-game-3
-     {:game-grid   {:height 4 :width 4}
+     {:game-grid   {:height 3 :width 3}
       :cell-height "24px"
       :cell-width  "24px"
       :debug-game? true
       :debug?      false})
-   default-db])
+   ])
 
 ;; TODO dry up
 (def game-dbs-map

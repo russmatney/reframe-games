@@ -157,7 +157,7 @@
   (-> grid (nth (+ y phantom-rows)) (nth (+ phantom-columns x))))
 
 (defn get-cells
-  [{:keys [grid]} pred]
+  [{:keys [grid] :as g} pred]
   (filter pred (flatten grid)))
 
 (defn any-cell?
@@ -283,7 +283,10 @@
 
 (defn move-cell-coords
   "Returns a map with :x, :y coords relative to the passed direction
-  (:left, :right, :up, :down)."
+  (:left, :right, :up, :down).
+
+  Also accepts a third `game-opts` option, which it uses to support
+  moving across walls in `no-walls?` `no-walls-x?` and `no-walls-y?` modes"
   ([{:keys [x y]} direction]
    (let [x-diff (case direction :left -1 :right 1 0)
          y-diff (case direction :down 1 :up -1 0)]
@@ -358,8 +361,97 @@
       :else db)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell relative movement/distance and rotation helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn rotate-diff
+  "x1 = y0
+  y1 = -x0"
+  [{:keys [x y]}]
+  {:x y
+   :y (* -1 x)})
+
+(defn calc-diff [cell-a cell-b]
+  {:x (- (:x cell-a) (:x cell-b))
+   :y (- (:y cell-a) (:y cell-b))})
+
+(defn apply-diff [cell-a cell-b]
+  {:x (+ (:x cell-a) (:x cell-b))
+   :y (+ (:y cell-a) (:y cell-b))})
+
+(defn calc-rotate-target
+  "Rotates the passed `cell` about the `anchor-cell` clockwise.
+  Returns a target cell as a map with :x and :y keys for `cell`'s new
+  coordinates."
+  [anchor-cell cell]
+  (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell Instant Down
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn greater-x? [{x1 :x} {x2 :x}] (> x1 x2))
+(defn less-x? [{x1 :x} {x2 :x}] (< x1 x2))
+(defn same-x? [{x1 :x} {x2 :x}] (= x1 x2))
+
+(defn greater-y? [{y1 :y} {y2 :y}] (> y1 y2))
+(defn less-y? [{y1 :y} {y2 :y}] (< y1 y2))
+(defn same-y? [{y1 :y} {y2 :y}] (= y1 y2))
+
+(defn get-column-or-row [db cell direction]
+  (get-cells
+    db
+    (fn [c]
+      (case direction
+        (:up :down)    (same-x? cell c)
+        (:left :right) (same-y? cell c)))))
+
+(defn cells-in-direction
+  "Returns the cells in the passed direction from the given cell."
+  [db cell direction]
+  (let [col-or-row-cells (get-column-or-row db cell direction)]
+    (filter #(case direction
+               :up    (less-y? % cell)
+               :down  (greater-y? % cell)
+               :right (greater-x? % cell)
+               :left  (less-x? % cell))
+            col-or-row-cells)))
+
+
+(defn cell->furthest-open-space
+  "Returns the open cell that is furthest in `direction`.
+
+  furthest _consecutive_ open space
+
+  Currently walks in that direction until a cell is not open. Could be expanded
+  to allow 'skipping' but that behavior doesn't fit a tetris/puyo game that i've
+  played, so, leaving this for now.
+  "
+  [db cell {:keys [can-move? direction]}]
+  (let [cells-in-dir (cells-in-direction db cell direction)
+        _            (println "cells-in-dir: " cells-in-dir)
+        sorted       (sort-by
+                       (case direction
+                         :up    less-y?
+                         :down  greater-y?
+                         :right greater-x?
+                         :left  less-x?)
+                       cells-in-dir)
+        target       (:best
+                      (reduce (fn [{:keys [best skip?]} next-cell]
+                                (if skip?
+                                  {:skip? true
+                                   :best  best}
+                                  {:best  (if (can-move? next-cell) next-cell best)
+                                   :skip? false})
+                                )
+                              {:best  (first sorted)
+                               :skip? false}
+                              (rest sorted)))]
+    (when cells-in-dir
+      (println "target: " target)
+      target)))
 
 ;; usage
 ;; (grid/instant-down
@@ -369,40 +461,54 @@
 ;;    :can-move?   ;; can the cell be merged into?
 ;;    (fn [_] true)})
 
+
 (defn instant-down
-  [db {:keys [cells keep-shape? can-move?]}]
-  (let []
-    (println "instant-down")
-    (map #(move-cell {:grid   db
-                      :cell   %
-                      :y-diff :until-blocked}) cells)
-    db))
+  "Returns a `db` with the passed cells moving as far in the passed `direction`
+  as possible.
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cell rotation helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  If `keep-shape?` is true, the shortest available move will be made for all
+  passed cells. If it is false, cells will fall independently until they reach
+  the furthest open space.
 
-(defn- rotate-diff
-  "x1 = y0
-  y1 = -x0"
-  [{:keys [x y]}]
-  {:x y
-   :y (* -1 x)})
+  See furthest open space for definition/note on consecutive spaces.
+  "
+  [db {:keys [cells keep-shape? can-move?]
+       :as   move-opts}]
+  (let [move-opts (assoc move-opts :direction :down)]
+    (if-not keep-shape?
+      db
+      (let [c-n-ts   (map (fn [c]
+                            {:cell   c
+                             :target (cell->furthest-open-space
+                                       db c move-opts)})
+                          cells)
+            c-n-ts   (filter #(:target %) c-n-ts)
+            c-n-ts   (map (fn [{:keys [cell target] :as c-n-t}]
+                            (let [{dx :x dy :y :as diff} ;; document the negative diff here
+                                  (calc-diff target cell)]
+                              (assoc c-n-t
+                                     :magnitude
+                                     (apply max (map #(.abs js/Math %) [dx dy]))
+                                     :diff diff)
+                              )) c-n-ts)
+            _        (println "c-n-ts" c-n-ts)
+            shortest (first (sort-by :magnitude < c-n-ts))]
+        (println "instant-down!")
+        (println "shortest: " shortest)
+        (println "shortest mag: " (:magnitude shortest))
+        (if shortest
+          (move-cells db
+                      {:cells     cells
+                       :move-f    #(apply-diff % (:diff shortest))
+                       ;; TODO may not need to check can-move? anymore...
+                       :can-move? can-move?})
+          db)
+        ))))
 
-(defn- calc-diff [anchor-cell cell]
-  {:x (- (:x anchor-cell) (:x cell))
-   :y (- (:y anchor-cell) (:y cell))})
+(comment
+  (.abs js/Math -1)
 
-(defn- apply-diff [anchor-cell cell]
-  {:x (+ (:x anchor-cell) (:x cell))
-   :y (+ (:y anchor-cell) (:y cell))})
-
-(defn calc-rotate-target
-  "Rotates the passed `cell` about the `anchor-cell` clockwise.
-  Returns a target cell as a map with :x and :y keys for `cell`'s new
-  coordinates."
-  [anchor-cell cell]
-  (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))
+  (sort-by :x < [{:x 2} {:x 1}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid rotation helpers
