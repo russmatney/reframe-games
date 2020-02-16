@@ -476,28 +476,30 @@
        :as   move-opts}]
   (if-not keep-shape?
     db
-    (let [c-n-ts   (map (fn [c]
-                          {:cell   c
-                           :target (cell->furthest-open-space
-                                     db c move-opts)})
-                        cells)
-          c-n-ts   (filter #(:target %) c-n-ts)
-          c-n-ts   (map (fn [{:keys [cell target] :as c-n-t}]
-                          (let [{dx :x dy :y :as diff} ;; document the negative diff here
-                                (calc-diff target cell)]
-                            (assoc c-n-t
-                                   :magnitude
-                                   (apply max (map #(.abs js/Math %) [dx dy]))
-                                   :diff diff)
-                            )) c-n-ts)
-          _        (println "c-n-ts" c-n-ts)
-          shortest (first (sort-by :magnitude < c-n-ts))]
+    (let [c-n-ts           (map (fn [c]
+                                  {:cell   c
+                                   :target (cell->furthest-open-space
+                                             db c move-opts)})
+                                cells)
+          any-null-target? (seq (remove :target c-n-ts))
+          c-n-ts           (filter :target c-n-ts)
+          c-n-ts           (map (fn [{:keys [cell target] :as c-n-t}]
+                                  (let [{dx :x dy :y :as diff} ;; document the negative diff here
+                                        (calc-diff target cell)]
+                                    (assoc c-n-t
+                                           :magnitude
+                                           (apply max (map #(.abs js/Math %) [dx dy]))
+                                           :diff diff)
+                                    )) c-n-ts)
+          _                (println "c-n-ts" c-n-ts)
+          shortest         (first (sort-by :magnitude < c-n-ts))]
       (println "instant-down!")
       (println "shortest: " shortest)
       (println "shortest mag: " (:magnitude shortest))
+      (println "any-null-target?" any-null-target?)
       ;; TODO handle stepping back in from shortest (fallback movement)
       ;; OR filter on can-move? earlier
-      (if (can-move? (:target shortest))
+      (if (and (can-move? (:target shortest)) (not any-null-target?))
         (move-cells db
                     {:cells     cells
                      :move-f    #(apply-diff % (:diff shortest))
