@@ -462,7 +462,7 @@
 ;;    (fn [_] true)})
 
 
-(defn instant-down
+(defn instant-fall
   "Returns a `db` with the passed cells moving as far in the passed `direction`
   as possible.
 
@@ -474,36 +474,37 @@
   "
   [db {:keys [cells keep-shape? can-move?]
        :as   move-opts}]
-  (let [move-opts (assoc move-opts :direction :down)]
-    (if-not keep-shape?
-      db
-      (let [c-n-ts   (map (fn [c]
-                            {:cell   c
-                             :target (cell->furthest-open-space
-                                       db c move-opts)})
-                          cells)
-            c-n-ts   (filter #(:target %) c-n-ts)
-            c-n-ts   (map (fn [{:keys [cell target] :as c-n-t}]
-                            (let [{dx :x dy :y :as diff} ;; document the negative diff here
-                                  (calc-diff target cell)]
-                              (assoc c-n-t
-                                     :magnitude
-                                     (apply max (map #(.abs js/Math %) [dx dy]))
-                                     :diff diff)
-                              )) c-n-ts)
-            _        (println "c-n-ts" c-n-ts)
-            shortest (first (sort-by :magnitude < c-n-ts))]
-        (println "instant-down!")
-        (println "shortest: " shortest)
-        (println "shortest mag: " (:magnitude shortest))
-        (if shortest
-          (move-cells db
-                      {:cells     cells
-                       :move-f    #(apply-diff % (:diff shortest))
-                       ;; TODO may not need to check can-move? anymore...
-                       :can-move? can-move?})
-          db)
-        ))))
+  (if-not keep-shape?
+    db
+    (let [c-n-ts   (map (fn [c]
+                          {:cell   c
+                           :target (cell->furthest-open-space
+                                     db c move-opts)})
+                        cells)
+          c-n-ts   (filter #(:target %) c-n-ts)
+          c-n-ts   (map (fn [{:keys [cell target] :as c-n-t}]
+                          (let [{dx :x dy :y :as diff} ;; document the negative diff here
+                                (calc-diff target cell)]
+                            (assoc c-n-t
+                                   :magnitude
+                                   (apply max (map #(.abs js/Math %) [dx dy]))
+                                   :diff diff)
+                            )) c-n-ts)
+          _        (println "c-n-ts" c-n-ts)
+          shortest (first (sort-by :magnitude < c-n-ts))]
+      (println "instant-down!")
+      (println "shortest: " shortest)
+      (println "shortest mag: " (:magnitude shortest))
+      ;; TODO handle stepping back in from shortest (fallback movement)
+      ;; OR filter on can-move? earlier
+      (if (can-move? (:target shortest))
+        (move-cells db
+                    {:cells     cells
+                     :move-f    #(apply-diff % (:diff shortest))
+                     ;; TODO may not need to check can-move? anymore...
+                     :can-move? can-move?})
+        db)
+      )))
 
 (comment
   (.abs js/Math -1)

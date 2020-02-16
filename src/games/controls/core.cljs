@@ -66,16 +66,21 @@
         db             (assoc db :game-grid updated-grid)]
     db))
 
+(defn is-space? [cell]
+  (not (:moveable? cell)))
+
 (defn instant-down
   "Gathers `:moveable?` cells and moves them with `grid/instant-down`"
   [{:keys [game-grid] :as db}]
   (let [moveable-cells (grid/get-cells game-grid :moveable?)
-        updated-grid   (grid/instant-down
+        updated-grid   (grid/instant-fall
                          game-grid
-                         {:cells       moveable-cells
+                         {:direction   :down
+                          :cells       moveable-cells
                           :keep-shape? true
-                          :can-move?   ;; can the cell be merged into?
-                          (fn [_] true)})
+                          ;; can the cell be merged into? TODO better fn name
+                          :can-move?   is-space?
+                          })
         db             (assoc db :game-grid updated-grid)]
     db))
 
