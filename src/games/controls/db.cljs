@@ -28,7 +28,10 @@
     :label "Play Puyo-Puyo"
     :keys  (set ["p"])
     :event [:games.events/set-page :puyo]}
-   ])
+   {:id    :move-right
+    :label "Debug view"
+    :keys  (set ["d"])
+    :event [:games.events/set-page :debug]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls Game DB

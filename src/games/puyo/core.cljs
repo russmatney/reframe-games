@@ -37,13 +37,15 @@
     (not (cell-occupied? db cell))))
 
 (defn can-overwrite-cell?
-  "Returns true if the indicated cell is within the grid's bounds AND not
-  occupied."
-  [{:keys [game-grid] :as db} cell]
+  "Returns true if the PASSED cell is within the grid's bounds, not
+  occupied, and not falling. this does NOT read from the board, but expects
+  the cell to be freshly looked up and passed to it."
+  [{:keys [game-grid]}
+   {:keys [occupied falling] :as cell}]
   (and
     (grid/within-bounds? game-grid cell)
-    (not (cell-occupied? db cell))
-    (not (cell-falling? db cell))))
+    (not occupied)
+    (not falling)))
 
 (defn any-falling?
   "Returns true if there is a falling cell anywhere in the grid."
@@ -277,7 +279,7 @@
                           (not (nil? deep-y))
                           (< y deep-y))]
             should?))]
-    (println "updating fallers with deepest-by-x:" deepest-by-x)
+    (println "deepest-by-x:" deepest-by-x)
     (update db :game-grid
             (fn [grid]
               (grid/update-cells

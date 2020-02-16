@@ -444,18 +444,38 @@
                        cells-in-dir)
         target       (:best
                       (reduce (fn [{:keys [best skip?]} next-cell]
-                                (if skip?
+                                (print
+                                  (str "finding best target - best: "
+                                       best " next: " next-cell
+                                       " can-move?(next-cell) "
+                                       (can-move? next-cell)))
+                                (println (str "skip? " skip?))
+                                (cond
+                                  skip?
                                   {:skip? true
                                    :best  best}
-                                  (if (can-move? next-cell)
-                                    {:best  next-cell
-                                     :skip? false}
-                                    {:best  best
-                                     :skip? true}))
-                                )
-                              {:best  (when (can-move? (first sorted)) (first sorted))
-                               :skip? (if (can-move? (first sorted)) false true)}
-                              (rest sorted)))]
+
+                                  (and
+                                    ;; nothing set and can't move already?
+                                    ;; we're blocked, skip and return nil
+                                    (not (can-move? next-cell))
+                                    (not best))
+                                  {:skip? true
+                                   :best  nil}
+
+                                  (can-move? next-cell)
+                                  {:best  next-cell
+                                   :skip? false}
+
+                                  :else
+                                  {:best  best
+                                   :skip? true}))
+                              {:best  nil
+                               :skip? false}
+                              sorted))]
+    (println "cells-in-dir" cells-in-dir)
+    (println "sorted" sorted)
+    (println "target" target)
     (when (seq cells-in-dir)
       target)))
 

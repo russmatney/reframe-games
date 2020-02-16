@@ -169,6 +169,33 @@
     [:div
      [matrix grid game-opts]]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Debug game
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn debug-game
+  "Intended as a debug helper."
+  []
+  (let [game-opts {:name :puyo-debug-game}
+        game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])
+        grid      @(rf/subscribe [::puyo.subs/game-grid game-opts])]
+
+    (components/page
+      {:direction    :row
+       :full-height? true}
+      [grid.views/matrix
+       grid
+       {:->cell
+        (fn [c]
+          [:div
+           {:style
+            (merge
+              (cell->style game-opts c)
+              {:width  "180px"
+               :border "1px solid white"})}
+
+           (str c)])}])))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Classic Game

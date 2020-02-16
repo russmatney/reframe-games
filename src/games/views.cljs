@@ -19,6 +19,7 @@
       :tetris [tetris.views/page]
       :puyo   [puyo.views/page]
 
+      :debug  [puyo.views/debug-game]
       :select [select.views/page])))
 
 (defn root []

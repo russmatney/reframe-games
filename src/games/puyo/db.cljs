@@ -26,7 +26,10 @@
 (defn game-db
   "Creates an initial puyo game state."
   [game-opts]
-  (let [{:keys [name game-grid step-timeout ignore-controls] :as game-opts}
+  (let [{:keys
+         [name game-grid step-timeout ignore-controls
+          group-size
+          ] :as game-opts}
         (merge defaults game-opts)]
     {:name      name
      :game-opts game-opts
@@ -42,7 +45,7 @@
          game-grid))
 
      ;; game logic
-     :group-size        4 ;; number of puyos in a group to be removed
+     :group-size        (or group-size 4) ;; number of puyos in a group to be removed
      :step-timeout      step-timeout
      :paused?           false
      :gameover?         false
@@ -108,9 +111,22 @@
                       :width      5}}
       (game-db)))
 
+(def debug-game-db
+  (->
+    {:name        :puyo-debug-game
+     :pages       #{:debug}
+     :on-gameover :restart
+     :colors      [:red :blue]
+     :group-size  3
+     :game-grid   {:entry-cell {:x 1 :y 0}
+                   :height     5
+                   :width      3}}
+    (game-db)))
+
 (def game-dbs
   [select-game-db
-   classic-game-db])
+   classic-game-db
+   debug-game-db])
 
 ;; TODO dry up
 (def game-dbs-map

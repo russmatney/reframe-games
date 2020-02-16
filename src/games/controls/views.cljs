@@ -72,7 +72,7 @@
 ;; Debug game
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn debug-cells
+(defn debug-cell
   "Debug cells have clickable `:anchor?`s."
   [{:keys [moveable? x y anchor?] :as cell}
    {:keys [debug? cell-height cell-width] :as game-opts}]
@@ -112,7 +112,7 @@
       (when debug? [:h1 {:style {:color "white"}} (str "debug? :" debug?)])
 
       (when debug? [:h3 {:style {:color "white"}} (:name game-opts)])
-      [grid.views/matrix grid {:->cell #(debug-cells % game-opts)}]
+      [grid.views/matrix grid {:->cell #(debug-cell % game-opts)}]
 
       (when debug? [:div {:style {:background "white"}} [:p (str game-opts)]])]
      )))
