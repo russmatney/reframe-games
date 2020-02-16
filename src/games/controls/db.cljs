@@ -40,15 +40,13 @@
   [{:id    :move-left
     :label "Move Left"
     :keys  (set ["left" "h" "a"])
-    :event [:games.controls.events/move-piece game-opts :left]}
-   ;; {:id    :move-down
-   ;;  :label "Move Down"
-   ;;  :keys  (set ["down" "j" "s"])
-   ;;  :event [:games.controls.events/move-piece game-opts :down]}
+    ;; :event [:games.controls.events/move-piece game-opts :left]
+    :event [:games.controls.events/instant-fall game-opts :left]}
    {:id    :move-down
     :label "Move Down"
     :keys  (set ["down" "j" "s"])
-    :event [:games.controls.events/instant-down game-opts]}
+    ;; :event [:games.controls.events/move-piece game-opts :down]
+    :event [:games.controls.events/instant-fall game-opts :down]}
    {:id    :move-right
     :label "Move Right"
     :keys  (set ["right" "l" "d"])
@@ -105,27 +103,27 @@
 
 (def game-dbs
   [select-game-db
-   (make-debug-game-db
-     :controls-debug-game
-     {:debug? true})
+   ;; (make-debug-game-db
+   ;;   :controls-debug-game
+   ;;   {:debug? true})
    (make-debug-game-db
      :controls-debug-game-1
      {:debug-game? true
-      :game-grid   {:height          2 :width        1
+      :game-grid   {:height          3 :width        3
                     :phantom-columns 1 :phantom-rows 1}
       :debug?      false})
-   (make-debug-game-db
-     :controls-debug-game-2
-     {:game-grid   {:height 3 :width 3}
-      :debug-game? true
-      :debug?      false})
-   (make-debug-game-db
-     :controls-debug-game-3
-     {:game-grid   {:height 3 :width 3}
-      :cell-height "24px"
-      :cell-width  "24px"
-      :debug-game? true
-      :debug?      false})
+   ;; (make-debug-game-db
+   ;;   :controls-debug-game-2
+   ;;   {:game-grid   {:height 3 :width 3}
+   ;;    :debug-game? true
+   ;;    :debug?      false})
+   ;; (make-debug-game-db
+   ;;   :controls-debug-game-3
+   ;;   {:game-grid   {:height 3 :width 3}
+   ;;    :cell-height "24px"
+   ;;    :cell-width  "24px"
+   ;;    :debug-game? true
+   ;;    :debug?      false})
    ])
 
 ;; TODO dry up

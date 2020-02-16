@@ -314,7 +314,7 @@
   [db {:keys [cells move-f can-move?]}]
   (let [cells-and-targets
         (map (fn [c] {:cell   (get-cell db c)
-                      :target (move-f c)})
+                      :target (get-cell db (move-f c))})
              cells)
         targets        (map :target cells-and-targets)
         cells-to-move  (set (map cell->coords cells))
@@ -430,37 +430,46 @@
   "
   [db cell {:keys [can-move? direction]}]
   (let [cells-in-dir (cells-in-direction db cell direction)
-        _            (println "cells-in-dir: " cells-in-dir)
         sorted       (sort-by
                        (case direction
-                         :up    less-y?
-                         :down  greater-y?
-                         :right greater-x?
-                         :left  less-x?)
+                         (:up :down)    :y
+                         (:left :right) :x)
+                       (case direction
+                         (:up :left)    >
+                         (:down :right) <)
                        cells-in-dir)
         target       (:best
                       (reduce (fn [{:keys [best skip?]} next-cell]
                                 (if skip?
                                   {:skip? true
                                    :best  best}
-                                  {:best  (if (can-move? next-cell) next-cell best)
-                                   :skip? false})
+                                  (if (can-move? next-cell)
+                                    {:best  next-cell
+                                     :skip? false}
+                                    {:best  best
+                                     :skip? true}))
                                 )
-                              {:best  (first sorted)
-                               :skip? false}
+                              {:best  (when (can-move? (first sorted)) (first sorted))
+                               :skip? (if (can-move? (first sorted)) false true)}
                               (rest sorted)))]
-    (when cells-in-dir
-      (println "target: " target)
+    (when (seq cells-in-dir)
       target)))
 
-;; usage
-;; (grid/instant-down
-;;   game-grid
-;;   {:cells       moveable-cells
-;;    :keep-shape? true
-;;    :can-move?   ;; can the cell be merged into?
-;;    (fn [_] true)})
+(defn ->cell-and-target
+  "Derp, baked in this furthest open space logic."
+  [db c move-opts]
+  {:cell   c
+   :target (cell->furthest-open-space
+             db c move-opts)})
 
+(defn ->diff-and-magnitude
+  [{:keys [cell target] :as c-n-t}]
+  (let [{dx :x dy :y :as diff} ;; document the negative diff here
+        (calc-diff target cell)]
+    (assoc c-n-t
+           :magnitude
+           (apply max (map #(.abs js/Math %) [dx dy]))
+           :diff diff)))
 
 (defn instant-fall
   "Returns a `db` with the passed cells moving as far in the passed `direction`
@@ -472,38 +481,43 @@
 
   See furthest open space for definition/note on consecutive spaces.
   "
-  [db {:keys [cells keep-shape? can-move?]
+  [db {:keys [cells keep-shape? can-move? direction]
        :as   move-opts}]
   (if-not keep-shape?
-    db
-    (let [c-n-ts           (map (fn [c]
-                                  {:cell   c
-                                   :target (cell->furthest-open-space
-                                             db c move-opts)})
-                                cells)
+
+    (let [sorted-cells (sort-by
+                         (case direction
+                           (:up :down)    :y
+                           (:left :right) :x)
+                         (case direction
+                           (:up :left)    <
+                           (:down :right) >)
+                         cells)]
+      ;; order is important - go from the direction passed
+      ;; (:down -> start from bottom of grid (decreasing y))
+      (reduce
+        (fn [db cell]
+          (let [{:keys [diff target]}
+                (->diff-and-magnitude
+                  (->cell-and-target db cell move-opts))]
+            (if-not target
+              db
+              (move-cells
+                db
+                {:cells     [cell]
+                 :move-f    #(apply-diff % diff)
+                 :can-move? can-move?})))
+          ) db sorted-cells))
+
+    (let [c-n-ts           (map #(->cell-and-target db % move-opts) cells)
           any-null-target? (seq (remove :target c-n-ts))
           c-n-ts           (filter :target c-n-ts)
-          c-n-ts           (map (fn [{:keys [cell target] :as c-n-t}]
-                                  (let [{dx :x dy :y :as diff} ;; document the negative diff here
-                                        (calc-diff target cell)]
-                                    (assoc c-n-t
-                                           :magnitude
-                                           (apply max (map #(.abs js/Math %) [dx dy]))
-                                           :diff diff)
-                                    )) c-n-ts)
-          _                (println "c-n-ts" c-n-ts)
+          c-n-ts           (map ->diff-and-magnitude c-n-ts)
           shortest         (first (sort-by :magnitude < c-n-ts))]
-      (println "instant-down!")
-      (println "shortest: " shortest)
-      (println "shortest mag: " (:magnitude shortest))
-      (println "any-null-target?" any-null-target?)
-      ;; TODO handle stepping back in from shortest (fallback movement)
-      ;; OR filter on can-move? earlier
       (if (and (can-move? (:target shortest)) (not any-null-target?))
         (move-cells db
                     {:cells     cells
                      :move-f    #(apply-diff % (:diff shortest))
-                     ;; TODO may not need to check can-move? anymore...
                      :can-move? can-move?})
         db)
       )))

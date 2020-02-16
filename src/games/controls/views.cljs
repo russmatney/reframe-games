@@ -145,5 +145,5 @@
    ;; ^{:key "debug-game"}
    ;; [debug-game]
    ^{:key "two-games"}
-   [n-games-page 3]
+   [n-games-page 1]
    ])

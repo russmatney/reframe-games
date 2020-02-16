@@ -93,11 +93,11 @@
       db)))
 
 (rf/reg-event-db
-  ::instant-down
+  ::instant-fall
   [(game-db-interceptor :controls-games)]
-  (fn [db _game-opts]
+  (fn [db [_game-opts direction]]
     (if (controls/move-allowed? db)
-      (controls/instant-down db)
+      (controls/instant-fall db direction)
       db)))
 
 (rf/reg-event-db
