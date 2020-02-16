@@ -150,6 +150,21 @@
                    :can-move? #(cell-open? db %)
                    :cells     (remove :anchor? falling-cells)}))))))
 
+(defn instant-fall
+  "Gathers `:falling?` cells and moves them with `grid/instant-fall`"
+  [{:keys [game-opts] :as db} direction]
+  (update
+    db :game-grid
+    (fn [g]
+      (grid/instant-fall
+        g
+        {:direction   direction
+         :cells       (get-falling-cells db)
+         :keep-shape? (or false (:keep-shape? game-opts))
+         ;; TODO fix this to not need the db
+         ;; works for now b/c it only checks bounds and :occupied
+         :can-move?   #(cell-open? db %)}))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adding Pieces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -332,7 +347,8 @@
       (-> db
           (update-score)
           (clear-groups groups)
-          (update-fallers groups))
+          (update-fallers groups)
+          (instant-fall :down))
 
       ;; nothing is falling, add a new piece
       (not (any-falling? db))

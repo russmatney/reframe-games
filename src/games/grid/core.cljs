@@ -153,8 +153,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-cell
-  [{:keys [grid phantom-rows phantom-columns]} {:keys [x y]}]
-  (-> grid (nth (+ y phantom-rows)) (nth (+ phantom-columns x))))
+  [{:keys [grid width height phantom-rows phantom-columns]} {:keys [x y]}]
+  (let [ynth (+ y phantom-rows)
+        xnth (+ x phantom-columns)]
+    (if (>= y height) nil
+        (-> grid (nth ynth) (nth xnth)))))
 
 (defn get-cells
   [{:keys [grid] :as g} pred]
@@ -320,7 +323,8 @@
         cells-to-move  (set (map cell->coords cells))
         target-coords  (set (map cell->coords targets))
         cells-to-clear (set/difference cells-to-move target-coords)
-        all-can-move?  (not (seq (remove can-move? targets)))]
+        all-can-move?  (and (not-any? nil? targets)
+                            (not (seq (remove can-move? targets))))]
 
     {:cells-and-targets cells-and-targets
      :targets           targets

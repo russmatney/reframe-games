@@ -70,18 +70,18 @@
   (not (:moveable? cell)))
 
 (defn instant-fall
-  "Gathers `:moveable?` cells and moves them with `grid/instant-down`"
+  "Gathers `:moveable?` cells and moves them with `grid/instant-fall`"
   [{:keys [game-grid game-opts] :as db} direction]
-  (let [moveable-cells (grid/get-cells game-grid :moveable?)
-        updated-grid   (grid/instant-fall
-                         game-grid
-                         {:direction   direction
-                          :cells       moveable-cells
-                          :keep-shape? (or false (:keep-shape? game-opts))
-                          ;; can the cell be merged into? TODO better fn name
-                          :can-move?   is-space?})
-        db             (assoc db :game-grid updated-grid)]
-    db))
+  (update
+    db :game-grid
+    (fn [g]
+      (grid/instant-fall
+        g
+        {:direction   direction
+         :cells       (grid/get-cells game-grid :moveable?)
+         :keep-shape? (or false (:keep-shape? game-opts))
+         :can-move?   is-space?}))))
+
 
 (defn rotate-piece [{:keys [game-grid] :as db}]
   (let [cells       (grid/get-cells game-grid :props)
