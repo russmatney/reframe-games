@@ -3,7 +3,29 @@
 {:tests [{:id            :unit-cljs
           :type          :kaocha.type/cljs
           :test-paths    ["test"]
-          ;; :cljs/timeout 10000                        ; 10 seconds, the default
-          :cljs/repl-env cljs.repl.node/repl-env ; node is the default
-          ;; :cljs/repl-env cljs.repl.browser/repl-env
-          }]}
+          :cljs/timeout  10000
+          :cljs/repl-env cljs.repl.node/repl-env
+          }]
+
+ :plugins [
+           ;; circular dep, apparently...
+           ;; :kaocha.plugin/cloverage
+           :kaocha.plugin/notifier
+           ]
+
+ :cloverage/opts
+ {:ns-exclude-regex [],
+  :text?            false,
+  :lcov?            false,
+  :high-watermark   80,
+  :fail-threshold   0,
+  :output           "target/coverage",
+  :low-watermark    50,
+  :ns-regex         [],
+  :summary?         true,
+  :coveralls?       false,
+  :emma-xml?        false,
+  :html?            true,
+  :nop?             false,
+  :codecov?         false}
+ }

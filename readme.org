@@ -101,6 +101,8 @@ let the user write the controls/db.cljs
 **** [ ] Write a metadata component
 include: current combo, highest combo, combos to next level, highest level
 pieces played, combos scored, items available
+**** [ ] add garden/stylesheets
+https://github.com/lambdaisland/garden-watcher
 * Resources
 ** Tetris
 The [[https://tetris.wiki][Tetris Wiki]] has some great Tetris related resources.

@@ -7,20 +7,18 @@
         re-frame   {:mvn/version "0.11.0"}
         re-pressed {:mvn/version "0.3.1"}
 
-        binaryage/devtools {:mvn/version "1.0.0"}
-
-        lambdaisland/kaocha      {:mvn/version "0.0-590"}
-        lambdaisland/kaocha-cljs {:mvn/version "0.0-68"}}
+        binaryage/devtools {:mvn/version "1.0.0"}}
 
  :aliases
- {:cljs {:extra-deps {thheller/shadow-cljs {:mvn/version "2.8.77"}}}
+ {:cljs
+  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.8.77"}}}
 
   :test
   {:extra-paths ["test"]
    :extra-deps
-   {
-    lambdaisland/kaocha      {:mvn/version "0.0-590"}
-    lambdaisland/kaocha-cljs {:mvn/version "0.0-68"}}}
+   {lambdaisland/kaocha           {:mvn/version "0.0-590"}
+    lambdaisland/kaocha-cljs      {:mvn/version "0.0-68"}
+    lambdaisland/kaocha-cloverage {:mvn/version "0.0-41"}}}
 
   :nrepl {:extra-deps
           {cider/cider-nrepl {:mvn/version "0.23.0"}

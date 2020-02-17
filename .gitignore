@@ -12,3 +12,5 @@ out
 node_modules/
 reframe-games.zip
 .cpcache/
+
+.cljs_node_repl/

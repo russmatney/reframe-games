@@ -94,19 +94,22 @@
 (defn update-cells
   "Applies the passed function to the cells that return true for pred."
   [db pred f]
-  (update db :grid
-          (fn [g]
-            (into []
-                  (map
-                    (fn [row]
-                      (into []
-                            (map
-                              (fn [cell]
-                                (if (pred cell)
-                                  (f cell)
-                                  cell))
-                              row)))
-                    g)))))
+  (update
+    db :grid
+    (fn [g]
+      (into
+        []
+        (map
+          (fn [row]
+            (into
+              []
+              (map
+                (fn [cell]
+                  (if (pred cell)
+                    (f cell)
+                    cell))
+                row)))
+          g)))))
 
 (defn overwrite-cell
   "Copies all props from `cell` to `target`.
@@ -118,12 +121,13 @@
   "
   [db {:keys [cell target]}]
   (let [props (dissoc cell :x :y)]
-    (update-cell db target
-                 (fn [target]
-                   (merge
-                     props
-                     {:x (:x target)
-                      :y (:y target)})))))
+    (update-cell
+      db target
+      (fn [target]
+        (merge
+          props
+          {:x (:x target)
+           :y (:y target)})))))
 
 (defn clear-cell-props
   "Removes non-coordinate flags from cells."
