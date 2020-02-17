@@ -1,6 +1,6 @@
 {:deps {:aliases [:nrepl :cljs]}
 
- :source-paths ["src"]
+ :source-paths ["src" "test"]
 
  :nrepl {:port 2988
          :middleware
