@@ -18,10 +18,10 @@
     (swap! timeouts dissoc id))
   (when (some? event)
     (swap! timeouts assoc id
-      (js/setTimeout
-        (fn []
-          (rf/dispatch event))
-        time))))
+           (js/setTimeout
+             (fn []
+               (rf/dispatch event))
+             time))))
 
 (defn clear-timeout
   [{:keys [id]}]

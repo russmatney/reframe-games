@@ -52,8 +52,7 @@
   (fn [_cofx game-opts]
     {:db         (puyo.db/game-dbs-map (:name game-opts))
      ;; TODO clean up existing games/controls
-     :dispatch-n [[::set-controls game-opts]
-                  [::step game-opts]
+     :dispatch-n [[::step game-opts]
                   [::game-timer game-opts]]}))
 
 (rf/reg-event-fx
@@ -113,17 +112,8 @@
   ::hold-and-swap-piece
   [(game-db-interceptor ::puyo.db/db)]
   (fn [db _game-opts]
-    ;; if there is a hold, move current hold to front of piece-queue
-    ;; remove current falling piece from board, move it to hold
     (let [{:keys [held-shape falling-shape hold-lock paused?]} db]
-      (println "holding or swapping!")
-      (println "paused? " paused?)
-      (println "hold-lock? " hold-lock)
-      (println "falling-shape ? " falling-shape)
-      (println "held-shape ? " held-shape)
-
-      (if ;; if nothing falling or if hold-lock in effect, return db
-          (or (not falling-shape)
+      (if (or (not falling-shape)
               hold-lock
               paused?)
         db
@@ -162,4 +152,5 @@
 (pause/reg-pause-events
   {:n            :games.puyo.events
    :game-map-key ::puyo.db/db
-   :timers       [(pause/make-timer ::step)]})
+   :timers       [{:game-opts->id    (fn [_] ::step)
+                   :game-opts->event (fn [gopts] [::step gopts])}]})

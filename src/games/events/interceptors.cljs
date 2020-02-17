@@ -84,7 +84,6 @@
 (defn ->fancy-interceptor
   "'This thing is just a map.'"
   [& {:keys [id before after]}]
-  (when true (println "using the fancy interceptor! Good luck!"))
   (rfi/->interceptor
     :id     (or id :unnamed)
     :before before

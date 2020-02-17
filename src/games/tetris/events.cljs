@@ -142,4 +142,5 @@
 (pause/reg-pause-events
   {:n            :games.tetris.events
    :game-map-key ::tetris.db/db
-   :timers       [(pause/make-timer ::step)]})
+   :timers       [{:game-opts->id    (fn [_] ::step)
+                   :game-opts->event (fn [gopts] [::step gopts])}]})
