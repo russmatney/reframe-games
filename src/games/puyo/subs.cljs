@@ -88,7 +88,7 @@
   ::any-held?
   (fn [db [_ game-opts]]
     (-> db
-        (game-opts->db game-opts :held-shape-fn))))
+        (game-opts->db game-opts :held-shape))))
 
 (rf/reg-sub
   ::score

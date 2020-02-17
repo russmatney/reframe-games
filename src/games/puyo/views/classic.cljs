@@ -26,7 +26,7 @@
   ^{:key "rest."}
   [:p
    {:style    {:margin-top "1rem"}
-    :on-click #(rf/dispatch [::puyo.events/start-game game-opts])}
+    :on-click #(rf/dispatch [::puyo.events/restart-game game-opts])}
    "Click here to restart."])
 
 (defn center-panel [game-opts]

@@ -5,7 +5,8 @@
    [games.puyo.db :as puyo.db]
    [games.puyo.core :as puyo]
    [games.pause.core :as pause]
-   [games.controls.events :as controls.events]))
+   [games.controls.events :as controls.events]
+   [games.puyo.shapes :as puyo.shapes]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Start-games
@@ -42,6 +43,16 @@
   [(game-db-interceptor ::puyo.db/db)]
   (fn [_cofx game-opts]
     {:dispatch-n [[::set-controls game-opts]
+                  [::step game-opts]
+                  [::game-timer game-opts]]}))
+
+(rf/reg-event-fx
+  ::restart-game
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [_cofx game-opts]
+    {:db         (puyo.db/game-dbs-map (:name game-opts))
+     ;; TODO clean up existing games/controls
+     :dispatch-n [[::set-controls game-opts]
                   [::step game-opts]
                   [::game-timer game-opts]]}))
 
@@ -104,30 +115,36 @@
   (fn [db _game-opts]
     ;; if there is a hold, move current hold to front of piece-queue
     ;; remove current falling piece from board, move it to hold
-    (let [{:keys [held-shape-fn falling-shape-fn hold-lock paused?]} db]
+    (let [{:keys [held-shape falling-shape hold-lock paused?]} db]
+      (println "holding or swapping!")
+      (println "paused? " paused?)
+      (println "hold-lock? " hold-lock)
+      (println "falling-shape ? " falling-shape)
+      (println "held-shape ? " held-shape)
 
       (if ;; if nothing falling or if hold-lock in effect, return db
-          (or (not falling-shape-fn)
+          (or (not falling-shape)
               hold-lock
               paused?)
         db
         (cond-> db
           ;; prepend queue with held piece
-          held-shape-fn
+          held-shape
           (update :piece-queue (fn [q]
-                                 (cons held-shape-fn q)))
+                                 (cons held-shape q)))
 
-          falling-shape-fn
+          falling-shape
           (->
             ;; move falling piece to held piece
-            (assoc :held-shape-fn falling-shape-fn)
+            (assoc :held-shape falling-shape)
             ;; clear falling piece if there was one
-            (assoc :falling-shape-fn nil)
+            (assoc :falling-shape nil)
             ;; clear the falling pieces from the board
             (puyo/clear-falling-cells)
             ;; update grid for showing held piece
             (update :held-grid
-                    #(puyo/add-preview-piece % falling-shape-fn))
+                    #(puyo/add-preview-piece
+                       % (puyo.shapes/build-piece-fn falling-shape)))
 
             ;; indicate that a piece was held to prevent double-holds
             (assoc :hold-lock true)

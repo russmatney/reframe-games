@@ -66,10 +66,10 @@
      :ignore-controls ignore-controls
 
      ;; hold/swap
-     :falling-shape-fn nil
-     :held-shape-fn    nil
-     :held-grid        shape-grid
-     :hold-lock        false
+     :falling-shape nil
+     :held-shape    nil
+     :held-grid     shape-grid
+     :hold-lock     false
 
      ;; modes
      :spin-the-bottle? false ;; rotate the board on every piece

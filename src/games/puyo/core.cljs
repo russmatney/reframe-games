@@ -121,7 +121,9 @@
   (-> (reduce (fn [d cell]
                 (mark-cell-occupied d cell))
               db blocked-cells)
-      (instant-fall :down)))
+      (instant-fall :down)
+      ;; re-enable holds after a blocked movement event
+      (assoc :hold-lock false)))
 
 (defn- do-move-piece
   [db move-opts]
@@ -202,8 +204,7 @@
   "
   [{:keys [piece-queue min-queue-size] :as db}]
   (let [next-three  (take 3 (drop 1 piece-queue))
-        next-colors (first piece-queue)
-        game-opts   (:game-opts db)]
+        next-colors (first piece-queue)]
     (-> ;; this also indicates that the pieces has been played, so we increment
       db
       (update :current-piece-num inc)
@@ -216,7 +217,7 @@
                     q))))
 
       ;; update the current falling fn
-      (assoc :falling-shape-fn (puyo.shapes/build-piece-fn next-colors))
+      (assoc :falling-shape next-colors)
 
       ;; add the cells to the matrix!
       (update :game-grid
@@ -261,10 +262,7 @@
                   grid
                   (fn [cell]
                     (seq (filter #(contains? % cell) groups)))
-                  #(dissoc % :occupied :color :anchor?))))
-
-      ;; prevent other fallers from being held
-      (assoc :hold-lock true)))
+                  #(dissoc % :occupied :color :anchor?))))))
 
 (defn update-fallers
   "Updates cells that have had a cell below removed."
