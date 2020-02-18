@@ -1,7 +1,35 @@
 (ns games.grid.core
   (:require
    [clojure.set :as set]
-   [clojure.walk :as walk]))
+   [clojure.walk :as walk]
+   [adzerk.cljs-console :as log]
+   [clojure.string :as string]))
+
+;; TODO break grid/cell functions into grid.cells namespace
+
+(defn cell->str
+  "Converts a cell into a coords and keys str."
+  [{:keys [x y falling occupied flagged] :as c}]
+  (let [props (dissoc c :x :y :falling :occupied :flagged)]
+    (str "    |    " x "," y " "
+         (if flagged "f" "")
+         (if falling "f" "")
+         (if occupied "o" "")
+         (if (seq props) (keys props) ""))))
+
+(defn row->str [row]
+  (let [cells     row
+        cell-strs (map cell->str cells)]
+    (string/join cell-strs)))
+
+(defn grid->str [grid]
+  (let [rows     grid
+        row-strs (map row->str rows)]
+    (string/join "\n" row-strs)))
+
+(defn log [db]
+  (let [st (grid->str (:grid db))]
+    (js/console.log st)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grid, row, and cell creation
@@ -27,6 +55,8 @@
   [{:keys [width phantom-columns]}]
   (vec (take (+ width phantom-columns) (repeat {}))))
 
+;; TODO be nice to write a build-grid-for-shape to auto-size itself
+;; could include a x/y buffer, and be used to dry up queue/hold/test grid usage
 (defn build-grid
   "Builds a grid with the passed `opts`.
   Expects :height, :width, :phantom-rows, :phantom-columns as `int`s.
@@ -157,14 +187,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-cell
-  [{:keys [grid width height phantom-rows phantom-columns]} {:keys [x y]}]
-  (let [ynth (+ y phantom-rows)
-        xnth (+ x phantom-columns)]
-    (if (>= y height) nil
-        (-> grid (nth ynth) (nth xnth)))))
+  [{:keys [grid width height phantom-rows phantom-columns] :as db} {:keys [x y]}]
+  (let [ynth     (+ y phantom-rows)
+        xnth     (+ x phantom-columns)
+        _db-meta (dissoc db :grid)
+        outside-bounds?
+        (or
+          (>= y height)
+          (>= x width)
+          (< xnth 0)
+          (< ynth 0))]
+    (if outside-bounds?
+      (log/warn
+        "WARN: Attempting access outside grid bounds!
+        | x,y: #{x},#{y} | gdb: ~{_db-meta}")
+      (-> grid (nth ynth) (nth xnth)))))
 
 (defn get-cells
-  [{:keys [grid] :as g} pred]
+  [{:keys [grid]} pred]
   (filter pred (flatten grid)))
 
 (defn any-cell?
@@ -193,6 +233,13 @@
   [group c]
   (let [coords (set (map cell->coords group))]
     (contains? coords (cell->coords c))))
+
+(defn get-cell-in-group
+  [group c]
+  (first (filter (fn [group-c]
+                   (= (cell->coords group-c)
+                      (cell->coords c))
+                   ) group)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell Transforms
@@ -330,6 +377,20 @@
      {:x x :y y})))
 
 (defn- calc-move-cells
+  "Calculates targets for cells, cells to be cleared,
+  and whether or not this group of moves can be made.
+
+  Targets are calced with the passed `move-f`.
+
+  `all-can-move?` returns true if both:
+  1. none of the calced targets are nil
+  2. the 'new' targets are positive for `can-move?`
+    'new' targets are calced targets excluding current cells,
+    which will presumably be empty.
+
+  TODO probably an issue with copy-order here, may need
+  to sort to make sure the correct cell-overwrites are made
+  "
   [db {:keys [cells move-f can-move?]}]
   (let [cells-and-targets
         (map (fn [c] {:cell   (get-cell db c)
@@ -339,14 +400,25 @@
         cells-to-move  (set (map cell->coords cells))
         target-coords  (set (map cell->coords targets))
         cells-to-clear (set/difference cells-to-move target-coords)
+        ;; targets that are not current cells
+        new-targets
+        (filter (fn [trgt]
+                  (let [trgt-coords (cell->coords trgt)]
+                    (not (contains? cells-to-move trgt-coords)))
+                  ) targets)
         all-can-move?  (and (not-any? nil? targets)
-                            (not (seq (remove can-move? targets))))]
+                            (not (seq
+                                   (remove
+                                     can-move?
+                                     new-targets))))]
 
     {:cells-and-targets cells-and-targets
      :targets           targets
      :cells-to-clear    cells-to-clear
      :all-can-move?     all-can-move?}))
 
+;; TODO pull move-f into move-cells? or build on top of it
+;; TODO support :direction AND no-walls/game-opts
 (defn move-cells
   "Moves a group of passed `cells` according to `move-f`.
   Only moves if all passed cells return true for `can-move?`.
@@ -356,8 +428,13 @@
   clearing props on cells that have been abandoned, and being smart about not
   clearing cells that are being moved into.
   "
-  [db {:keys [fallback-moves] :as move-opts}]
-  (let [{:keys [cells-and-targets cells-to-clear all-can-move?]}
+  [db {:keys [fallback-moves move-f direction] :as move-opts}]
+  (let [move-opts
+        (if (and (not move-f) direction)
+          (assoc move-opts :move-f #(move-cell-coords % direction))
+          move-opts)
+
+        {:keys [cells-and-targets cells-to-clear all-can-move?]}
         (calc-move-cells db move-opts)
         {:keys [fallback-move-f additional-cells]} (first fallback-moves)]
     (cond
@@ -516,14 +593,15 @@
        :as   move-opts}]
   (if-not keep-shape?
 
-    (let [sorted-cells (sort-by
-                         (case direction
-                           (:up :down)    :y
-                           (:left :right) :x)
-                         (case direction
-                           (:up :left)    <
-                           (:down :right) >)
-                         cells)]
+    (let [sorted-cells
+          (sort-by
+            (case direction
+              (:up :down)    :y
+              (:left :right) :x)
+            (case direction
+              (:up :left)    <
+              (:down :right) >)
+            cells)]
       ;; order is important - go from the direction passed
       ;; (:down -> start from bottom of grid (decreasing y))
       (reduce
@@ -544,9 +622,6 @@
           c-n-ts   (filter :target c-n-ts)
           c-n-ts   (map ->diff-and-magnitude c-n-ts)
           shortest (first (sort-by :magnitude < c-n-ts))]
-      (println "shortest " shortest)
-      (println "c-n-ts " c-n-ts)
-      (println "cells " cells)
       (if (can-move? (:target shortest))
         (move-cells db
                     {:cells     cells

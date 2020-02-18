@@ -7,7 +7,9 @@
         re-frame   {:mvn/version "0.11.0"}
         re-pressed {:mvn/version "0.3.1"}
 
-        binaryage/devtools {:mvn/version "1.0.0"}}
+
+        binaryage/devtools  {:mvn/version "1.0.0"}
+        adzerk/cljs-console {:mvn/version "0.1.1"}}
 
  :aliases
  {:cljs
