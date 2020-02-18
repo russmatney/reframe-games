@@ -44,65 +44,65 @@ zip -r reframe-games.zip public
 **** [X] break build process apart to support multiple apps
 **** [X] dry up timers and pause helpers
 **** [X] refactor colors into view, rather than attached to cells
-**** [ ] locked-falls should be instant-falls
-**** [ ] manual-down should be instant-down
+**** [X] locked-falls should be instant-falls
+**** [X] manual-down should be instant-down
+**** [X] puyo removes extra pieces on group-breaks
+**** [X] controls fire multiple events (from different sources)
+**** [X] unify cell color 'type' treatment
+**** [X] input controls to both games on select page
+**** [X] instant-fall feature
+**** [X] faster tick-timeout while locked falls are happening
+**** [X] create playble game in the menus as the game itself
+**** [X] send multiple controls events per each - allow for multi-register
+just overwrite for now? or fire both controls? both i think?
+make it easy to register/deregister them.
+**** [X] controls: instant-drop
 **** [ ] timers broken
-**** [ ] puyo removes extra pieces on group-breaks
 **** [ ] dry up controls and game-db events
-**** [ ] add models/model generators and unit-tests
-likely with malli
 **** [ ] display directional controls more prominently
 redo controls view, maybe just show when paused
-**** [ ] dry up @rf/subscribe usage with suggested subscribe macro `(<-sub! ::s/current-page])`?
-**** [ ] controls fire multiple events (from different sources)
-***** [ ] control registration/deregistration
-**** [ ] unify cell color 'type' treatment
-**** [ ] no keys detected yet overlay with suggestions for clicking?
-**** [ ] support navigation? (back button?)
-**** [ ] clear console errors
-**** [ ] (slightly) better controls layout
-**** [ ] selected game with keyboard controls
-**** [ ] input controls to both games on select page
-**** [ ] instant-fall feature
+**** [ ] dry up @rf/subscribe usage with suggested subscribe macro
+`(<-sub! ::s/current-page])`?
+**** [ ] control registration/deregistration
+**** [ ] show/learn controls overlay
+no keys detected yet overlay with suggestions for clicking?
+**** [ ] pause overlay
+**** [ ] support optional url navigation? (back button?)
+**** [ ] select game with keyboard movement controls
 **** [ ] incorporate spin feature
-**** [ ] show combos/rows-to-next-level
-**** [ ] faster tick-timeout while locked falls are happening
-**** [ ] show controls on the board
+**** [ ] show combo chains and rows-to-next-level
 **** [ ] mobile touch/gesture support
 **** [ ] customizable controls
-**** [ ] rotation styles on rows
-**** [ ] bullet mode: size-3 pieces, 10x speed
-**** [ ] draw your own piece
-**** [ ] build up a puzzle/art piece
-**** [ ] record and show replay/highlights
-**** [ ] shared high-score + leaderboard
 **** [ ] configurable pieces and board size
-**** [ ] bonus for clearing the screen completely
-**** [ ] controls: instant-drop
 **** [ ] high-score, custom controls preserved across re-fresh
 **** [ ] rows-to-next-level visual indication
-**** [ ] 'doom' face - show emotion during left/right/rotate/score
-**** [ ] Add achievements
-**** [ ] poster-ized level clears (gunn style)
-***** include current game state metadata
-**** [ ] display character commentary per piece played
 **** [ ] rotate in two directions
 **** [ ] show 'ghost' piece (for fast drop)
 **** [ ] mobile detection and 'alert'?
 **** [ ] pause doesn't always stop the clock?
 **** [ ] add a robot to make moves when no one has for a while
 something for leaving it on
-**** [ ] create the menu as the game itself
-**** [ ] send multiple controls events per each - allow for multi-register
-just overwrite for now? or fire both controls? both i think?
-make it easy to register/deregister them.
-**** [ ] create controls page for connecting events and keys
-let the user write the controls/db.cljs
+**** [ ] add garden/stylesheets
+https://github.com/lambdaisland/garden-watcher
+**** [ ] make get-cell warning optional
+** ideas
+**** [ ] battle with AI
+**** [ ] rotation styles on rows
+**** [ ] bullet mode: size-3 pieces, 10x speed
+**** [ ] draw your own piece
+**** [ ] build up a puzzle/art piece
+**** [ ] record and show replay/highlights
+**** [ ] shared high-score + leaderboard
+**** [ ] bonus for clearing the screen completely
+**** [ ] comments for holding same-piece type
+**** [ ] 'doom' face - show emotion during left/right/rotate/score
+**** [ ] Add achievements
+**** [ ] poster-ized level clears (gunn style)
+***** include current game state metadata
+**** [ ] display character commentary per piece played
 **** [ ] Write a metadata component
 include: current combo, highest combo, combos to next level, highest level
 pieces played, combos scored, items available
-**** [ ] add garden/stylesheets
-https://github.com/lambdaisland/garden-watcher
 * Resources
 ** Tetris
 The [[https://tetris.wiki][Tetris Wiki]] has some great Tetris related resources.
