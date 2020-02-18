@@ -3,6 +3,9 @@
    [games.grid.core :as sut]
    [cljs.test :as t :refer-macros [deftest is testing]]))
 
+;; TODO move somewhere relevant
+(enable-console-print!)
+
 (deftest build-grid-test
   (testing "builds a grid"
     (let [width 3 height 5
@@ -110,6 +113,92 @@
   (let [todo true]
     (is todo)))
 
-(deftest instant-fall-test
-  (let [todo true]
-    (is todo)))
+(deftest cell-in-group-test
+  (testing "returns true if a cell's coords are in the group"
+    (let [group [{:x 1 :y 1 :blah 1} {:x 2 :y 3 :gibber true}]]
+      (is (sut/cell-in-group? group {:x 1 :y 1}))
+      (is (not (sut/cell-in-group? group {:x 0 :y 1}))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Instant Drop test
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defn instant-fall-test
+  "Creates and updates a grid db with the passed lists of cells.
+  Calls `instant-fall` in the passed `direction`.
+
+  Asserts that `empty-cells` are not :falling.
+  Asserts that the `expected-cells` are :falling.
+  "
+  [{:keys
+    [mark-cells expected-cells empty-cells move-cells
+     keep-shape? direction print?]}]
+  (let [direction (or direction :down)
+        move-opts {:cells       move-cells
+                   :keep-shape? keep-shape?
+                   :direction   direction
+                   :can-move?   #(not (:falling %))}
+        gdb
+        (-> (sut/build-grid {:height 5 :width 3 :phantom-rows 2})
+            (sut/update-cells
+              #(sut/cell-in-group? mark-cells %)
+              #(assoc % :falling true))
+            (sut/instant-fall move-opts))]
+    (doall
+      (map
+        (fn [cell]
+          (let [c (sut/get-cell gdb cell)]
+            (when print?
+              (println "should be falling")
+              (println c))
+            (is (:falling c))))
+        expected-cells))
+    (doall
+      (map
+        (fn [cell]
+          (let [c (sut/get-cell gdb cell)]
+            (when print?
+              (println "should not be falling")
+              (println c))
+            (is (not (:falling c)))))
+        empty-cells))))
+
+(deftest instant-fall-test-basic
+  (testing "keep-shape?"
+    (instant-fall-test
+      {:mark-cells     [{:x 1 :y 0}]
+       :move-cells     [{:x 1 :y 0}]
+       :empty-cells    [{:x 1 :y 0}]
+       :expected-cells [{:x 1 :y 4}]
+       :print?         false
+       :keep-shape?    true}))
+  (testing "drop-shape?"
+    (instant-fall-test
+      {:mark-cells     [{:x 1 :y 0}]
+       :move-cells     [{:x 1 :y 0}]
+       :empty-cells    [{:x 1 :y 0}]
+       :expected-cells [{:x 1 :y 4}]
+       :keep-shape?    false})))
+
+(deftest instant-fall-test-blocked
+  (testing "keep-shape?"
+    (instant-fall-test
+      {:mark-cells     [{:x 1 :y 0} {:x 1 :y 4}]
+       :move-cells     [{:x 1 :y 0}]
+       :empty-cells    [{:x 1 :y 0}]
+       :expected-cells [{:x 1 :y 3} {:x 1 :y 4}]
+       :keep-shape?    true}))
+  (instant-fall-test
+    {:mark-cells     [{:x 1 :y 0} {:x 1 :y 4} {:x 1 :y 3} {:x 1 :y 2} {:x 1 :y 1}]
+     :move-cells     [{:x 1 :y 0}]
+     :empty-cells    []
+     :expected-cells [{:x 1 :y 0} {:x 1 :y 4} {:x 1 :y 3} {:x 1 :y 2} {:x 1 :y 1}]
+     :keep-shape?    true})
+  (testing "drop shape"
+    (instant-fall-test
+      {:mark-cells     [{:x 1 :y 0} {:x 1 :y 4}]
+       :move-cells     [{:x 1 :y 0}]
+       :empty-cells    [{:x 1 :y 0}]
+       :expected-cells [{:x 1 :y 3} {:x 1 :y 4}]
+       :keep-shape?    false})))

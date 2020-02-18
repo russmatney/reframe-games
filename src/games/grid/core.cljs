@@ -184,6 +184,16 @@
   Used to compare sets of cells."
   [{:keys [x y]}] {:x x :y y})
 
+(defn same-cell?
+  "True if the cells have the same coords"
+  [c1 c2]
+  (= (cell->coords c1) (cell->coords c2)))
+
+(defn cell-in-group?
+  [group c]
+  (let [coords (set (map cell->coords group))]
+    (contains? coords (cell->coords c))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell Transforms
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -268,6 +278,7 @@
   (and
     (> height y)
     (> width x)
+    (>= y 0)
     (>= x 0)))
 
 (defn entry-cell-is?
