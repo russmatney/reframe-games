@@ -13,7 +13,9 @@
    {:id    :move-down
     :label "Move Down"
     :keys  (set ["down" "j" "s"])
-    :event [:games.puyo.events/move-piece game-opts :down]}
+    :event [:games.puyo.events/instant-fall game-opts :down]
+    ;; :event [:games.puyo.events/move-piece game-opts :down]
+    }
    {:id    :move-right
     :label "Move Right"
     :keys  (set ["right" "l" "d"])

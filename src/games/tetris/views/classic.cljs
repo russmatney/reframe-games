@@ -119,7 +119,7 @@
     {:display        "flex"
      :flex           "1"
      :flex-direction "column"}}
-   (when true [debug-game game-opts])
+   (when false [debug-game game-opts])
    [piece-queue game-opts]
    [held-piece game-opts]
    [controls.views/mini-text

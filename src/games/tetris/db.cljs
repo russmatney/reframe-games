@@ -81,8 +81,7 @@
      :cell-style {:width "20px" :height "20px"}
      :pages      #{:tetris}
      :game-grid  {:entry-cell {:x 4 :y -1}
-                  :height     10
-                  ;; :height     16
+                  :height     16
                   :width      10}}
     (game-db)))
 

@@ -96,6 +96,16 @@
       db)))
 
 (rf/reg-event-db
+  ::instant-fall
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [db [_game-opts direction]]
+    (if (puyo/can-player-move? db)
+      (-> db
+          (puyo/instant-fall direction)
+          (puyo/after-piece-played))
+      db)))
+
+(rf/reg-event-db
   ::rotate-piece
   [(game-db-interceptor ::puyo.db/db)]
   (fn [db _game-opts]

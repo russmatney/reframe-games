@@ -89,19 +89,21 @@
   "Gathers `:falling` cells and moves them with `grid/instant-fall`"
   [db direction]
   (let [falling-cells (get-falling-cells db)
-        updated-db    (update db
-                              :game-grid
-                              (fn [g]
-                                (grid/instant-fall
-                                  g
-                                  {:direction   direction
-                                   :cells       falling-cells
-                                   :keep-shape? false
-                                   ;; TODO fix this to not need the db (should be handled underneath, this
-                                   ;; can          be a cheap cell prop check)
-                                   ;; works for now b/c it only checks bounds and :occupied
-                                   ;; TODO investigate/simplify cell-open? usage and :falling flag
-                                   :can-move?   #(can-overwrite-cell? db %)})))]
+        updated-db
+        (update
+          db
+          :game-grid
+          (fn [g]
+            (grid/instant-fall
+              g
+              {:direction   direction
+               :cells       falling-cells
+               :keep-shape? false
+               ;; TODO fix this to not need the db (should be handled underneath, this
+               ;; can          be a cheap cell prop check)
+               ;; works for now b/c it only checks bounds and :occupied
+               ;; TODO investigate/simplify cell-open? usage and :falling flag
+               :can-move?   #(can-overwrite-cell? db %)})))]
     ;; mark new cell coords as occupied
     (mark-cells-occupied updated-db
                          (get-falling-cells updated-db))))
@@ -111,6 +113,11 @@
   `cell-open?` returns false for the target (new) cell."
   [db {:keys [cells move-f]}]
   (remove #(cell-open? db (move-f %)) cells))
+
+(defn after-piece-played [db]
+  (-> db
+      ;; re-enable holds after a blocked movement event
+      (assoc :hold-lock false)))
 
 (defn handle-blocked-cells
   "Updates cells after a move. Should only be called if the moved direction was
@@ -122,8 +129,7 @@
                 (mark-cell-occupied d cell))
               db blocked-cells)
       (instant-fall :down)
-      ;; re-enable holds after a blocked movement event
-      (assoc :hold-lock false)))
+      (after-piece-played)))
 
 (defn- do-move-piece
   [db move-opts]

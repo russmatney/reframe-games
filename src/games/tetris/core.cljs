@@ -72,6 +72,16 @@
   [{:keys [game-grid]}]
   (grid/get-cells game-grid :falling))
 
+
+(defn after-piece-played
+  "Updates flags/counters after a piece has been played."
+  [db]
+  (-> db
+      ;; this also indicates that the pieces has been played, so we increment
+      (update :pieces-played inc)
+      ;; remove the hold-lock to allow another hold to happen
+      (assoc :hold-lock false)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Instant fall
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -100,9 +110,10 @@
                                    :cells       falling-cells
                                    :keep-shape? true
                                    :can-move?   #(can-overwrite-cell? db %)})))]
-    ;; mark new cell coords as occupied
-    (mark-cells-occupied updated-db
-                         (get-falling-cells updated-db))))
+    (-> updated-db
+        ;; mark new cell coords as occupied
+        (mark-cells-occupied
+          (get-falling-cells updated-db)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move piece
@@ -143,12 +154,7 @@
       (as-> db db
         (reduce (fn [d cell] (mark-cell-occupied d cell))
                 db falling-cells)
-
-        ;; TODO piece-played event-function
-        ;; this also indicates that the pieces has been played, so we increment
-        (update db :pieces-played inc)
-        ;; remove the hold-lock to allow another hold to happen
-        (assoc db :hold-lock false))
+        (after-piece-played db))
 
       ;; otherwise just return the db
       db)))

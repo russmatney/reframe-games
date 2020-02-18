@@ -5,7 +5,8 @@
    [games.tetris.db :as tetris.db]
    [games.tetris.core :as tetris]
    [games.pause.core :as pause]
-   [games.controls.events :as controls.events]))
+   [games.controls.events :as controls.events]
+   [adzerk.cljs-console :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Start-games
@@ -90,7 +91,9 @@
   [(game-db-interceptor ::tetris.db/db)]
   (fn [db [_game-opts direction]]
     (if (tetris/can-player-move? db)
-      (tetris/instant-fall db direction)
+      (-> db
+          (tetris/instant-fall direction)
+          (tetris/after-piece-played))
       db)))
 
 ;; TODO fix interceptor for these events
@@ -116,8 +119,7 @@
           falling-shape (:falling-shape db)
           hold-lock     (:hold-lock db)
           paused?       (:paused? db)]
-      (if
-          ;; No holding if nothing falling, or if hold-lock in effect
+      (if ;; No holding if nothing falling, or if hold-lock in effect
           (or (not falling-shape)
               hold-lock
               paused?)
