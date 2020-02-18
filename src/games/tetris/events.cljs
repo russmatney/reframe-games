@@ -85,6 +85,14 @@
       (tetris/move-piece db direction)
       db)))
 
+(rf/reg-event-db
+  ::instant-fall
+  [(game-db-interceptor ::tetris.db/db)]
+  (fn [db [_game-opts direction]]
+    (if (tetris/can-player-move? db)
+      (tetris/instant-fall db direction)
+      db)))
+
 ;; TODO fix interceptor for these events
 (rf/reg-event-db
   ::rotate-piece

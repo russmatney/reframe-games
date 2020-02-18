@@ -42,7 +42,7 @@
    "o" {:keyCode 79}
    "p" {:keyCode 80}
    "q" {:keyCode 81}
-   "r" {:keyCode 82}
+   ;; "r" {:keyCode 82} ;; TODO reenable - right now this clobbers ctrl+r
    "s" {:keyCode 83}
    "t" {:keyCode 84}
    "u" {:keyCode 85}

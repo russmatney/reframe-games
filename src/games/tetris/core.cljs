@@ -56,15 +56,53 @@
   Returns an updated db."
   [db cell]
   (update db :game-grid
-    #(grid/update-cell % cell
-      (fn [c] (-> c
-                (assoc :occupied true)
-                (dissoc :falling))))))
+          #(grid/update-cell % cell
+                             (fn [c] (-> c
+                                         (assoc :occupied true)
+                                         (dissoc :falling))))))
+
+;; TODO dry up!
+(defn mark-cells-occupied
+  [db cells]
+  (reduce (fn [db cell] (mark-cell-occupied db cell)) db cells))
+
 
 (defn get-falling-cells
   "Returns all cells with a `:falling true` prop"
   [{:keys [game-grid]}]
   (grid/get-cells game-grid :falling))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Instant fall
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn can-overwrite-cell?
+  "Returns true if the PASSED cell is within the grid's bounds, not
+  occupied, and not falling. this does NOT read from the board, but expects
+  the cell to be freshly looked up and passed to it."
+  [{:keys [game-grid]}
+   {:keys [occupied falling] :as cell}]
+  (and
+    (grid/within-bounds? game-grid cell)
+    (not occupied)
+    (not falling)))
+
+(defn instant-fall
+  "Gathers `:falling` cells and moves them with `grid/instant-fall`"
+  [db direction]
+  (let [falling-cells (get-falling-cells db)
+        updated-db    (update db
+                              :game-grid
+                              (fn [g]
+                                (grid/instant-fall
+                                  g
+                                  {:direction   direction
+                                   :cells       falling-cells
+                                   :keep-shape? true
+                                   :can-move?   #(can-overwrite-cell? db %)})))]
+    ;; mark new cell coords as occupied
+    (mark-cells-occupied updated-db
+                         (get-falling-cells updated-db))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move piece

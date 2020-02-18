@@ -9,7 +9,8 @@
    {:id    :move-down
     :label "Move Down"
     :keys  (set ["down" "j" "s"])
-    :event [:games.tetris.events/move-piece game-opts :down]}
+    ;; :event [:games.tetris.events/move-piece game-opts :down]
+    :event [:games.tetris.events/instant-fall game-opts :down]}
    {:id    :move-right
     :label "Move Right"
     :keys  (set ["right" "l" "d"])

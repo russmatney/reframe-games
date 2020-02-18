@@ -1,16 +1,15 @@
-(ns games.puyo.views.classic
+(ns games.tetris.views.classic
   (:require
    [re-frame.core :as rf]
    [games.views.components :as components]
    [games.views.util :as util]
-   [games.controls.views :as controls.views]
    [games.grid.views :as grid.views]
-   [games.puyo.events :as puyo.events]
+   [games.controls.views :as controls.views]
    [games.subs :as subs]
-   [games.color :as color]
-   [games.puyo.subs :as puyo.subs]
-   [games.puyo.views :as puyo.views]))
-
+   [games.tetris.subs :as tetris.subs]
+   [games.tetris.events :as tetris.events]
+   [games.tetris.views :as tetris.views]
+   [games.color :as color]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Center Panel
@@ -18,20 +17,19 @@
 
 (defn gameover
   []
-  ^{:key "go"}
   [:h3 {:style {:margin-bottom "1rem"}} "Game Over."])
 
 (defn restart
   [game-opts]
-  ^{:key "rest."}
   [:p
    {:style    {:margin-top "1rem"}
-    :on-click #(rf/dispatch [::puyo.events/restart-game game-opts])}
+    ;; TODO impl event
+    :on-click #(rf/dispatch [::tetris.events/restart-game game-opts])}
    "Click here to restart."])
 
 (defn center-panel [game-opts]
-  (let [grid      @(rf/subscribe [::puyo.subs/game-grid game-opts])
-        gameover? @(rf/subscribe [::puyo.subs/gameover? game-opts])]
+  (let [grid      @(rf/subscribe [::tetris.subs/game-grid game-opts])
+        gameover? @(rf/subscribe [::tetris.subs/gameover? game-opts])]
     [:div.center-panel
      {:style
       {:display "flex"
@@ -40,7 +38,7 @@
       {:style {:flex "1"}}
 
       (when gameover? ^{:key "go"} [gameover])
-      ^{:key "matrix"} [puyo.views/matrix grid game-opts]
+      ^{:key "matrix"} [tetris.views/matrix grid game-opts]
       (when gameover? ^{:key "rest."} [restart game-opts])]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -48,10 +46,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn left-panel [game-opts]
-  (let [score   @(rf/subscribe [::puyo.subs/score game-opts])
-        t       @(rf/subscribe [::puyo.subs/time game-opts])
-        level   @(rf/subscribe [::puyo.subs/level game-opts])
-        paused? @(rf/subscribe [::puyo.subs/paused? game-opts])
+  (let [score   @(rf/subscribe [::tetris.subs/score game-opts])
+        t       @(rf/subscribe [::tetris.subs/time game-opts])
+        level   @(rf/subscribe [::tetris.subs/level game-opts])
+        paused? @(rf/subscribe [::tetris.subs/paused? game-opts])
         time    (str (util/with-precision 1 (/ t 1000)) "s")]
     [:div.left-panel
      {:style
@@ -59,59 +57,46 @@
        :flex           "1"
        :flex-direction "column"}}
      [components/widget
-      {:on-click #(rf/dispatch [::puyo.events/toggle-pause game-opts])
-       :style    {:flex "1"}
-       :label    (if paused? "Paused" "Time")
-       :value    time}]
+      {:style
+       {:flex "1"}
+       :label (if paused? "Paused" "Time")
+       :value time}]
      [components/widget
-      {:style {:flex "1"}
-       :label "Level"
-       :value level}]
+      {:style
+       {:flex "1"}
+       :label "Level" :value level}]
      [components/widget
-      {:style {:flex "1"}
-       :label "Score"
-       :value score}]]))
+      {:style
+       {:flex "1"}
+       :label "Score" :value score}]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Piece Queue
+;; Queue
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn piece-queue [{:keys [cell-style] :as game-opts}]
-  (let [preview-grids @(rf/subscribe [::puyo.subs/preview-grids game-opts])]
-    ^{:key "piece-queue"}
-    [grid.views/piece-list
-     {:label       "Queue"
-      :piece-grids preview-grids
-      :style       {:justify-content "space-between"
-                    :flex-direction  "row"}
-      :cell->style
-      (fn [c]
-        (merge
-          (or cell-style {})
-          {:background (color/cell->piece-color c)}))}]))
+(defn piece-queue [game-opts]
+  (let [preview-grids @(rf/subscribe [::tetris.subs/preview-grids game-opts])]
+    (grid.views/piece-list
+      {:label       "Queue"
+       :cell->style (fn [c] {:background (color/cell->piece-color c)})
+       :piece-grids preview-grids})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Held Piece
+;; Hold/Swap
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn hold-string [game-opts]
-  (let [any-held? @(rf/subscribe [::puyo.subs/any-held? game-opts])
+  (let [any-held? @(rf/subscribe [::tetris.subs/any-held? game-opts])
         hold-keys @(rf/subscribe [::subs/keys-for :hold])
         hold-key  (first hold-keys)]
     (str (if any-held? "Swap (" "Hold (") hold-key ")")))
 
-(defn held-piece [{:keys [cell-style] :as game-opts}]
-  (let [held-grid @(rf/subscribe [::puyo.subs/held-grid game-opts])]
+(defn held-piece [game-opts]
+  (let [held-grid @(rf/subscribe [::tetris.subs/held-grid game-opts])]
     (grid.views/piece-list
       {:label       (hold-string game-opts)
        :piece-grids [held-grid]
-       :cell->style
-       (fn [{:keys [color] :as c}]
-         (merge
-           (or cell-style {})
-           (if color
-             {:background (color/cell->piece-color c)}
-             {:background "transparent"})))})))
+       :cell->style (fn [c] {:background (color/cell->piece-color c)})})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Right panel
@@ -129,25 +114,27 @@
     {:controls [:pause :hold :rotate]}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Classic Game
+;; Classic game
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn classic-game
   []
-  (let [game-opts {:name :puyo-classic-game}
-        game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])]
-    (components/page
-      {:direction    :row
-       :full-height? true}
-      ^{:key "left"}
-      [left-panel game-opts]
-      ^{:key "center"}
-      [center-panel game-opts]
-      ^{:key "right"}
-      [right-panel game-opts])))
+  (let [game-opts {:name :tetris-classic-game}
+        game-opts @(rf/subscribe [::tetris.subs/game-opts game-opts])]
+    [components/page
+     {:direction    :row
+      :full-height? true}
+     ^{:key "left"}
+     [left-panel game-opts]
+
+     ^{:key "center"}
+     [center-panel game-opts]
+
+     ^{:key "right"}
+     [right-panel game-opts]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Page
+;; Main page component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn page

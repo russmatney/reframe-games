@@ -10,8 +10,6 @@
 ;; Init db
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO cofx to read defaults from user's config/cookie
-;; ex: default-page
 (rf/reg-event-db
   ::init-db
   (fn [_] (db/initial-db)))
