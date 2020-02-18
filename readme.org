@@ -38,35 +38,14 @@ Build as described above, then zip it up.
 zip -r reframe-games.zip public
 #+END_SRC
 * misc todos
-**** [X] move entrypoints into grids
-**** [X] clean up 'widget' api
-**** [X] dry up views into grid/views namespace
-**** [X] break build process apart to support multiple apps
-**** [X] dry up timers and pause helpers
-**** [X] refactor colors into view, rather than attached to cells
-**** [X] locked-falls should be instant-falls
-**** [X] manual-down should be instant-down
-**** [X] puyo removes extra pieces on group-breaks
-**** [X] controls fire multiple events (from different sources)
-**** [X] unify cell color 'type' treatment
-**** [X] input controls to both games on select page
-**** [X] instant-fall feature
-**** [X] faster tick-timeout while locked falls are happening
-**** [X] create playble game in the menus as the game itself
-**** [X] send multiple controls events per each - allow for multi-register
-just overwrite for now? or fire both controls? both i think?
-make it easy to register/deregister them.
-**** [X] controls: instant-drop
-**** [ ] timers broken
 **** [ ] dry up controls and game-db events
-**** [ ] display directional controls more prominently
-redo controls view, maybe just show when paused
 **** [ ] dry up @rf/subscribe usage with suggested subscribe macro
 `(<-sub! ::s/current-page])`?
 **** [ ] control registration/deregistration
 **** [ ] show/learn controls overlay
 no keys detected yet overlay with suggestions for clicking?
-**** [ ] pause overlay
+**** [ ] pause overlay (with controls)
+**** [ ] 'learn' namespace with minigame for learning controls for currently active games
 **** [ ] support optional url navigation? (back button?)
 **** [ ] select game with keyboard movement controls
 **** [ ] incorporate spin feature
