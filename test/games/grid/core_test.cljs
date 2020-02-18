@@ -1,6 +1,7 @@
 (ns games.grid.core-test
   (:require
    [games.grid.core :as sut]
+   [cljs.pprint :as pprint]
    [cljs.test :as t :refer-macros [deftest is testing]]))
 
 ;; TODO move somewhere relevant
@@ -123,6 +124,16 @@
 ;; Instant Drop test
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn pretty-print [gdb]
+  (pprint/pprint
+    (map
+      (fn [row]
+        (str
+          (map
+            (fn [{:keys [x y falling]}]
+              (str "    |    " "(" x "," y ") " falling))
+            row)))
+      (:grid gdb))))
 
 (defn instant-fall-test
   "Creates and updates a grid db with the passed lists of cells.
@@ -133,7 +144,7 @@
   "
   [{:keys
     [mark-cells expected-cells empty-cells move-cells
-     keep-shape? direction print?]}]
+     keep-shape? direction print? force-fail?]}]
   (let [direction (or direction :down)
         move-opts {:cells       move-cells
                    :keep-shape? keep-shape?
@@ -143,12 +154,14 @@
         (-> (sut/build-grid {:height 5 :width 3 :phantom-rows 2})
             (sut/update-cells
               #(sut/cell-in-group? mark-cells %)
-              #(assoc % :falling true))
-            (sut/instant-fall move-opts))]
+              #(assoc % :falling true)))
+        gdb'      (sut/instant-fall gdb move-opts)]
+    (when print? (pretty-print gdb))
+    (when print? (pretty-print gdb'))
     (doall
       (map
         (fn [cell]
-          (let [c (sut/get-cell gdb cell)]
+          (let [c (sut/get-cell gdb' cell)]
             (when print?
               (println "should be falling")
               (println c))
@@ -157,12 +170,13 @@
     (doall
       (map
         (fn [cell]
-          (let [c (sut/get-cell gdb cell)]
+          (let [c (sut/get-cell gdb' cell)]
             (when print?
               (println "should not be falling")
               (println c))
             (is (not (:falling c)))))
-        empty-cells))))
+        empty-cells))
+    (when force-fail? (is false))))
 
 (deftest instant-fall-test-basic
   (testing "keep-shape?"
@@ -171,7 +185,6 @@
        :move-cells     [{:x 1 :y 0}]
        :empty-cells    [{:x 1 :y 0}]
        :expected-cells [{:x 1 :y 4}]
-       :print?         false
        :keep-shape?    true}))
   (testing "drop-shape?"
     (instant-fall-test
@@ -203,20 +216,61 @@
        :expected-cells [{:x 1 :y 3} {:x 1 :y 4}]
        :keep-shape?    false})))
 
-(deftest instant-fall-test-stacked-piece
-  (testing "keep-shape?"
+;; (deftest instant-fall-test-stacked-piece
+;;   (testing "keep-shape?"
+;;     (instant-fall-test
+;;       {:mark-cells     [{:x 1 :y 0} {:x 1 :y 1}]
+;;        :move-cells     [{:x 1 :y 0} {:x 1 :y 1}]
+;;        :empty-cells    [{:x 1 :y 0} {:x 1 :y 1}]
+;;        :expected-cells [{:x 1 :y 3} {:x 1 :y 4}]
+;;        :keep-shape?    true}))
+;;   (testing "drop shape"
+;;     (instant-fall-test
+;;       {:mark-cells     [{:x 1 :y 0} {:x 1 :y 1}]
+;;        :move-cells     [{:x 1 :y 0} {:x 1 :y 1}]
+;;        :empty-cells    [{:x 1 :y 0} {:x 1 :y 1}]
+;;        :expected-cells [{:x 1 :y 3} {:x 1 :y 4}]
+;;        :keep-shape?    false})))
+
+(deftest instant-fall-test-staggered-piece-keep-shape
+  (let [
+        s-shape            (map #(sut/relative {:x 1 :y 0} %)
+                                [{:x 1 :y -1} {:y -1} {} {:x -1}])
+        s-shape-after-drop (map #(sut/relative {:x 1 :y 4} %)
+                                [{:x 1 :y -1} {:y -1} {} {:x -1}])
+        ]
     (instant-fall-test
-      {:mark-cells     [{:x 1 :y 0} {:x 1 :y 2}]
-       :move-cells     [{:x 1 :y 0} {:x 1 :y 2}]
-       :empty-cells    [{:x 1 :y 0} {:x 1 :y 2}]
-       :expected-cells [{:x 1 :y 3} {:x 1 :y 4}]
-       :print?         true
+      {:mark-cells     s-shape
+       :move-cells     s-shape
+       :empty-cells    s-shape
+       :expected-cells s-shape-after-drop
        :keep-shape?    true})))
-(testing "drop shape"
-  (instant-fall-test
-    {:mark-cells     [{:x 1 :y 0} {:x 1 :y 2}]
-     :move-cells     [{:x 1 :y 0} {:x 1 :y 2}]
-     :empty-cells    [{:x 1 :y 0} {:x 1 :y 2}]
-     :expected-cells [{:x 1 :y 3} {:x 1 :y 4}]
-     :print?         true
-     :keep-shape?    false}))
+
+(deftest instant-fall-test-staggered-piece-drop-shape
+  (let [
+        s-shape            (map #(sut/relative {:x 1 :y 0} %)
+                                [{:x 1 :y -1} {:y -1} {} {:x -1}])
+        s-shape-after-drop (map #(sut/relative {:x 1 :y 4} %)
+                                [{:x 1 :y 0} {:y -1} {} {:x -1}])
+        ]
+    (instant-fall-test
+      {:mark-cells     s-shape
+       :move-cells     s-shape
+       :empty-cells    s-shape
+       :expected-cells s-shape-after-drop
+       :keep-shape?    false})))
+
+
+;; (deftest instant-fall-test-staggered-piece-keep-shape-blocked
+;;   (let [
+;;         s-shape            [{:x 2 :y -1} {:x 2 :y -2} {:x 1 :y -1} {:x -1 :y 0}]
+;;         s-shape-after-drop [{:x 2 :y -1} {:x 2 :y -2} {:x 1 :y -1} {:x -1 :y 0}]
+;;         ]
+;;     (instant-fall-test
+;;       {:mark-cells     (conj s-shape {:x 2 :y 4})
+;;        :move-cells     s-shape
+;;        :empty-cells    s-shape
+;;        :expected-cells s-shape-after-drop
+;;        :print?         true
+;;        :keep-shape?    true
+;;        :force-fail?    true})))

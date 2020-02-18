@@ -540,12 +540,14 @@
                  :can-move? can-move?})))
           ) db sorted-cells))
 
-    (let [c-n-ts           (map #(->cell-and-target db % move-opts) cells)
-          any-null-target? (seq (remove :target c-n-ts))
-          c-n-ts           (filter :target c-n-ts)
-          c-n-ts           (map ->diff-and-magnitude c-n-ts)
-          shortest         (first (sort-by :magnitude < c-n-ts))]
-      (if (and (can-move? (:target shortest)) (not any-null-target?))
+    (let [c-n-ts   (map #(->cell-and-target db % move-opts) cells)
+          c-n-ts   (filter :target c-n-ts)
+          c-n-ts   (map ->diff-and-magnitude c-n-ts)
+          shortest (first (sort-by :magnitude < c-n-ts))]
+      (println "shortest " shortest)
+      (println "c-n-ts " c-n-ts)
+      (println "cells " cells)
+      (if (can-move? (:target shortest))
         (move-cells db
                     {:cells     cells
                      :move-f    #(apply-diff % (:diff shortest))
