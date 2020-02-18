@@ -13,10 +13,9 @@
 
 (rf/reg-sub
   ::tetris-db
-  (fn [db evt]
-    (case (count evt)
-      1 (-> db ::tetris.db/db :default)
-      2 (let [[_e n] evt] (-> db ::tetris.db/db (get n))))))
+  (fn [db [_ game-opts]]
+    (game-opts->db db game-opts)))
+
 
 (rf/reg-sub
   ::game-opts

@@ -42,20 +42,20 @@
      :gameover?    false
 
      ;; queue
-     :piece-queue       (shuffle tetris.shapes/allowed-shape-fns)
-     :min-queue-size    5
-     :allowed-shape-fns tetris.shapes/allowed-shape-fns
-     :preview-grids     (repeat 3 shape-grid)
+     :piece-queue    (shuffle tetris.shapes/allowed-shapes)
+     :min-queue-size 5
+     :allowed-shapes tetris.shapes/allowed-shapes
+     :preview-grids  (repeat 3 shape-grid)
 
      ;; controls
      :controls        (tetris.controls/initial game-opts)
      :ignore-controls ignore-controls
 
      ;; hold/swap
-     :falling-shape-fn nil
-     :held-shape-fn    nil
-     :held-grid        shape-grid
-     :hold-lock        false
+     :falling-shape nil
+     :held-shape    nil
+     :held-grid     shape-grid
+     :hold-lock     false
 
      ;; timer
      :time 0

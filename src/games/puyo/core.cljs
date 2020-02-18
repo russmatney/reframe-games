@@ -25,15 +25,15 @@
   (:falling (grid/get-cell game-grid cell)))
 
 (defn cell-within-bounds?
-  [{:keys [game-grid] :as db} cell]
-  (grid/within-bounds? game-grid cell))
+  [{:keys [game-grid]} cell]
+  (grid/within-bounds? game-grid cell {:allow-above? true}))
 
 (defn cell-open?
   "Returns true if the indicated cell is within the grid's bounds AND not
   occupied."
   [{:keys [game-grid] :as db} cell]
   (and
-    (grid/within-bounds? game-grid cell)
+    (grid/within-bounds? game-grid cell {:allow-above? true})
     (not (cell-occupied? db cell))))
 
 (defn can-overwrite-cell?
@@ -43,7 +43,7 @@
   [{:keys [game-grid]}
    {:keys [occupied falling] :as cell}]
   (and
-    (grid/within-bounds? game-grid cell)
+    (grid/within-bounds? game-grid cell {:allow-above? true})
     (not occupied)
     (not falling)))
 

@@ -274,12 +274,13 @@
 
 (defn within-bounds?
   "Returns true if the passed cell coords is within the edges of the grid."
-  [{:keys [height width]} {:keys [x y]}]
-  (and
-    (> height y)
-    (> width x)
-    (>= y 0)
-    (>= x 0)))
+  ([db cell] (within-bounds? db cell {:allow-above? false}))
+  ([{:keys [height width]} {:keys [x y]} {:keys [allow-above?]}]
+   (and
+     (> height y)
+     (> width x)
+     (or allow-above? (>= y 0))
+     (>= x 0))))
 
 (defn entry-cell-is?
   "Returns true if the passed predicate is true of the entry-cell."

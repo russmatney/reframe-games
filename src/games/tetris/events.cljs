@@ -112,8 +112,8 @@
   (fn [db _game-opts]
     ;; if there is a hold, move current hold to front of queue
     ;; remove current falling piece from board, move it to hold
-    (let [held          (:held-shape-fn db)
-          falling-shape (:falling-shape-fn db)
+    (let [held          (:held-shape db)
+          falling-shape (:falling-shape db)
           hold-lock     (:hold-lock db)
           paused?       (:paused? db)]
       (if
@@ -124,17 +124,16 @@
         db
         (cond-> db
           ;; prepend queue with held piece
-          ;; TODO prevent quick double tap from stacking the queue here
           held
-          (update :piece-queue (fn [q]
-                                 (cons held q)))
+          (update :piece-queue
+                  (fn [q] (cons held q)))
 
           falling-shape
           (->
             ;; move falling piece to held piece
-            (assoc :held-shape-fn falling-shape)
+            (assoc :held-shape falling-shape)
             ;; clear falling piece if there was one
-            (assoc :falling-shape-fn nil)
+            (assoc :falling-shape nil)
             ;; clear the falling pieces from the board
             (tetris/clear-falling-cells)
             ;; update grid for showing held piece

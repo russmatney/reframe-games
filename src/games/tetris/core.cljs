@@ -21,7 +21,7 @@
   occupied."
   [{:keys [game-grid] :as db} cell]
   (and
-    (grid/within-bounds? game-grid cell)
+    (grid/within-bounds? game-grid cell {:allow-above? true})
     (not (cell-occupied? db cell))))
 
 (defn row-fully-occupied? [row]
@@ -45,11 +45,12 @@
   (seq (grid/get-cells game-grid :falling)))
 
 (defn gameover?
-  "Returns true if any cell of the grid has a y < 0."
+  "Returns true if any cell of the grid has a y < 0 and is :occupied."
   [{:keys [game-grid]}]
-  (grid/any-cell? game-grid (fn [{:keys [y occupied]}]
-                              (and occupied
-                                   (< y 0)))))
+  (grid/any-cell? game-grid
+                  (fn [{:keys [y occupied] :as c}]
+                    (and occupied
+                         (< y 0)))))
 
 (defn mark-cell-occupied
   "Marks the passed cell (x, y) as occupied, dissoc-ing the :falling key.
@@ -61,7 +62,6 @@
                                          (assoc :occupied true)
                                          (dissoc :falling))))))
 
-;; TODO dry up!
 (defn mark-cells-occupied
   [db cells]
   (reduce (fn [db cell] (mark-cell-occupied db cell)) db cells))
@@ -83,7 +83,7 @@
   [{:keys [game-grid]}
    {:keys [occupied falling] :as cell}]
   (and
-    (grid/within-bounds? game-grid cell)
+    (grid/within-bounds? game-grid cell {:allow-above? true})
     (not occupied)
     (not falling)))
 
@@ -219,7 +219,7 @@
       (grid/build-grid)
       (grid/add-cells
         {:update-cell #(assoc % :preview true)
-         :make-cells  piece})))
+         :make-cells  (tetris.shapes/type->ec->cell piece)})))
 
 (defn add-new-piece
   "Adds a new cell to the grid.
@@ -227,7 +227,7 @@
   Depends on the `new-piece-coord`."
   [{:keys [piece-queue min-queue-size] :as db}]
   (let [next-three (take 3 (drop 1 piece-queue))
-        make-cells (first piece-queue)]
+        piece-type (first piece-queue)]
     (-> db
         (update :piece-queue
                 (fn [q]
@@ -236,13 +236,14 @@
                       (concat q (tetris.shapes/next-bag db))
                       q))))
 
-        (assoc :falling-shape-fn make-cells)
+        (assoc :falling-shape piece-type)
 
         (update :game-grid
                 (fn [g]
-                  (grid/add-cells g
-                                  {:update-cell #(assoc % :falling true)
-                                   :make-cells  make-cells})))
+                  (grid/add-cells
+                    g
+                    {:update-cell #(assoc % :falling true)
+                     :make-cells  (tetris.shapes/type->ec->cell piece-type)})))
 
         (update :preview-grids
                 (fn [gs]

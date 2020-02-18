@@ -102,12 +102,24 @@
 ;; Right panel
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn debug-game [game-opts]
+  (let [fields [:falling-shape :piece-queue]
+        db     @(rf/subscribe [::tetris.subs/tetris-db game-opts])]
+    [components/widget
+     {}
+     [:div
+      [:h3 "Game DB"]
+      (for [f fields]
+        [:p
+         (str f ":=> " (get db f))])]]))
+
 (defn right-panel [game-opts]
   [:div
    {:style
     {:display        "flex"
      :flex           "1"
      :flex-direction "column"}}
+   (when true [debug-game game-opts])
    [piece-queue game-opts]
    [held-piece game-opts]
    [controls.views/mini-text

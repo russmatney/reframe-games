@@ -202,3 +202,21 @@
        :empty-cells    [{:x 1 :y 0}]
        :expected-cells [{:x 1 :y 3} {:x 1 :y 4}]
        :keep-shape?    false})))
+
+(deftest instant-fall-test-stacked-piece
+  (testing "keep-shape?"
+    (instant-fall-test
+      {:mark-cells     [{:x 1 :y 0} {:x 1 :y 2}]
+       :move-cells     [{:x 1 :y 0} {:x 1 :y 2}]
+       :empty-cells    [{:x 1 :y 0} {:x 1 :y 2}]
+       :expected-cells [{:x 1 :y 3} {:x 1 :y 4}]
+       :print?         true
+       :keep-shape?    true})))
+(testing "drop shape"
+  (instant-fall-test
+    {:mark-cells     [{:x 1 :y 0} {:x 1 :y 2}]
+     :move-cells     [{:x 1 :y 0} {:x 1 :y 2}]
+     :empty-cells    [{:x 1 :y 0} {:x 1 :y 2}]
+     :expected-cells [{:x 1 :y 3} {:x 1 :y 4}]
+     :print?         true
+     :keep-shape?    false}))
