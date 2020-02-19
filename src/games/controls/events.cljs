@@ -4,8 +4,7 @@
    [re-pressed.core :as rp]
    [games.controls.re-pressed :as controls.rp]
    [games.events.interceptors :refer [game-db-interceptor]]
-   [games.controls.core :as controls]
-   [adzerk.cljs-console :as log]))
+   [games.controls.core :as controls]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init controls listener, global controls, and controls game
@@ -77,6 +76,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls 'game'
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO dry up with events/reg-game-events (fix circular dep)
 
 (rf/reg-event-fx
   ::init-game

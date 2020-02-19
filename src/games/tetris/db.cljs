@@ -26,7 +26,7 @@
     {:name            name
      :game-opts       game-opts
      :init-event-name :games.tetris.events/init-game
-     :stop-event-name :games.tetris.events/stop-game
+     :stop-event-name :games.tetris.events/stop
 
      ;; game matrix
      :game-grid

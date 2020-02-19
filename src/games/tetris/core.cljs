@@ -220,6 +220,7 @@
 ;; Adding new pieces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO this is a grid-db function
 (defn add-preview-piece [grid piece]
   (-> grid
       (grid/build-grid)

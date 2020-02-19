@@ -193,12 +193,12 @@
 
 (defn add-preview-piece
   "Rebuilds a passed preview grid and adds the passed piece (func) to it."
-  [grid piece-fn]
+  [grid piece]
   (-> grid
       (grid/build-grid)
       (grid/add-cells
         {:update-cell #(assoc % :preview true)
-         :make-cells  piece-fn})))
+         :make-cells  (puyo.shapes/build-piece-fn piece)})))
 
 (defn add-new-piece
   "Adds a new cell to the grid.
@@ -237,9 +237,9 @@
               (fn [gs]
                 (let [[g1 g2 g3] gs
                       [p1 p2 p3] next-three]
-                  [(add-preview-piece g1 (puyo.shapes/build-piece-fn p1))
-                   (add-preview-piece g2 (puyo.shapes/build-piece-fn p2))
-                   (add-preview-piece g3 (puyo.shapes/build-piece-fn p3))]))))))
+                  [(add-preview-piece g1 p1)
+                   (add-preview-piece g2 p2)
+                   (add-preview-piece g3 p3)]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clearing pieces and cells

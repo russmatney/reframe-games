@@ -9,13 +9,12 @@
 ;; DB
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn initial-db
-  []
+(def initial-db
   (let [game-db-merge-keys [:games]
         game-dbs           [puyo.db/db
                             tetris.db/db
                             controls.db/db]
-        initial-db
+        db
         { ;; NOTE also the initial page
          :current-page :select
          ;; initial controls
@@ -28,8 +27,8 @@
         (let [merged-map
               (merge (into {} (map merge-key game-dbs)))]
           (assoc db merge-key merged-map)))
-      initial-db game-db-merge-keys)))
+      db game-db-merge-keys)))
 
 
 (comment
-  (keys (:games (initial-db))))
+  (keys (:games initial-db)))

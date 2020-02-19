@@ -39,7 +39,9 @@ zip -r reframe-games.zip public
 #+END_SRC
 * misc todos
 **** [X] control registration/deregistration
-**** [ ] dry up controls and game-db events
+**** [X] dry up game-db events
+**** [X] pause doesn't always stop the clock?
+**** [ ] dry up controls->game-db event tie ins
 **** [ ] dry up @rf/subscribe usage with suggested subscribe macro
 `(<-sub! ::s/current-page])`?
 **** [ ] show/learn controls overlay
@@ -47,7 +49,6 @@ no keys detected yet overlay with suggestions for clicking?
 **** [ ] pause overlay (with controls)
 **** [ ] 'learn' namespace with minigame for learning controls for currently active games
 **** [ ] support optional url navigation? (back button?)
-**** [ ] select menu using keyboard movement controls
 **** [ ] show combo chains and rows-to-next-level
 **** [ ] mobile touch/gesture support
 **** [ ] customizable controls
@@ -57,7 +58,6 @@ no keys detected yet overlay with suggestions for clicking?
 **** [ ] rotate in two directions
 **** [ ] show 'ghost' piece (for fast drop)
 **** [ ] mobile detection and 'alert'?
-**** [ ] pause doesn't always stop the clock?
 **** [ ] add a robot to make moves when no one has for a while
 something for leaving it on
 **** [ ] add garden/stylesheets
