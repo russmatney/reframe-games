@@ -22,15 +22,21 @@
 ;; Start Games
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Dispatch start-games events into game event modules
-;; Might be better as an start/stop/pause games event?
+;; implies games have page knowledge (`pages`)
+;; maybe the pages should call out their named-games?
+(defn for-page?
+  [page {:keys [game-opts] :as _game-db}]
+  (contains? (:pages game-opts) page))
+
 (rf/reg-event-fx
   ::start-games
-  (fn [_cofx]
-    {:dispatch-n
-     [[::puyo.events/start-games]
-      [::tetris.events/start-games]
-      [::controls.events/start-games]]}))
+  (fn [{:keys [db]}]
+    (let [page  (:current-page db)
+          games (filter #(for-page? page %)
+                        (-> db :games vals))]
+      {:db (assoc db :active-games (map :name games))
+       :dispatch-n
+       (map (fn [game] [(:init-event-name game) (:game-opts game)]) games)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Navigation

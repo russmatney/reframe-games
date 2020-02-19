@@ -21,7 +21,7 @@
 
   The event will also be trimmed. Whether this helps
   or causes more insanity remains an open question."
-  [game-key]
+  []
   (rfi/->interceptor
     :id :game-db-interceptor
     :before
@@ -36,7 +36,7 @@
             ;; set db to the game's db
             (assoc-in
               [:coeffects :db]
-              (get-in context [:coeffects :db game-key name]))
+              (get-in context [:coeffects :db :games name]))
 
             ;; set original-db for :after clause
             (assoc-in
@@ -62,7 +62,7 @@
             game-db    (-> context :effects :db)
             og-db      (-> context :coeffects ::original-db)
             updated-db (if game-db
-                         (assoc-in og-db [game-key name] game-db)
+                         (assoc-in og-db [:games name] game-db)
                          og-db)]
         (-> context
             ;; clean up trimming, retore event
@@ -77,7 +77,7 @@
 
 (rf/reg-event-fx
   ::interceptor-example
-  [(game-db-interceptor :games.puyo.db/db)]
+  [(game-db-interceptor)]
   (fn [{:keys [db]} _game-opts]
     (log/debug "~{_game-opts}")
     (log/debug "~{(keys db)}")

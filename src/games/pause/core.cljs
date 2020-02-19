@@ -37,7 +37,7 @@
   `[{:id      ::game-tick
      :game-opts->event (fn [x] [::game-tick x])}]`
   "
-  [{:keys [game-map-key n timers]}]
+  [{:keys [n timers]}]
   (let [pause-evt      (keyword n :pause-game)
         resume-evt     (keyword n :resume-game)
         toggle-evt     (keyword n :toggle-pause)
@@ -46,7 +46,7 @@
 
     (rf/reg-event-fx
       pause-evt
-      [(game-db-interceptor game-map-key)]
+      [(game-db-interceptor)]
       (fn [{:keys [db]} game-opts]
         (let [timer-ids (map
                           (fn [timer]
@@ -59,7 +59,7 @@
 
     (rf/reg-event-fx
       resume-evt
-      [(game-db-interceptor game-map-key)]
+      [(game-db-interceptor)]
       (fn [{:keys [db]} game-opts]
         (let [updated-db (assoc db :paused? false)]
           (-> {:db updated-db}
@@ -69,7 +69,7 @@
 
     (rf/reg-event-fx
       toggle-evt
-      [(game-db-interceptor game-map-key)]
+      [(game-db-interceptor)]
       (fn [{:keys [db]} game-opts]
         (if-not (:gameover? db)
           (if (:paused? db)
@@ -80,7 +80,7 @@
 
     (rf/reg-event-fx
       game-timer-evt
-      [(game-db-interceptor game-map-key)]
+      [(game-db-interceptor)]
       (fn [{:keys [db]} game-opts]
         (let [{:keys [timer-increment]} db
               timer-increment           (or timer-increment 400)]

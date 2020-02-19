@@ -2,47 +2,17 @@
   (:require
    [re-frame.core :as rf]
    [games.events.interceptors :refer [game-db-interceptor]]
-   [games.tetris.db :as tetris.db]
    [games.tetris.core :as tetris]
    [games.pause.core :as pause]
-   [games.controls.events :as controls.events]
-   [adzerk.cljs-console :as log]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Start-games
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO dry this up
-;; implies games have page knowledge (`pages`)
-;; maybe the pages should call out their named-games?
-(defn for-page?
-  [page {:keys [game-opts] :as _game-db}]
-  (contains? (:pages game-opts) page))
-
-;; TODO mark games :started and use to add controls?
-(rf/reg-event-fx
-  ::start-games
-  (fn [{:keys [db]}]
-    (let [page (:current-page db)
-          game-opts-for-page
-          (-> db
-              ::tetris.db/db ;; TODO rename games-map key?
-              (vals)
-              (->>
-                (filter #(for-page? page %))
-                (map :game-opts)))]
-      {:dispatch-n
-       (map (fn [gopts] [::start-game gopts]) game-opts-for-page)})))
-
-
+   [games.controls.events :as controls.events]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Game loop
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rf/reg-event-fx
-  ::start-game
-  [(game-db-interceptor ::tetris.db/db)]
+  ::init-game
+  [(game-db-interceptor)]
   (fn [_cofx game-opts]
     {:dispatch-n [[::register-controls game-opts]
                   [::step game-opts]
@@ -50,7 +20,7 @@
 
 (rf/reg-event-fx
   ::step
-  [(game-db-interceptor ::tetris.db/db)]
+  [(game-db-interceptor)]
   (fn [{:keys [db]} game-opts]
     (let [db (tetris/step db game-opts)]
       (if (:gameover? db)
@@ -69,14 +39,14 @@
 ;; TODO clean up ignore-controls
 (rf/reg-event-fx
   ::register-controls
-  [(game-db-interceptor ::tetris.db/db)]
+  [(game-db-interceptor)]
   (fn [{:keys [db]} {:keys [ignore-controls]}]
     (when-not ignore-controls
       {:dispatch [::controls.events/register (:controls db)]})))
 
 (rf/reg-event-fx
   ::deregister-controls
-  [(game-db-interceptor ::tetris.db/db)]
+  [(game-db-interceptor)]
   (fn [{:keys [db]} _game-opts]
     {:dispatch
      [::controls.events/deregister (:controls db)]}))
@@ -87,7 +57,7 @@
 
 (rf/reg-event-db
   ::move-piece
-  [(game-db-interceptor ::tetris.db/db)]
+  [(game-db-interceptor)]
   (fn [db [_game-opts direction]]
     (if (tetris/can-player-move? db)
       (tetris/move-piece db direction)
@@ -95,7 +65,7 @@
 
 (rf/reg-event-db
   ::instant-fall
-  [(game-db-interceptor ::tetris.db/db)]
+  [(game-db-interceptor)]
   (fn [db [_game-opts direction]]
     (if (tetris/can-player-move? db)
       (-> db
@@ -106,7 +76,7 @@
 ;; TODO fix interceptor for these events
 (rf/reg-event-db
   ::rotate-piece
-  [(game-db-interceptor ::tetris.db/db)]
+  [(game-db-interceptor)]
   (fn [db _game-opts]
     (if (tetris/can-player-move? db)
       (tetris/rotate-piece db)
@@ -118,7 +88,7 @@
 
 (rf/reg-event-db
   ::hold-and-swap-piece
-  [(game-db-interceptor ::tetris.db/db)]
+  [(game-db-interceptor)]
   (fn [db _game-opts]
     ;; if there is a hold, move current hold to front of queue
     ;; remove current falling piece from board, move it to hold
@@ -156,7 +126,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (pause/reg-pause-events
-  {:n            :games.tetris.events
-   :game-map-key ::tetris.db/db
-   :timers       [{:game-opts->id    (fn [_] ::step)
-                   :game-opts->event (fn [gopts] [::step gopts])}]})
+  {:n      :games.tetris.events
+   :timers [{:game-opts->id    (fn [_] ::step)
+             :game-opts->event (fn [gopts] [::step gopts])}]})

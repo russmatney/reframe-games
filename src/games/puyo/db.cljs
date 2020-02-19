@@ -31,8 +31,9 @@
           group-size
           ] :as game-opts}
         (merge defaults game-opts)]
-    {:name      name
-     :game-opts game-opts
+    {:name            name
+     :game-opts       game-opts
+     :init-event-name :games.puyo.events/init-game
 
      ;; game (matrix)
      :game-grid
@@ -140,5 +141,4 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def db
-  ;; TODO rename to ::game-dbs
-  {::db game-dbs-map})
+  {:games game-dbs-map})

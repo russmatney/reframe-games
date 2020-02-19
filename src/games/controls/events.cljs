@@ -56,63 +56,38 @@
       {:db (set-controls db controls)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Start-games
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO implies games have page knowledge (`pages`)
-;; maybe the pages should call out their named-games?
-(defn for-page?
-[page {:keys [game-opts] :as _game-db}]
-(contains? (:pages game-opts) page))
-
-;; TODO mark games :started and use to add controls?
-(rf/reg-event-fx
-::start-games
-(fn [{:keys [db]}]
-(let [page (:current-page db)
-      game-opts-for-page
-      (-> db
-          :controls-games
-          (vals)
-          (->>
-            (filter #(for-page? page %))
-            (map :game-opts)))]
-  {:dispatch-n
-   (map (fn [gopts] [::start-game gopts]) game-opts-for-page)})))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls 'game'
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (rf/reg-event-fx
-  ::start-game
-  [(game-db-interceptor :controls-games)]
+  ::init-game
+  [(game-db-interceptor)]
   (fn [{:keys [_db]} game-opts]
     {:dispatch [::register-controls game-opts]}))
 
 (rf/reg-event-fx
   ::register-controls
-  [(game-db-interceptor :controls-games)]
+  [(game-db-interceptor)]
   (fn [{:keys [db]} {:keys [ignore-controls]}]
     (when-not ignore-controls
       {:dispatch [::register (:controls db)]})))
 
 (rf/reg-event-fx
   ::deregister-controls
-  [(game-db-interceptor :controls-games)]
+  [(game-db-interceptor)]
   (fn [{:keys [db]} {:keys [ignore-controls]}]
     (when-not ignore-controls
       {:dispatch [::deregister (:controls db)]})))
 
 (rf/reg-event-db
   ::add-piece
-  [(game-db-interceptor :controls-games)]
+  [(game-db-interceptor)]
   (fn [db _game-opts]
     (controls/add-pieces db)))
 
 (rf/reg-event-db
   ::move-piece
-  [(game-db-interceptor :controls-games)]
+  [(game-db-interceptor)]
   (fn [db [_game-opts direction]]
     (if (controls/move-allowed? db)
       (controls/move-piece db direction)
@@ -120,7 +95,7 @@
 
 (rf/reg-event-db
   ::instant-fall
-  [(game-db-interceptor :controls-games)]
+  [(game-db-interceptor)]
   (fn [db [_game-opts direction]]
     (if (controls/move-allowed? db)
       (controls/instant-fall db direction)
@@ -128,7 +103,7 @@
 
 (rf/reg-event-db
   ::rotate-piece
-  [(game-db-interceptor :controls-games)]
+  [(game-db-interceptor)]
   (fn [db _game-opts]
     (if (controls/move-allowed? db)
       (controls/rotate-piece db)
@@ -136,6 +111,6 @@
 
 (rf/reg-event-db
   ::toggle-debug
-  [(game-db-interceptor :controls-games)]
+  [(game-db-interceptor)]
   (fn [db _game-opts]
     (update-in db [:game-opts :debug?] not)))

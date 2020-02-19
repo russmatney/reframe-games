@@ -8,21 +8,21 @@
   ::puyo-db
   (fn [db evt]
     (case (count evt)
-      1 (-> db ::puyo.db/db :default)
-      2 (let [[_e n] evt] (-> db ::puyo.db/db (get n)))
-      3 (let [[_e n k] evt] (-> db ::puyo.db/db (get n) (get k))))))
+      1 (-> db :games :default)
+      2 (let [[_e n] evt] (-> db :games (get n)))
+      3 (let [[_e n k] evt] (-> db :games (get n) (get k))))))
 
 (rf/reg-sub
   ::game-opts
   (fn [db [_ game-opts]]
-    (-> db ::puyo.db/db (get (:name game-opts)) :game-opts)))
+    (-> db :games (get (:name game-opts)) :game-opts)))
 
 
 (defn game-opts->db
   ([db {:keys [name] :as _game-opts}]
-   (-> db ::puyo.db/db name))
+   (-> db :games name))
   ([db {:keys [name] :as _game-opts} k]
-   (-> db ::puyo.db/db name k)))
+   (-> db :games name k)))
 
 ;; TODO get this over the finish line
 (defn ->subs [subs]

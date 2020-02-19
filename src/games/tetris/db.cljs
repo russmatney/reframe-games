@@ -23,8 +23,9 @@
   [game-opts]
   (let [{:keys [name game-grid step-timeout ignore-controls] :as game-opts}
         (merge defaults game-opts)]
-    {:name      name
-     :game-opts game-opts
+    {:name            name
+     :game-opts       game-opts
+     :init-event-name :games.tetris.events/init-game
 
      ;; game matrix
      :game-grid
@@ -109,5 +110,4 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def db
-  ;; TODO rename to ::game-dbs
-  {::db game-dbs-map})
+  {:games game-dbs-map})

@@ -7,9 +7,9 @@
 
 (defn game-opts->db
   ([db {:keys [name] :as _game-opts}]
-   (-> db ::tetris.db/db name))
+   (-> db :games name))
   ([db {:keys [name] :as _game-opts} k]
-   (-> db ::tetris.db/db name k)))
+   (-> db :games name k)))
 
 (rf/reg-sub
   ::tetris-db
@@ -20,7 +20,7 @@
 (rf/reg-sub
   ::game-opts
   (fn [db [_ game-opts]]
-    (-> db ::tetris.db/db (get (:name game-opts)) :game-opts)))
+    (-> db :games (get (:name game-opts)) :game-opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grids

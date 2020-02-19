@@ -72,8 +72,10 @@
   ([game-opts]
    (let [{:keys [name game-grid] :as game-opts}
          (merge game-opts-defaults game-opts)]
-     {:name      name
-      :game-opts game-opts
+     {:name            name
+      :game-opts       game-opts
+      :init-event-name :games.controls.events/init-game
+
       :game-grid (grid/build-grid
                    (merge
                      ;; TODO entry-types like (top, middle, bottom, left, right)
@@ -129,7 +131,6 @@
    ;;    :debug?      false})
    ])
 
-;; TODO dry up
 (def game-dbs-map
   (->> game-dbs
        (map (fn [game] [(-> game :game-opts :name) game]))
@@ -140,5 +141,4 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def db
-  {:controls       global-controls
-   :controls-games game-dbs-map})
+  {:games game-dbs-map})
