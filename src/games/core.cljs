@@ -22,11 +22,4 @@
   (dev-setup)
   (mount-root)
 
-  ;; initialize db
-  (rf/dispatch-sync [::events/init-db])
-
-  ;; setup control listener
-  (rf/dispatch-sync [::controls.events/init])
-
-  ;; start games!
-  (rf/dispatch-sync [::events/start-games]))
+  (rf/dispatch-sync [::events/init]))

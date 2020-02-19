@@ -454,3 +454,4 @@
          :empty-cells    empty
          :expected-cells (concat shape-after-drop blockers)
          :keep-shape?    false}))))
+
