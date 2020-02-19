@@ -42,7 +42,7 @@
   ::start-game
   [(game-db-interceptor ::puyo.db/db)]
   (fn [_cofx game-opts]
-    {:dispatch-n [[::set-controls game-opts]
+    {:dispatch-n [[::register-controls game-opts]
                   [::step game-opts]
                   [::game-timer game-opts]]}))
 
@@ -73,14 +73,22 @@
 ;; Set Controls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO clean up ignore-controls and general controls usage
+;; TODO DRY UP
 (rf/reg-event-fx
-  ::set-controls
+  ::register-controls
   [(game-db-interceptor ::puyo.db/db)]
   (fn [{:keys [db]} {:keys [ignore-controls]}]
     (when-not ignore-controls
       {:dispatch
-       [::controls.events/set (:controls db)]})))
+       [::controls.events/register (:controls db)]})))
+
+;; TODO DRY UP
+(rf/reg-event-fx
+  ::deregister-controls
+  [(game-db-interceptor ::puyo.db/db)]
+  (fn [{:keys [db]} _game-opts]
+    {:dispatch
+     [::controls.events/deregister (:controls db)]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move/Rotate piece

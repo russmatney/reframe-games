@@ -4,7 +4,8 @@
    [re-pressed.core :as rp]
    [games.controls.re-pressed :as controls.rp]
    [games.events.interceptors :refer [game-db-interceptor]]
-   [games.controls.core :as controls]))
+   [games.controls.core :as controls]
+   [adzerk.cljs-console :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init controls listener, global controls, and controls game
@@ -22,19 +23,37 @@
 ;; Public event to set controls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn set-controls
+  "Takes a list of control objects, and sets them on the db.
+  Broken out to support registering and deregistering controls.
+  "
+  [db controls]
+  (let [by-key (controls.rp/controls->by-key controls)]
+    (log/info "Registering ~{(count controls)} controls.")
+    (assoc db
+           :controls controls
+           :controls-by-key by-key)))
+
 (rf/reg-event-fx
-  ::set
+  ::register
   [rf/trim-v]
   (fn [{:keys [db]} [controls]]
-    ;; currently merges controls into db
-    ;; might want to keep globals only...
-    ;; maybe preserve globals with a :global? flag ?
-    (let [controls (concat (:controls db) (or controls []))
-          by-key   (controls.rp/controls->by-key controls)]
+    (let [controls (concat (:controls db) (or controls []))]
+      (log/info "Registering ~{(count controls)} controls.")
+      {:db (set-controls db controls)})))
 
-      {:db (assoc db
-                  :controls controls
-                  :controls-by-key by-key)})))
+(rf/reg-event-fx
+  ::deregister
+  [rf/trim-v]
+  (fn [{:keys [db]} [controls-to-remove]]
+    (let [ids-to-remove (set (map :id controls-to-remove))
+          controls      (:controls db)
+          controls      (remove
+                          (fn [{:keys [id]}]
+                            (contains? ids-to-remove id))
+                          controls)]
+      (log/info "Deregistering ~{(count ids-to-remove)} controls.")
+      {:db (set-controls db controls)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Start-games
@@ -43,23 +62,23 @@
 ;; TODO implies games have page knowledge (`pages`)
 ;; maybe the pages should call out their named-games?
 (defn for-page?
-  [page {:keys [game-opts] :as _game-db}]
-  (contains? (:pages game-opts) page))
+[page {:keys [game-opts] :as _game-db}]
+(contains? (:pages game-opts) page))
 
 ;; TODO mark games :started and use to add controls?
 (rf/reg-event-fx
-  ::start-games
-  (fn [{:keys [db]}]
-    (let [page (:current-page db)
-          game-opts-for-page
-          (-> db
-              :controls-games
-              (vals)
-              (->>
-                (filter #(for-page? page %))
-                (map :game-opts)))]
-      {:dispatch-n
-       (map (fn [gopts] [::start-game gopts]) game-opts-for-page)})))
+::start-games
+(fn [{:keys [db]}]
+(let [page (:current-page db)
+      game-opts-for-page
+      (-> db
+          :controls-games
+          (vals)
+          (->>
+            (filter #(for-page? page %))
+            (map :game-opts)))]
+  {:dispatch-n
+   (map (fn [gopts] [::start-game gopts]) game-opts-for-page)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls 'game'
@@ -69,14 +88,21 @@
   ::start-game
   [(game-db-interceptor :controls-games)]
   (fn [{:keys [_db]} game-opts]
-    {:dispatch [::set-controls game-opts]}))
+    {:dispatch [::register-controls game-opts]}))
 
 (rf/reg-event-fx
-  ::set-controls
+  ::register-controls
   [(game-db-interceptor :controls-games)]
   (fn [{:keys [db]} {:keys [ignore-controls]}]
     (when-not ignore-controls
-      {:dispatch [::set (:controls db)]})))
+      {:dispatch [::register (:controls db)]})))
+
+(rf/reg-event-fx
+  ::deregister-controls
+  [(game-db-interceptor :controls-games)]
+  (fn [{:keys [db]} {:keys [ignore-controls]}]
+    (when-not ignore-controls
+      {:dispatch [::deregister (:controls db)]})))
 
 (rf/reg-event-db
   ::add-piece

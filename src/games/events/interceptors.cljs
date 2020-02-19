@@ -2,7 +2,8 @@
   (:require
    [re-frame.core :as rf]
    [re-frame.interceptor :as rfi]
-   [re-frame.utils :as rfu]))
+   [re-frame.utils :as rfu]
+   [adzerk.cljs-console :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Intereceptors
@@ -26,7 +27,11 @@
     :before
     (fn game-db-interceptor-before
       [context]
-      (let [{:keys [name]} (nth (get-in context [:coeffects :event]) 1)]
+      (let [event (get-in context [:coeffects :event])
+            {:keys [name]}
+            (if (> (count event) 1) (nth event 1)
+                (log/warn
+                  "Game-interceptor received event without argument: ~{event}"))]
         (-> context
             ;; set db to the game's db
             (assoc-in
@@ -74,7 +79,8 @@
   ::interceptor-example
   [(game-db-interceptor :games.puyo.db/db)]
   (fn [{:keys [db]} _game-opts]
-    ;; (println game-opts) (println (keys db))
+    (log/debug "~{_game-opts}")
+    (log/debug "~{(keys db)}")
     {:db db}))
 
 

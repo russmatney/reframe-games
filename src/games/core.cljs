@@ -4,7 +4,6 @@
    [games.views :as views]
    [games.events :as events]
    [games.events.timeout] ;; make sure this is required
-   [games.controls.events :as controls.events]
    [re-frame.core :as rf]))
 
 (defn dev-setup []

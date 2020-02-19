@@ -123,8 +123,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn key-press-handler
+  "Dispatches registered events when the passed key is pressed.
+  Selects events to dispatch using the db's :controls-by-key map.
+  "
   [str-key cofx _event]
   (let [controls (get-in cofx [:db :controls-by-key str-key])]
+    (println
+      (str str-key " pressed, dispatching " (count controls) " events"))
     {:dispatch-n (map :event controls)}))
 
 (defn register-dispatcher
@@ -151,10 +156,13 @@
 
 (defn controls->by-key
   "Converts controls from a list of control maps like
-  `{:keys #{k1 k2} :event [evt]}`
+  `{:keys #{k1 k2} :event [evt] :id :control-id}`
   into a map of controls by key, like:
-  `{k1 {:keys #{k1 k2} :event [evt]}
-    k2 {:keys #{k1 k2} :event [evt]}}`
+  `{k1 [{:keys #{k1 k2} :event [evt] :id ctrl-id}]
+    k2 [{:keys #{k1 k2} :event [evt] :id ctrl-id}]}`
+
+  Multiple controls will be registered for keys that share a control,
+  so that events can be dispatched to them simultaneously.
 
   Supports looking up events to dispatch by keys pressed in above handler.
   Called at control registration time.
@@ -170,6 +178,3 @@
         keys))
     {}
     controls))
-
-(comment
-  (assoc {} "p" "somethign"))

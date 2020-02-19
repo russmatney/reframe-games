@@ -44,7 +44,7 @@
   ::start-game
   [(game-db-interceptor ::tetris.db/db)]
   (fn [_cofx game-opts]
-    {:dispatch-n [[::set-controls game-opts]
+    {:dispatch-n [[::register-controls game-opts]
                   [::step game-opts]
                   [::game-timer game-opts]]}))
 
@@ -68,11 +68,18 @@
 
 ;; TODO clean up ignore-controls
 (rf/reg-event-fx
-  ::set-controls
+  ::register-controls
   [(game-db-interceptor ::tetris.db/db)]
   (fn [{:keys [db]} {:keys [ignore-controls]}]
     (when-not ignore-controls
-      {:dispatch [::controls.events/set (:controls db)]})))
+      {:dispatch [::controls.events/register (:controls db)]})))
+
+(rf/reg-event-fx
+  ::deregister-controls
+  [(game-db-interceptor ::tetris.db/db)]
+  (fn [{:keys [db]} _game-opts]
+    {:dispatch
+     [::controls.events/deregister (:controls db)]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move/Rotate piece

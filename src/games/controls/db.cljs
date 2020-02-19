@@ -8,27 +8,27 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def global-controls
-  [{:id    :home
+  [{:id    ::home-nav
     :label "Home"
     :keys  (set ["m" "x"])
     :event [:games.events/unset-page]}
-   {:id    :controls
+   {:id    ::controls-nav
     :label "Controls"
     :keys  (set ["c" "?"])
     :event [:games.events/set-page :controls]}
-   {:id    :about
+   {:id    ::about-nav
     :label "About"
     :keys  (set ["b"])
     :event [:games.events/set-page :about]}
-   {:id    :tetris
+   {:id    ::tetris-nav
     :label "Play Tetris"
     :keys  (set ["t"])
     :event [:games.events/set-page :tetris]}
-   {:id    :puyo
+   {:id    ::puyo-nav
     :label "Play Puyo-Puyo"
     :keys  (set ["p"])
     :event [:games.events/set-page :puyo]}
-   {:id    :move-right
+   {:id    ::debug-nav
     :label "Debug view"
     :keys  (set ["d"])
     :event [:games.events/set-page :debug]}])
@@ -40,25 +40,25 @@
 (defn controls-game-controls
   "heh."
   [game-opts]
-  [{:id    :move-left
+  [{:id    ::move-left
     :label "Move Left"
     :keys  (set ["left" "h" "a"])
     ;; :event [:games.controls.events/move-piece game-opts :left]
     :event [:games.controls.events/instant-fall game-opts :left]}
-   {:id    :move-down
+   {:id    ::move-down
     :label "Move Down"
     :keys  (set ["down" "j" "s"])
     ;; :event [:games.controls.events/move-piece game-opts :down]
     :event [:games.controls.events/instant-fall game-opts :down]}
-   {:id    :move-right
+   {:id    ::move-right
     :label "Move Right"
     :keys  (set ["right" "l" "d"])
     :event [:games.controls.events/move-piece game-opts :right]}
-   {:id    :move-up
+   {:id    ::move-up
     :label "Move Up"
     :keys  (set ["up" "k" "s"])
     :event [:games.controls.events/move-piece game-opts :up]}
-   {:id    :rotate
+   {:id    ::rotate
     :label "Rotate"
     :keys  (set ["space"])
     :event [:games.controls.events/rotate-piece game-opts]}])

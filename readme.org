@@ -38,10 +38,10 @@ Build as described above, then zip it up.
 zip -r reframe-games.zip public
 #+END_SRC
 * misc todos
+**** [ ] control registration/deregistration
 **** [ ] dry up controls and game-db events
 **** [ ] dry up @rf/subscribe usage with suggested subscribe macro
 `(<-sub! ::s/current-page])`?
-**** [ ] control registration/deregistration
 **** [ ] show/learn controls overlay
 no keys detected yet overlay with suggestions for clicking?
 **** [ ] pause overlay (with controls)
