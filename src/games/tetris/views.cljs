@@ -1,13 +1,8 @@
 (ns games.tetris.views
   (:require
    [re-frame.core :as rf]
-   [games.views.components :as components]
-   [games.views.util :as util]
    [games.grid.views :as grid.views]
-   [games.controls.views :as controls.views]
-   [games.subs :as subs]
    [games.tetris.subs :as tetris.subs]
-   [games.tetris.events :as tetris.events]
    [games.color :as color]))
 
 

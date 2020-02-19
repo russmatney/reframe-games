@@ -128,8 +128,6 @@
   "
   [str-key cofx _event]
   (let [controls (get-in cofx [:db :controls-by-key str-key])]
-    (println
-      (str str-key " pressed, dispatching " (count controls) " events"))
     {:dispatch-n (map :event controls)}))
 
 (defn register-dispatcher

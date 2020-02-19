@@ -20,8 +20,12 @@
       [::controls.rp/register-key-dispatchers]]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public event to set controls
+;; Global control registry
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn distinct-by [f coll]
+  (let [groups (group-by f coll)]
+    (map #(first (groups %)) (distinct (map f coll)))))
 
 (defn set-controls
   "Takes a list of control objects, and sets them on the db.
@@ -29,7 +33,6 @@
   "
   [db controls]
   (let [by-key (controls.rp/controls->by-key controls)]
-    (log/info "Registering ~{(count controls)} controls.")
     (assoc db
            :controls controls
            :controls-by-key by-key)))
@@ -38,8 +41,8 @@
   ::register
   [rf/trim-v]
   (fn [{:keys [db]} [controls]]
-    (let [controls (concat (:controls db) (or controls []))]
-      (log/info "Registering ~{(count controls)} controls.")
+    (let [controls (concat (:controls db) (or controls []))
+          controls (distinct-by :id controls)]
       {:db (set-controls db controls)})))
 
 (rf/reg-event-fx
@@ -52,8 +55,24 @@
                           (fn [{:keys [id]}]
                             (contains? ids-to-remove id))
                           controls)]
-      (log/info "Deregistering ~{(count ids-to-remove)} controls.")
       {:db (set-controls db controls)})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Game control events
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(rf/reg-event-fx
+  ::register-controls
+  [(game-db-interceptor)]
+  (fn [{:keys [db]} {:keys [ignore-controls]}]
+    (when-not ignore-controls
+      {:dispatch [::register (:controls db)]})))
+
+(rf/reg-event-fx
+  ::deregister-controls
+  [(game-db-interceptor)]
+  (fn [{:keys [db]} _game-opts]
+    {:dispatch [::deregister (:controls db)]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls 'game'
@@ -66,18 +85,10 @@
     {:dispatch [::register-controls game-opts]}))
 
 (rf/reg-event-fx
-  ::register-controls
+  ::stop-game
   [(game-db-interceptor)]
-  (fn [{:keys [db]} {:keys [ignore-controls]}]
-    (when-not ignore-controls
-      {:dispatch [::register (:controls db)]})))
-
-(rf/reg-event-fx
-  ::deregister-controls
-  [(game-db-interceptor)]
-  (fn [{:keys [db]} {:keys [ignore-controls]}]
-    (when-not ignore-controls
-      {:dispatch [::deregister (:controls db)]})))
+  (fn [{:keys [_db]} game-opts]
+    {:dispatch [::deregister-controls game-opts]}))
 
 (rf/reg-event-db
   ::add-piece

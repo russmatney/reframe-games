@@ -38,7 +38,7 @@ Build as described above, then zip it up.
 zip -r reframe-games.zip public
 #+END_SRC
 * misc todos
-**** [ ] control registration/deregistration
+**** [X] control registration/deregistration
 **** [ ] dry up controls and game-db events
 **** [ ] dry up @rf/subscribe usage with suggested subscribe macro
 `(<-sub! ::s/current-page])`?
@@ -47,8 +47,7 @@ no keys detected yet overlay with suggestions for clicking?
 **** [ ] pause overlay (with controls)
 **** [ ] 'learn' namespace with minigame for learning controls for currently active games
 **** [ ] support optional url navigation? (back button?)
-**** [ ] select game with keyboard movement controls
-**** [ ] incorporate spin feature
+**** [ ] select menu using keyboard movement controls
 **** [ ] show combo chains and rows-to-next-level
 **** [ ] mobile touch/gesture support
 **** [ ] customizable controls
@@ -65,6 +64,7 @@ something for leaving it on
 https://github.com/lambdaisland/garden-watcher
 **** [ ] make get-cell warning optional
 ** ideas
+**** [ ] spin-board after x-many pieces
 **** [ ] battle with AI
 **** [ ] rotation styles on rows
 **** [ ] bullet mode: size-3 pieces, 10x speed

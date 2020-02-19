@@ -3,6 +3,7 @@
    [re-frame.core :as rf]
    [games.events.interceptors :refer [game-db-interceptor]]
    [games.tetris.core :as tetris]
+   [games.tetris.db :as tetris.db]
    [games.pause.core :as pause]
    [games.controls.events :as controls.events]))
 
@@ -14,8 +15,24 @@
   ::init-game
   [(game-db-interceptor)]
   (fn [_cofx game-opts]
-    {:dispatch-n [[::register-controls game-opts]
+    {:dispatch-n [[::controls.events/register-controls game-opts]
                   [::step game-opts]
+                  [::game-timer game-opts]]}))
+
+(rf/reg-event-fx
+  ::stop-game
+  [(game-db-interceptor)]
+  (fn [_cofx game-opts]
+    {:dispatch-n     [[::controls.events/deregister-controls game-opts]]
+     :clear-timeouts [{:id ::step}
+                      {:id ::game-timer}]}))
+
+(rf/reg-event-fx
+  ::restart-game
+  [(game-db-interceptor)]
+  (fn [_cofx game-opts]
+    {:db         (tetris.db/game-dbs-map (:name game-opts))
+     :dispatch-n [[::step game-opts]
                   [::game-timer game-opts]]}))
 
 (rf/reg-event-fx
@@ -31,25 +48,6 @@
          :timeout {:id    ::step
                    :event [::step game-opts]
                    :time  (:step-timeout db)}}))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Set Controls
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO clean up ignore-controls
-(rf/reg-event-fx
-  ::register-controls
-  [(game-db-interceptor)]
-  (fn [{:keys [db]} {:keys [ignore-controls]}]
-    (when-not ignore-controls
-      {:dispatch [::controls.events/register (:controls db)]})))
-
-(rf/reg-event-fx
-  ::deregister-controls
-  [(game-db-interceptor)]
-  (fn [{:keys [db]} _game-opts]
-    {:dispatch
-     [::controls.events/deregister (:controls db)]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move/Rotate piece

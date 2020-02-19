@@ -11,7 +11,7 @@
   [{:id    ::home-nav
     :label "Home"
     :keys  (set ["m" "x"])
-    :event [:games.events/unset-page]}
+    :event [:games.events/set-page :select]}
    {:id    ::controls-nav
     :label "Controls"
     :keys  (set ["c" "?"])
@@ -40,25 +40,25 @@
 (defn controls-game-controls
   "heh."
   [game-opts]
-  [{:id    ::move-left
+  [{:id    (controls/->id ::move-left game-opts)
     :label "Move Left"
     :keys  (set ["left" "h" "a"])
     ;; :event [:games.controls.events/move-piece game-opts :left]
     :event [:games.controls.events/instant-fall game-opts :left]}
-   {:id    ::move-down
+   {:id    (controls/->id ::move-down game-opts)
     :label "Move Down"
     :keys  (set ["down" "j" "s"])
     ;; :event [:games.controls.events/move-piece game-opts :down]
     :event [:games.controls.events/instant-fall game-opts :down]}
-   {:id    ::move-right
+   {:id    (controls/->id ::move-right game-opts)
     :label "Move Right"
     :keys  (set ["right" "l" "d"])
     :event [:games.controls.events/move-piece game-opts :right]}
-   {:id    ::move-up
+   {:id    (controls/->id ::move-up game-opts)
     :label "Move Up"
     :keys  (set ["up" "k" "s"])
     :event [:games.controls.events/move-piece game-opts :up]}
-   {:id    ::rotate
+   {:id    (controls/->id ::rotate game-opts)
     :label "Rotate"
     :keys  (set ["space"])
     :event [:games.controls.events/rotate-piece game-opts]}])
@@ -75,6 +75,7 @@
      {:name            name
       :game-opts       game-opts
       :init-event-name :games.controls.events/init-game
+      :stop-event-name :games.controls.events/stop-game
 
       :game-grid (grid/build-grid
                    (merge

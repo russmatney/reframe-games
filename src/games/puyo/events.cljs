@@ -16,17 +16,23 @@
   ::init-game
   [(game-db-interceptor)]
   (fn [_cofx game-opts]
-    (println "starting puyo" (:name game-opts))
-    {:dispatch-n [[::register-controls game-opts]
+    {:dispatch-n [[::controls.events/register-controls game-opts]
                   [::step game-opts]
                   [::game-timer game-opts]]}))
+
+(rf/reg-event-fx
+  ::stop-game
+  [(game-db-interceptor)]
+  (fn [_cofx game-opts]
+    {:dispatch-n     [[::controls.events/deregister-controls game-opts]]
+     :clear-timeouts [{:id ::step}
+                      {:id ::game-timer}]}))
 
 (rf/reg-event-fx
   ::restart-game
   [(game-db-interceptor)]
   (fn [_cofx game-opts]
     {:db         (puyo.db/game-dbs-map (:name game-opts))
-     ;; TODO clean up existing games/controls
      :dispatch-n [[::step game-opts]
                   [::game-timer game-opts]]}))
 
@@ -43,27 +49,6 @@
          :timeout {:id    ::step
                    :event [::step game-opts]
                    :time  step-timeout}}))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Set Controls
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO DRY UP
-(rf/reg-event-fx
-  ::register-controls
-  [(game-db-interceptor)]
-  (fn [{:keys [db]} {:keys [ignore-controls]}]
-    (when-not ignore-controls
-      {:dispatch
-       [::controls.events/register (:controls db)]})))
-
-;; TODO DRY UP
-(rf/reg-event-fx
-  ::deregister-controls
-  [(game-db-interceptor)]
-  (fn [{:keys [db]} _game-opts]
-    {:dispatch
-     [::controls.events/deregister (:controls db)]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move/Rotate piece

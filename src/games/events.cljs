@@ -28,15 +28,33 @@
   [page {:keys [game-opts] :as _game-db}]
   (contains? (:pages game-opts) page))
 
+(defn games-for-page
+  [db page]
+  (let [games (-> db :games vals)]
+    (filter #(for-page? page %)
+            games)))
+
+(defn games-not-for-page
+  [db page]
+  (let [games (-> db :games vals)]
+    (remove #(for-page? page %)
+            games)))
+
 (rf/reg-event-fx
   ::start-games
   (fn [{:keys [db]}]
-    (let [page  (:current-page db)
-          games (filter #(for-page? page %)
-                        (-> db :games vals))]
-      {:db (assoc db :active-games (map :name games))
+    (let [page        (:current-page db)
+          start-games (games-for-page db page)
+          stop-games  (games-not-for-page db page)]
+      {:db (assoc db :active-games (map :name start-games))
        :dispatch-n
-       (map (fn [game] [(:init-event-name game) (:game-opts game)]) games)})))
+       (concat
+         (map (fn [game]
+                [(:init-event-name game) (:game-opts game)])
+              start-games)
+         (map (fn [game]
+                [(:stop-event-name game) (:game-opts game)])
+              stop-games))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Navigation
@@ -47,16 +65,3 @@
   (fn [{:keys [db]} [_ page]]
     {:db       (assoc db :current-page page)
      :dispatch [::start-games]}))
-
-;; TODO update to dispatch broader start/stop games events
-;; might even dispatch navigation events to game event modules
-(rf/reg-event-fx
-  ::unset-page
-  (fn [{:keys [db]} _]
-    (let [current-page (-> db :current-page)]
-      (cond-> {:db (dissoc db :current-page)}
-        (contains? #{:tetris :puyo} current-page)
-        (assoc :dispatch
-               (case current-page
-                 :tetris [::tetris.events/pause-game]
-                 :puyo   [::puyo.events/pause-game]))))))

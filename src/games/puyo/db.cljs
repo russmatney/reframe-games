@@ -34,6 +34,7 @@
     {:name            name
      :game-opts       game-opts
      :init-event-name :games.puyo.events/init-game
+     :stop-event-name :games.puyo.events/stop-game
 
      ;; game (matrix)
      :game-grid
