@@ -187,21 +187,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-cell
-  [{:keys [grid width height phantom-rows phantom-columns] :as db} {:keys [x y]}]
-  (let [ynth     (+ y phantom-rows)
-        xnth     (+ x phantom-columns)
-        _db-meta (dissoc db :grid)
-        outside-bounds?
-        (or
-          (>= y height)
-          (>= x width)
-          (< xnth 0)
-          (< ynth 0))]
-    (if outside-bounds?
-      (log/warn
-        "WARN: Attempting access outside grid bounds!
-        | x,y: #{x},#{y} | gdb: ~{_db-meta}")
-      (-> grid (nth ynth) (nth xnth)))))
+  ([db cell] (get-cell db cell {}))
+  ([{:keys [grid width height phantom-rows phantom-columns] :as db}
+    {:keys [x y]}
+    {:keys [ignore-warning?]}]
+   (let [ynth     (+ y phantom-rows)
+         xnth     (+ x phantom-columns)
+         _db-meta (dissoc db :grid)
+         outside-bounds?
+         (or
+           (>= y height)
+           (>= x width)
+           (< xnth 0)
+           (< ynth 0))]
+     (if outside-bounds?
+       (if-not ignore-warning?
+         (log/warn
+           "WARN: Attempting access outside grid bounds!
+        | x,y: #{x},#{y} | gdb: ~{_db-meta}"))
+       (-> grid (nth ynth) (nth xnth))))))
 
 (defn get-cells
   [{:keys [grid]} pred]
@@ -394,7 +398,7 @@
   [db {:keys [cells move-f can-move?]}]
   (let [cells-and-targets
         (map (fn [c] {:cell   (get-cell db c)
-                      :target (get-cell db (move-f c))})
+                      :target (get-cell db (move-f c) {:ignore-warning? true})})
              cells)
         targets        (map :target cells-and-targets)
         cells-to-move  (set (map cell->coords cells))
