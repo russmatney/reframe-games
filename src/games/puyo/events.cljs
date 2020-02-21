@@ -3,7 +3,6 @@
    [games.events :as events]
    [games.puyo.core :as puyo]))
 
-;; register game events
 (events/reg-game-events
   {:n       (namespace ::x)
    :step-fn puyo/step})

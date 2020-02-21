@@ -1,6 +1,7 @@
 (ns games.views
   (:require
    [games.puyo.views.classic :as puyo.classic]
+   [games.puzzle.views :as puzzle.views]
    [games.tetris.views.classic :as tetris.classic]
    [games.debug.views :as debug.views]
    [games.views.about :as views.about]
@@ -20,6 +21,7 @@
 
       :tetris [tetris.classic/page]
       :puyo   [puyo.classic/page]
+      :puzzle [puzzle.views/page]
 
       :debug  [debug.views/page]
       :select [select.views/page])))

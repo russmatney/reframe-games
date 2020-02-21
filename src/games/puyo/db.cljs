@@ -51,7 +51,6 @@
      :step-timeout      step-timeout
      :paused?           false
      :gameover?         false
-     :waiting-for-fall? false
      :current-piece-num 0
 
      ;; timer
@@ -134,7 +133,7 @@
 ;; TODO dry up
 (def game-dbs-map
   (->> game-dbs
-       (map (fn [game] [(-> game :game-opts :name) game]))
+       (map (fn [game] [(-> game :name) game]))
        (into {})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

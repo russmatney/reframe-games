@@ -17,7 +17,7 @@
                             debug.db/db]
         db
         { ;; NOTE also the initial page
-         :current-page :select
+         :current-page :puzzle
          ;; initial controls
          :controls     controls.db/global-controls}]
 

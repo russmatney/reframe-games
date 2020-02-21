@@ -25,6 +25,10 @@
     :label "Play Puyo-Puyo"
     :keys  (set ["p"])
     :event [:games.events/set-page :puyo]}
+   {:id    ::puzzle-nav
+    :label "Play Puzzle"
+    :keys  (set ["z"])
+    :event [:games.events/set-page :puzzle]}
    {:id    ::debug-nav
     :label "Debug view"
     :keys  (set ["d"])

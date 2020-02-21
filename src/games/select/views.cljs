@@ -5,6 +5,7 @@
    [games.tetris.views :as tetris.views]
    [games.puyo.views :as puyo.views]
    [games.debug.views :as debug.views]
+   [games.puzzle.views :as puzzle.views]
    [games.views.components :as components]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,6 +19,9 @@
    {:label     "Puyo"
     :on-click  #(rf/dispatch [::events/set-page :puyo])
     :component [puyo.views/select-game]}
+   {:label     "Puzzle"
+    :on-click  #(rf/dispatch [::events/set-page :puzzlle])
+    :component [puzzle.views/select-game]}
    {:label     "Debug"
     :on-click  #(rf/dispatch [::events/set-page :debug])
     :component [debug.views/select-game]}])

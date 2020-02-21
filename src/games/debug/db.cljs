@@ -24,7 +24,6 @@
 
       :game-grid (grid/build-grid
                    (merge
-                     ;; TODO entry-types like (top, middle, bottom, left, right)
                      {:entry-cell      {:x 0 :y 0}
                       :height          3
                       :width           3
