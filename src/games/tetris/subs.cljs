@@ -1,9 +1,6 @@
 (ns games.tetris.subs
   (:require
-   [re-frame.core :as rf]
-   [games.tetris.db :as tetris.db]
-   [games.grid.core :as grid]))
-
+   [re-frame.core :as rf]))
 
 (defn game-opts->db
   ([db {:keys [name] :as _game-opts}]
@@ -11,34 +8,15 @@
   ([db {:keys [name] :as _game-opts} k]
    (-> db :games name k)))
 
-(rf/reg-sub
-  ::tetris-db
-  (fn [db [_ game-opts]]
-    (game-opts->db db game-opts)))
-
-
-(rf/reg-sub
-  ::game-opts
-  (fn [db [_ game-opts]]
-    (-> db :games (get (:name game-opts)) :game-opts)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grids
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (rf/reg-sub
-  ::game-grid
+  ::preview-grids
   (fn [db [_ game-opts]]
     (-> db
-        (game-opts->db game-opts :game-grid)
-        (grid/only-positive-rows))))
-
-(rf/reg-sub
-::preview-grids
-(fn [db [_ game-opts]]
-  (-> db
-      (game-opts->db game-opts :preview-grids))))
+        (game-opts->db game-opts :preview-grids))))
 
 (rf/reg-sub
 ::held-grid

@@ -1,6 +1,7 @@
 (ns games.subs
   (:require
-   [re-frame.core :as rf]))
+   [re-frame.core :as rf]
+   [games.grid.core :as grid]))
 
 
 (rf/reg-sub
@@ -12,11 +13,25 @@
 ;; Game shared subs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO test and impl
+(rf/reg-sub
+  ::game-db
+  (fn [db evt]
+    (case (count evt)
+      2 (let [[_e game-opts] evt]
+          (-> db :games (get (:name game-opts))))
+      3 (let [[_e game-opts k] evt]
+          (-> db :games (get (:name game-opts)) (get k))))))
+
 (rf/reg-sub
   ::game-opts
   (fn [db [_ game-opts]]
-    (-> db :games (:name game-opts) :game-opts)))
+    (-> db :games (get (:name game-opts)) :game-opts)))
+
+(rf/reg-sub
+  ::game-grid
+  (fn [db [_ game-opts]]
+    (-> db :games (get (:name game-opts)) :game-grid
+        (grid/only-positive-rows))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controls

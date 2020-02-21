@@ -5,7 +5,7 @@
    [games.grid.core :as grid]
    [games.grid.views :as grid.views]
    [games.color :as color]
-   [games.puyo.subs :as puyo.subs]))
+   [games.subs :as subs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cells
@@ -24,8 +24,8 @@
 
 (defn matrix
   [grid game-opts]
-  (let [spin?         @(rf/subscribe [::puyo.subs/puyo-db game-opts :spin-the-bottle?])
-        pieces-played @(rf/subscribe [::puyo.subs/puyo-db game-opts :pieces-played])
+  (let [spin?         @(rf/subscribe [::subs/game-db game-opts :spin-the-bottle?])
+        pieces-played @(rf/subscribe [::subs/game-db game-opts :pieces-played])
 
         grid
         (cond-> grid
@@ -45,8 +45,8 @@
   "Intended as a selectable game (from a list)."
   []
   (let [game-opts {:name :puyo-select-game}
-        grid      @(rf/subscribe [::puyo.subs/game-grid game-opts])
-        game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])]
+        grid      @(rf/subscribe [::subs/game-grid game-opts])
+        game-opts @(rf/subscribe [::subs/game-opts game-opts])]
     [:div
      [matrix grid game-opts]]))
 
@@ -58,8 +58,8 @@
   "Intended as a debug helper."
   []
   (let [game-opts {:name :puyo-debug-game}
-        game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])
-        grid      @(rf/subscribe [::puyo.subs/game-grid game-opts])]
+        game-opts @(rf/subscribe [::subs/game-opts game-opts])
+        grid      @(rf/subscribe [::subs/game-grid game-opts])]
 
     (components/page
       {:direction    :row

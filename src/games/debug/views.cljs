@@ -4,7 +4,8 @@
    [games.views.components :as components]
    [games.grid.views :as grid.views]
    [games.debug.events :as debug.events]
-   [games.debug.subs :as debug.subs]))
+   [games.debug.subs :as debug.subs]
+   [games.subs :as subs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Select game
@@ -25,7 +26,7 @@
   "Intended as a div. Starts itself."
   []
   (let [game-opts {:name :debug-select-game}
-        grid      @(rf/subscribe [::debug.subs/game-grid game-opts])]
+        grid      @(rf/subscribe [::subs/game-grid game-opts])]
     [grid.views/matrix grid
      {:->cell select-game-cells}]))
 
@@ -65,9 +66,9 @@
   "
   ([] (debug-game {:name :debug-debug-game}))
   ([game-opts]
-   (let [grid      @(rf/subscribe [::debug.subs/game-grid game-opts])
-         debug?    @(rf/subscribe [::debug.subs/debug? game-opts])
-         game-opts @(rf/subscribe [::debug.subs/game-opts game-opts])]
+   (let [grid      @(rf/subscribe [::subs/game-grid game-opts])
+         debug?    @(rf/subscribe [::subs/game-db game-opts :debug?])
+         game-opts @(rf/subscribe [::subs/game-opts game-opts])]
 
      [:div
       (when debug? [:h1 {:style {:color "white"}} (str "debug? :" debug?)])

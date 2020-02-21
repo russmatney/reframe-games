@@ -30,7 +30,7 @@
    "Click here to restart."])
 
 (defn center-panel [game-opts]
-  (let [grid      @(rf/subscribe [::puyo.subs/game-grid game-opts])
+  (let [grid      @(rf/subscribe [::subs/game-grid game-opts])
         gameover? @(rf/subscribe [::puyo.subs/gameover? game-opts])]
     [:div.center-panel
      {:style
@@ -135,7 +135,7 @@
 (defn classic-game
   []
   (let [game-opts {:name :puyo-classic-game}
-        game-opts @(rf/subscribe [::puyo.subs/game-opts game-opts])]
+        game-opts @(rf/subscribe [::subs/game-opts game-opts])]
     (components/page
       {:direction    :row
        :full-height? true}

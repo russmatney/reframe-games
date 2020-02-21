@@ -2,7 +2,7 @@
   (:require
    [re-frame.core :as rf]
    [games.grid.views :as grid.views]
-   [games.tetris.subs :as tetris.subs]
+   [games.subs :as subs]
    [games.color :as color]))
 
 
@@ -36,8 +36,8 @@
   "Intended as a mini-game to be used when choosing a game to play."
   []
   (let [game-opts {:name :tetris-select-game}
-        grid      @(rf/subscribe [::tetris.subs/game-grid game-opts])
-        game-opts @(rf/subscribe [::tetris.subs/game-opts game-opts])]
+        grid      @(rf/subscribe [::subs/game-grid game-opts])
+        game-opts @(rf/subscribe [::subs/game-opts game-opts])]
     [:div
      [matrix grid game-opts]]))
 

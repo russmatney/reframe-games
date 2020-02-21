@@ -28,7 +28,7 @@
    "Click here to restart."])
 
 (defn center-panel [game-opts]
-  (let [grid      @(rf/subscribe [::tetris.subs/game-grid game-opts])
+  (let [grid      @(rf/subscribe [::subs/game-grid game-opts])
         gameover? @(rf/subscribe [::tetris.subs/gameover? game-opts])]
     [:div.center-panel
      {:style
@@ -104,7 +104,7 @@
 
 (defn debug-game [game-opts]
   (let [fields [:falling-shape :piece-queue]
-        db     @(rf/subscribe [::tetris.subs/tetris-db game-opts])]
+        db     @(rf/subscribe [::subs/game-db game-opts])]
     [components/widget
      {}
      [:div
@@ -132,7 +132,7 @@
 (defn classic-game
   []
   (let [game-opts {:name :tetris-classic-game}
-        game-opts @(rf/subscribe [::tetris.subs/game-opts game-opts])]
+        game-opts @(rf/subscribe [::subs/game-opts game-opts])]
     [components/page
      {:direction    :row
       :full-height? true}
