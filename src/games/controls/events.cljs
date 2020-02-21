@@ -3,8 +3,7 @@
    [re-frame.core :as rf]
    [re-pressed.core :as rp]
    [games.controls.re-pressed :as controls.rp]
-   [games.events.interceptors :refer [game-db-interceptor]]
-   [games.controls.core :as controls]))
+   [games.events.interceptors :refer [game-db-interceptor]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init controls listener, global controls, and controls game
@@ -73,56 +72,3 @@
   (fn [{:keys [db]} _game-opts]
     {:dispatch [::deregister (:controls db)]}))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Controls 'game'
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO dry up with events/reg-game-events (fix circular dep)
-
-(rf/reg-event-fx
-  ::init-game
-  [(game-db-interceptor)]
-  (fn [{:keys [_db]} game-opts]
-    {:dispatch [::register-controls game-opts]}))
-
-(rf/reg-event-fx
-  ::stop-game
-  [(game-db-interceptor)]
-  (fn [{:keys [_db]} game-opts]
-    {:dispatch [::deregister-controls game-opts]}))
-
-(rf/reg-event-db
-  ::add-piece
-  [(game-db-interceptor)]
-  (fn [db _game-opts]
-    (controls/add-pieces db)))
-
-(rf/reg-event-db
-  ::move-piece
-  [(game-db-interceptor)]
-  (fn [db [_game-opts direction]]
-    (if (controls/move-allowed? db)
-      (controls/move-piece db direction)
-      db)))
-
-(rf/reg-event-db
-  ::instant-fall
-  [(game-db-interceptor)]
-  (fn [db [_game-opts direction]]
-    (if (controls/move-allowed? db)
-      (controls/instant-fall db direction)
-      db)))
-
-(rf/reg-event-db
-  ::rotate-piece
-  [(game-db-interceptor)]
-  (fn [db _game-opts]
-    (if (controls/move-allowed? db)
-      (controls/rotate-piece db)
-      db)))
-
-(rf/reg-event-db
-  ::toggle-debug
-  [(game-db-interceptor)]
-  (fn [db _game-opts]
-    (update-in db [:game-opts :debug?] not)))

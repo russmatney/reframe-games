@@ -2,7 +2,8 @@
   (:require
    [games.tetris.db :as tetris.db]
    [games.puyo.db :as puyo.db]
-   [games.controls.db :as controls.db]))
+   [games.controls.db :as controls.db]
+   [games.debug.db :as debug.db]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -13,7 +14,7 @@
   (let [game-db-merge-keys [:games]
         game-dbs           [puyo.db/db
                             tetris.db/db
-                            controls.db/db]
+                            debug.db/db]
         db
         { ;; NOTE also the initial page
          :current-page :select

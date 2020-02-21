@@ -4,25 +4,23 @@
    [games.events :as events]
    [games.tetris.views :as tetris.views]
    [games.puyo.views :as puyo.views]
-   [games.controls.views :as controls.views]
+   [games.debug.views :as debug.views]
    [games.views.components :as components]))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def selectable-games
-  ;; TODO specify easier pieces, fewer colors
   [{:label     "Tetris"
     :on-click  #(rf/dispatch [::events/set-page :tetris])
     :component [tetris.views/select-game]}
    {:label     "Puyo"
     :on-click  #(rf/dispatch [::events/set-page :puyo])
     :component [puyo.views/select-game]}
-   {:label     "Controls"
-    :on-click  #(rf/dispatch [::events/set-page :controls])
-    :component [controls.views/select-game]}])
+   {:label     "Debug"
+    :on-click  #(rf/dispatch [::events/set-page :debug])
+    :component [debug.views/select-game]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Selections
