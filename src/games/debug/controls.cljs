@@ -6,13 +6,12 @@
   [{:id    (controls/->id ::move-left game-opts)
     :label "Move Left"
     :keys  (set ["left" "h" "a"])
-    ;; :event [:games.controls.events/move-piece game-opts :left]
-    :event [:games.debug.events/instant-fall game-opts :left]}
+    :event [:games.debug.events/move-piece game-opts :left]}
    {:id    (controls/->id ::move-down game-opts)
     :label "Move Down"
     :keys  (set ["down" "j" "s"])
-    ;; :event [:games.controls.events/move-piece game-opts :down]
-    :event [:games.debug.events/instant-fall game-opts :down]}
+    ;; :event [:games.debug.events/instant-fall game-opts :down]
+    :event [:games.debug.events/move-piece game-opts :down]}
    {:id    (controls/->id ::move-right game-opts)
     :label "Move Right"
     :keys  (set ["right" "l" "d"])

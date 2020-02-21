@@ -18,6 +18,7 @@
 
 (events/reg-hold-event
   {:n                   (namespace ::x)
+   :can-player-move?    puyo/can-player-move?
    :clear-falling-cells puyo/clear-falling-cells
    :add-preview-piece   puyo/add-preview-piece
    :on-hold             (fn [db] (update db :current-piece-num dec))})

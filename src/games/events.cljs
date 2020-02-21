@@ -210,9 +210,11 @@
            after-piece-played
            rotate-piece
            ]}]
-  (let [move-evt         (keyword n :move-piece)
-        instant-fall-evt (keyword n :instant-fall)
-        rotate-evt       (keyword n :rotate-piece)]
+  (let [move-evt           (keyword n :move-piece)
+        instant-fall-evt   (keyword n :instant-fall)
+        rotate-evt         (keyword n :rotate-piece)
+        can-player-move?   (or can-player-move? (fn [_] true))
+        after-piece-played (or after-piece-played identity)]
 
     (rf/reg-event-db
       move-evt
@@ -240,20 +242,20 @@
           (rotate-piece db)
           db)))))
 
-
 (defn reg-hold-event
-  [{:keys [n clear-falling-cells add-preview-piece on-hold]}]
-  (let [hold-evt (keyword n :hold-and-swap-piece)
-        on-hold  (or on-hold identity)]
+  [{:keys [n clear-falling-cells add-preview-piece on-hold can-player-move?]}]
+  (let [hold-evt         (keyword n :hold-and-swap-piece)
+        can-player-move? (or can-player-move? (fn [_] true))
+        on-hold          (or on-hold identity)]
     (rf/reg-event-db
       hold-evt
       [(game-db-interceptor)]
-      (fn [{:keys [held-shape falling-shape hold-lock paused?]
+      (fn [{:keys [held-shape falling-shape hold-lock]
             :as   db
             } _game-opts]
         (if (or (not falling-shape)
                 hold-lock
-                paused?)
+                (not (can-player-move? db)))
           db
           (cond-> db
             ;; prepend queue with held piece

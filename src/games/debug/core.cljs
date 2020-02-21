@@ -78,17 +78,17 @@
          :keep-shape? (or false (:keep-shape? game-opts))
          :can-move?   is-space?}))))
 
-
 (defn rotate-piece [{:keys [game-grid] :as db}]
   (let [cells       (grid/get-cells game-grid :props)
         anchor-cell (first (filter :anchor? cells))]
     (if-not anchor-cell
       ;; no anchor-cell, do nothing
       db
-      (update db :game-grid
-              (fn [grid]
-                (grid/move-cells
-                  grid
-                  {:move-f    #(grid/calc-rotate-target anchor-cell %)
-                   :can-move? (fn [_] true)
-                   :cells     (remove :anchor? cells)}))))))
+      (update
+        db :game-grid
+        (fn [grid]
+          (grid/move-cells
+            grid
+            {:move-f    #(grid/calc-rotate-target anchor-cell %)
+             :can-move? (fn [_] true)
+             :cells     (remove :anchor? cells)}))))))

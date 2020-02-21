@@ -43,7 +43,7 @@ zip -r reframe-games.zip public
 **** [X] pause doesn't always stop the clock?
 **** [ ] dry up @rf/subscribe usage with suggested subscribe macro
 `(<-sub! ::s/current-page])`?
-**** [ ] move 'controls-game' to learn/help/debug namespace?
+**** [X] move 'controls-game' to learn/help/debug namespace?
 **** [ ] show/learn controls overlay
 no keys detected yet overlay with suggestions for clicking?
 **** [ ] pause overlay (with controls)

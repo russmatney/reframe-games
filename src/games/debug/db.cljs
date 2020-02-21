@@ -20,7 +20,7 @@
      {:name            name
       :game-opts       game-opts
       :init-event-name :games.debug.events/init-game
-      :stop-event-name :games.debug.events/stop-game
+      :stop-event-name :games.debug.events/stop
 
       :game-grid (grid/build-grid
                    (merge

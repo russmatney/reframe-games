@@ -18,5 +18,6 @@
 
 (events/reg-hold-event
   {:n                   (namespace ::x)
+   :can-player-move?    tetris/can-player-move?
    :clear-falling-cells tetris/clear-falling-cells
    :add-preview-piece   tetris/add-preview-piece})
