@@ -13,7 +13,7 @@
     :event [:games.puzzle.events/move-piece game-opts :down]}
    {:id    (controls/->id ::move-up game-opts)
     :label "Move Up"
-    :keys  (set ["up" "j" "s"])
+    :keys  (set ["up" "k" "w"])
     :event [:games.puzzle.events/move-piece game-opts :up]}
    {:id    (controls/->id ::move-right game-opts)
     :label "Move Right"

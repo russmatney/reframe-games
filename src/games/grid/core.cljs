@@ -167,13 +167,14 @@
                  {:x (:x c)
                   :y (:y c)})))
 
+;; TODO remove make-cells completely
 (defn add-cells
   "Adds the passed cells to the passed grid"
-  [{:keys [entry-cell] :as db} {:keys [make-cells update-cell]}]
-  (let [entry-cell (or entry-cell {:x 0 :y 0})
-        update-f   (or update-cell (fn [c] c))
-        cells      (make-cells entry-cell)
-        cells      (map update-f cells)]
+  [{:keys [entry-cell] :as db} {:keys [cells make-cells update-cell]}]
+  (let [entry-cell  (or entry-cell {:x 0 :y 0})
+        update-cell (or update-cell identity)
+        cells       (or cells (make-cells entry-cell))
+        cells       (map update-cell cells)]
     (if-not cells
       db
       (reduce
@@ -432,11 +433,19 @@
   clearing props on cells that have been abandoned, and being smart about not
   clearing cells that are being moved into.
   "
-  [db {:keys [fallback-moves move-f direction] :as move-opts}]
+  [db {:keys [fallback-moves move-f direction cells can-move?] :as move-opts}]
   (let [move-opts
         (if (and (not move-f) direction)
           (assoc move-opts :move-f #(move-cell-coords % direction))
           move-opts)
+
+        move-opts
+        (if (not (coll? cells))
+          (assoc move-opts :cells (get-cells db cells))
+          move-opts)
+
+        move-opts
+        (update move-opts :can-move? #(or can-move? (fn [_] true)))
 
         {:keys [cells-and-targets cells-to-clear all-can-move?]}
         (calc-move-cells db move-opts)

@@ -5,8 +5,10 @@
    [games.events.interceptors :refer [game-db-interceptor]]
    [games.grid.core :as grid]))
 
-(defn move-piece [db _direction]
-  db)
+(defn move-piece [db direction]
+  (update
+    db :game-grid
+    #(grid/move-cells % {:cells :in-hand? :direction direction})))
 
 (defn rotate-piece [db]
   db)
@@ -14,16 +16,23 @@
 (defn step [db]
   db)
 
+;; TODO flag pieces being added
+;; TODO clear un-set pieces when a new piece is added
 (defn add-piece
   [db {:keys [cells] :as piece}]
-  (println "adding piece " piece)
   (update
     db :game-grid
     (fn [g]
-      (grid/add-cells
-        g {:update-cell #(assoc % :color
-                                (rand-nth [:red :blue :green]))
-           :make-cells  (fn [ec] (map #(grid/relative ec %) cells) )}))))
+      (-> g
+          (grid/clear-cells :in-hand?)
+          (grid/add-cells
+            {:update-cell #(assoc % :in-hand? true)
+             :cells       (map
+                            (comp
+                              #(assoc % :color
+                                      (rand-nth [:red :blue :green]))
+                              #(grid/relative {:x 1 :y 1} %))
+                            cells)})))))
 
 (events/reg-game-events
   ;; not many step features needed yet, but this initializes controls for us

@@ -3,20 +3,14 @@
    [re-frame.core :as rf]
    [games.grid.core :as grid]))
 
-(defn cells->ec->cells
-  [cells]
-  (fn [ec]
-    (map #(grid/relative ec %) cells)))
-
 (defn ->grid
   [cells]
-  (-> {:height     5 :width 5
-       :entry-cell {:x 1 :y 1}}
+  (-> {:height 5 :width 5}
       (grid/build-grid)
       (grid/add-cells
         {:update-cell #(assoc % :color
                               (rand-nth [:red :blue :green]))
-         :make-cells  (cells->ec->cells cells)})))
+         :cells       (map #(grid/relative {:x 1 :y 1} %) cells)})))
 
 (rf/reg-sub
   ::piece-grids
