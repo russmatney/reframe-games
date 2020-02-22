@@ -1,7 +1,17 @@
 (ns games.puzzle.db
   (:require
    [games.puzzle.controls :as puzzle.controls]
-   [games.grid.core :as grid]))
+   [games.grid.core :as grid]
+   [games.tetris.shapes :as tetris.shapes]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Pieces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn initial-pieces
+  "Tetrominos for now."
+  []
+  (map :cells tetris.shapes/tetrominos))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; game db
@@ -23,6 +33,9 @@
      (grid/build-grid
        (merge {:height 10 :width 6} game-grid))
 
+     ;; puzzle-pieces
+     :pieces (initial-pieces)
+
      ;; timer
      :time 0
 
@@ -35,10 +48,9 @@
 
 (def classic-game-db
   (->
-    {:name       :puzzle-classic-game
-     :cell-style {:width "20px" :height "20px"}
-     :pages      #{:puzzle}
-     :game-grid  {:height 10 :width 6}}
+    {:name      :puzzle-classic-game
+     :pages     #{:puzzle}
+     :game-grid {:height 10 :width 6}}
     (game-db)))
 
 (def select-game-db

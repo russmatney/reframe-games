@@ -1,6 +1,7 @@
 (ns games.db
   (:require
    [games.tetris.db :as tetris.db]
+   [games.puzzle.db :as puzzle.db]
    [games.puyo.db :as puyo.db]
    [games.controls.db :as controls.db]
    [games.debug.db :as debug.db]))
@@ -12,7 +13,8 @@
 
 (def initial-db
   (let [game-db-merge-keys [:games]
-        game-dbs           [puyo.db/db
+        game-dbs           [puzzle.db/db
+                            puyo.db/db
                             tetris.db/db
                             debug.db/db]
         db

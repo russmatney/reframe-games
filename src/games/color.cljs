@@ -25,16 +25,22 @@
   [c]
   (-> c :color (color->piece-color)))
 
+(defn cell->style
+  [c]
+  (if (:color c)
+    {:background (cell->piece-color c)}
+    {}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def board-black "#212529")
+(def border-color "#484848")
 
 (defn cell->background
-;; [{:keys [x y]}]
-[_]
-board-black
-;; (str "rgba(" (* x 20) ", 100, " (* x 20) ", " (- 1 (/ y 10)) ")")
-)
+  ;; [{:keys [x y]}]
+  [_]
+  board-black
+  ;; (str "rgba(" (* x 20) ", 100, " (* x 20) ", " (- 1 (/ y 10)) ")")
+  )

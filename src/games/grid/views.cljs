@@ -1,8 +1,7 @@
 (ns games.grid.views
   (:require
-   [games.views.components :refer [widget]]))
-
-(def border-color "#484848")
+   [games.views.components :refer [widget]]
+   [games.color :as color]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell
@@ -24,7 +23,8 @@
          :max-height height
          :width      width
          :height     height
-         :border     (str border-color " solid 1px")}
+         :border     (str color/border-color " solid 1px")}
+        (color/cell->style c)
         style)}
      (if debug (str c) "")
 

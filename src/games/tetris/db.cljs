@@ -79,12 +79,11 @@
 
 (def classic-game-db
   (->
-    {:name       :tetris-classic-game
-     :cell-style {:width "20px" :height "20px"}
-     :pages      #{:tetris}
-     :game-grid  {:entry-cell {:x 4 :y -1}
-                  :height     16
-                  :width      10}}
+    {:name      :tetris-classic-game
+     :pages     #{:tetris}
+     :game-grid {:entry-cell {:x 4 :y -1}
+                 :height     16
+                 :width      10}}
     (game-db)))
 
 (def select-game-db

@@ -28,6 +28,7 @@
     :z      {:color :red}
     :t      {:color :magenta}))
 
+;; TODO how can this be the name of this function.
 (defn type->ec->cell
   [type]
   (let [cells (get type->cells type)

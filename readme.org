@@ -44,6 +44,8 @@ zip -r reframe-games.zip public
 **** [ ] dry up @rf/subscribe usage with suggested subscribe macro
 `(<-sub! ::s/current-page])`?
 **** [X] move 'controls-game' to learn/help/debug namespace?
+**** [ ] update uses of :name to :id where relevant
+**** [ ] add :group-id to pieces/cell-groups
 **** [ ] show/learn controls overlay
 no keys detected yet overlay with suggestions for clicking?
 **** [ ] pause overlay (with controls)

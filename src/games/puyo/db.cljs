@@ -94,7 +94,6 @@
 (def classic-game-db
   (->
     {:name        :puyo-classic-game
-     :cell-style  {:width "20px" :height "20px"}
      :pages       #{:puyo}
      :no-walls-x? true
      :game-grid   {:entry-cell {:x 3 :y -1}
