@@ -3,15 +3,10 @@
    [re-frame.core :as rf]
    [games.grid.core :as grid]))
 
-(defn choose-color []
-  (rand-nth [:red :blue :green]))
-
 (defn cells->ec->cells
   [cells]
   (fn [ec]
-    (map (comp
-           #(assoc % :color (choose-color))
-           #(grid/relative ec %)) cells)))
+    (map #(grid/relative ec %) cells)))
 
 (defn ->grid
   [cells]
@@ -19,10 +14,16 @@
        :entry-cell {:x 1 :y 1}}
       (grid/build-grid)
       (grid/add-cells
-        {:make-cells (cells->ec->cells cells)})))
+        {:update-cell #(assoc % :color
+                              (rand-nth [:red :blue :green]))
+         :make-cells  (cells->ec->cells cells)})))
 
 (rf/reg-sub
   ::piece-grids
   (fn [db [_ game-opts]]
-    (let [piece-cells (-> db :games (get (:name game-opts)) :pieces)]
-      (map ->grid piece-cells))))
+    (let [piece-cells
+          (-> db :games (get (:name game-opts)) :pieces)]
+      (map
+        (fn [{:keys [cells] :as piece}]
+          [piece (->grid cells)])
+        piece-cells))))

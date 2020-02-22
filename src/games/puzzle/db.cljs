@@ -11,7 +11,7 @@
 (defn initial-pieces
   "Tetrominos for now."
   []
-  (map :cells tetris.shapes/tetrominos))
+  tetris.shapes/tetrominos)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; game db
@@ -31,7 +31,9 @@
      ;; game
      :game-grid
      (grid/build-grid
-       (merge {:height 10 :width 6} game-grid))
+       (merge {:height     10 :width 6
+               :entry-cell {:x 1 :y 1}
+               } game-grid))
 
      ;; puzzle-pieces
      :pieces (initial-pieces)

@@ -40,9 +40,11 @@
     [:div
      {:style {:flex "1"}}
      [:h3 "Pieces"]
-     (for [[i g] (map-indexed vector piece-grids)]
-       ^{:key i}
-       [:div {:style {:margin-bottom "8px"}}
+     (for [[piece g] piece-grids]
+       ^{:key (str piece)}
+       [:div
+        {:on-click #(rf/dispatch [::puzzle.events/select-piece game-opts piece])
+         :style    {:margin-bottom "8px"}}
         [grid.views/matrix g]])]))
 
 (defn board
