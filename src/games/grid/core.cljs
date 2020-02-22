@@ -116,78 +116,6 @@
 ;; Cell Prop Updates
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn update-cell
-  "Applies the passed function to the cell at the specified coords."
-  [{:keys [grid phantom-rows phantom-columns] :as db} {:keys [x y]} f]
-  (let [updated (update-in grid [(+ phantom-rows y) (+ phantom-columns x)] f)]
-    (assoc db :grid updated)))
-
-(defn update-cells
-  "Applies the passed function to the cells that return true for pred."
-  [db pred f]
-  (update
-    db :grid
-    (fn [g]
-      (into
-        []
-        (map
-          (fn [row]
-            (into
-              []
-              (map
-                (fn [cell]
-                  (if (pred cell)
-                    (f cell)
-                    cell))
-                row)))
-          g)))))
-
-(defn overwrite-cell
-  "Copies all props from `cell` to `target`.
-  Looks up the cell passed to get the latest props before copying.
-  Merges any new properies included on the passed `cell`.
-
-  Some thoughts after reading:
-  not sure why a merge here, vs clearing and setting the passed props.
-  "
-  [db {:keys [cell target]}]
-  (let [props (dissoc cell :x :y)]
-    (update-cell
-      db target
-      (fn [target]
-        (merge
-          props
-          {:x (:x target)
-           :y (:y target)})))))
-
-(defn clear-cell-props
-  "Removes non-coordinate flags from cells."
-  [db cell]
-  (update-cell db cell
-               (fn [c]
-                 {:x (:x c)
-                  :y (:y c)})))
-
-;; TODO remove make-cells completely
-(defn add-cells
-  "Adds the passed cells to the passed grid"
-  [{:keys [entry-cell] :as db} {:keys [cells make-cells update-cell]}]
-  (let [entry-cell  (or entry-cell {:x 0 :y 0})
-        update-cell (or update-cell identity)
-        cells       (or cells (make-cells entry-cell))
-        cells       (map update-cell cells)]
-    (if-not cells
-      db
-      (reduce
-        (fn [db {:keys [x y] :as cell}]
-          (overwrite-cell db {:cell cell :target {:x x :y y}}))
-        db
-        cells))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cell Fetching and Deleting
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn get-cell
   ([db cell] (get-cell db cell {}))
   ([{:keys [grid width height phantom-rows phantom-columns] :as db}
@@ -218,11 +146,113 @@
   [db pred]
   (seq (get-cells db pred)))
 
+(defn update-cell
+  "Applies the passed function to the cell at the specified coords."
+  [{:keys [grid phantom-rows phantom-columns] :as db} {:keys [x y]} f]
+  (let [updated (update-in grid [(+ phantom-rows y) (+ phantom-columns x)] f)]
+    (assoc db :grid updated)))
+
+(defn update-cells
+  "Applies the passed function to the cells that return true for pred."
+  [db pred f]
+  (update
+    db :grid
+    (fn [g]
+      (into
+        []
+        (map
+          (fn [row]
+            (into
+              []
+              (map
+                (fn [cell]
+                  (if (pred cell)
+                    (f cell)
+                    cell))
+                row)))
+          g)))))
+
+(defn cell->props [cell]
+  (dissoc cell :x :y ::prop-stack))
+
+(defn overwrite-cell
+  "Copies all props from `cell` to `target`.
+  Looks up the cell passed to get the latest props before copying.
+  Sets any properies included on the passed `cell`.
+  Any props in the target are added to the cell's `::prop-stack`,
+  a special key that allows for restoring previous cell states.
+  "
+  [db {:keys [cell target]}]
+  (let [props (cell->props cell)]
+    (update-cell
+      db target
+      (fn [target]
+        (let [target-props (cell->props target)]
+          (cond-> props
+            true
+            (->
+              (assoc :x (:x target))
+              (assoc :y (:y target)))
+
+            ;; clear prop-stack if target was empty
+            ;; TODO shouldn't ever happen?
+            (empty? target-props)
+            (dissoc ::prop-stack)
+
+            (seq target-props)
+            (assoc ::prop-stack
+                   (cons target-props (or (::prop-stack target) [])))))))))
+
+(defn clear-cell
+  "Removes non-coordinate flags from cells.
+  "
+  [db cell]
+  (update-cell
+    db cell
+    (fn [c]
+      {:x (:x c)
+       :y (:y c)})))
+
+(defn reset-or-clear-cell
+  ""
+  [db cell]
+  (let [prop-stack (or  (::prop-stack (get-cell db cell)) [])
+        props      (first prop-stack)
+        rest-props (rest prop-stack)]
+    (if-not props
+      (clear-cell db cell)
+      (update-cell
+        db cell
+        (fn [c]
+          (-> props
+              {:x           (:x c)
+               :y           (:y c)
+               ::prop-stack rest-props}))))))
+
+;; TODO remove make-cells completely
+(defn add-cells
+  "Adds the passed cells to the passed grid"
+  [{:keys [entry-cell] :as db} {:keys [cells make-cells update-cell]}]
+  (let [entry-cell  (or entry-cell {:x 0 :y 0})
+        update-cell (or update-cell identity)
+        cells       (or cells (make-cells entry-cell))
+        cells       (map update-cell cells)]
+    (if-not cells
+      db
+      (reduce
+        (fn [db {:keys [x y] :as cell}]
+          (overwrite-cell db {:cell cell :target {:x x :y y}}))
+        db
+        cells))))
+
 (defn clear-cells
   [db pred]
-  (reduce (fn [db c] (clear-cell-props db c))
-          db
-          (get-cells db pred)))
+  (reduce
+    (fn [db c] (reset-or-clear-cell db c))
+    db
+    (get-cells db pred)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn cell->coords
   "Returns only the coords of a cell as :x and :y
@@ -496,7 +526,7 @@
         ;; copy cells that are 'moving'
         (reduce overwrite-cell db cells-and-targets)
         ;; clear cells that were left
-        (reduce clear-cell-props db cells-to-clear))
+        (reduce reset-or-clear-cell db cells-to-clear))
 
       fallback-move-f
       (let [fallback-moves (drop 1 fallback-moves)]
@@ -553,39 +583,44 @@
   "
   [db cell {:keys [can-move? direction]}]
   (let [cells-in-dir (cells-in-direction db cell direction)
-        sorted       (sort-by
-                       (case direction
-                         (:up :down)    :y
-                         (:left :right) :x)
-                       (case direction
-                         (:up :left)    >
-                         (:down :right) <)
-                       cells-in-dir)
-        target       (:best
-                      (reduce (fn [{:keys [best skip?]} next-cell]
-                                (cond
-                                  skip?
-                                  {:skip? true
-                                   :best  best}
 
-                                  (and
-                                    ;; nothing set and can't move already?
-                                    ;; we're blocked, skip and return nil
-                                    (not (can-move? next-cell))
-                                    (not best))
-                                  {:skip? true
-                                   :best  nil}
+        sorted
+        (sort-by
+          (case direction
+            (:up :down)    :y
+            (:left :right) :x)
+          (case direction
+            (:up :left)    >
+            (:down :right) <)
+          cells-in-dir)
 
-                                  (can-move? next-cell)
-                                  {:best  next-cell
-                                   :skip? false}
+        target
+        (:best
+         (reduce
+           (fn [{:keys [best skip?]} next-cell]
+             (cond
+               skip?
+               {:skip? true
+                :best  best}
 
-                                  :else
-                                  {:best  best
-                                   :skip? true}))
-                              {:best  nil
-                               :skip? false}
-                              sorted))]
+               (and
+                 ;; nothing set and can't move already?
+                 ;; we're blocked, skip and return nil
+                 (not (can-move? next-cell))
+                 (not best))
+               {:skip? true
+                :best  nil}
+
+               (can-move? next-cell)
+               {:best  next-cell
+                :skip? false}
+
+               :else
+               {:best  best
+                :skip? true}))
+           {:best  nil
+            :skip? false}
+           sorted))]
     (when (seq cells-in-dir)
       target)))
 

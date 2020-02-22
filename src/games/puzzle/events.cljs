@@ -18,7 +18,7 @@
         g {:cells :in-hand? :rotation :clockwise}))))
 
 (defn add-piece
-  [db {:keys [cells] :as piece}]
+  [db {:keys [cells]}]
   (update
     db :game-grid
     (fn [g]

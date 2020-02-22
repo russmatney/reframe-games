@@ -65,14 +65,16 @@
          {:style
           {:display "flex"}}
          (for [{:keys [x y] :as c} row]
-           (if ->cell
-             ^{:key (str "custom-" x y)} (->cell c)
+           (let []
+             (if ->cell
+               ^{:key (str "custom-" x y)}
+               (->cell c)
 
-             ^{:key (str "cell-" x y)}
-             [cell
-              {:game-opts game-opts
-               :cell      c
-               :style     (if cell->style (cell->style c) {})}]))])])))
+               ^{:key (str "cell-" x y)}
+               [cell
+                {:game-opts game-opts
+                 :cell      c
+                 :style     (if cell->style (cell->style c) {})}])))])])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Piece-list (Matricies)
