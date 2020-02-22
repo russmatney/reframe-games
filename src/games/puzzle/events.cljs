@@ -11,13 +11,12 @@
     #(grid/move-cells % {:cells :in-hand? :direction direction})))
 
 (defn rotate-piece [db]
-  db)
+  (update
+    db :game-grid
+    (fn [g]
+      (grid/move-cells
+        g {:cells :in-hand? :rotation :clockwise}))))
 
-(defn step [db]
-  db)
-
-;; TODO flag pieces being added
-;; TODO clear un-set pieces when a new piece is added
 (defn add-piece
   [db {:keys [cells] :as piece}]
   (update
@@ -27,17 +26,30 @@
           (grid/clear-cells :in-hand?)
           (grid/add-cells
             {:update-cell #(assoc % :in-hand? true)
-             :cells       (map
-                            (comp
-                              #(assoc % :color
-                                      (rand-nth [:red :blue :green]))
-                              #(grid/relative {:x 1 :y 1} %))
-                            cells)})))))
+             :cells
+             (map
+               (comp
+                 #(assoc % :color (rand-nth [:red :blue :green]))
+                 #(grid/relative {:x 1 :y 1} %))
+               cells)})))))
+
+(defn set-piece
+  [db]
+  (update
+    db :game-grid
+    (fn [g]
+      (grid/update-cells
+        g
+        :in-hand?
+        (fn [c]
+          (-> c
+              (dissoc :in-hand?)
+              (assoc :set? true)))))))
 
 (events/reg-game-events
-  ;; not many step features needed yet, but this initializes controls for us
+  ;; no step features needed, but this initializes controls for us
   {:n       (namespace ::x)
-   :step-fn step})
+   :step-fn identity})
 
 (events/reg-game-move-events
   ;; connects a few controls to functions for us
@@ -50,3 +62,9 @@
   [(game-db-interceptor)]
   (fn [db [_game-opts piece]]
     (add-piece db piece)))
+
+(rf/reg-event-db
+  ::set-piece
+  [(game-db-interceptor)]
+  (fn [db _game-opts]
+    (set-piece db)))

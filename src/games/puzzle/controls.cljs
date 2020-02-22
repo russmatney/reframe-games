@@ -21,9 +21,9 @@
     :event [:games.puzzle.events/move-piece game-opts :right]}
    {:id    (controls/->id ::rotate game-opts)
     :label "Rotate"
-    :keys  (set ["up" "k" "w"])
+    :keys  (set ["space"])
     :event [:games.puzzle.events/rotate-piece game-opts]}
-   {:id    (controls/->id ::pause game-opts)
-    :label "Pause"
+   {:id    (controls/->id ::set-piece game-opts)
+    :label "Set Piece"
     :keys  (set ["enter"])
-    :event [:games.puzzle.events/toggle-pause game-opts]}])
+    :event [:games.puzzle.events/set-piece game-opts]}])

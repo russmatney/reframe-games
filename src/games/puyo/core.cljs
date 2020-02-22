@@ -166,26 +166,29 @@
     (if-not anchor-cell
       ;; no anchor-cell, do nothing
       db
-      (update db :game-grid
-              (fn [grid]
-                (grid/move-cells
-                  grid
-                  {:move-f    #(grid/calc-rotate-target anchor-cell %)
-                   :fallback-moves
-                   [{:additional-cells [anchor-cell]
-                     :fallback-move-f  (fn [c]
-                                         (as-> c c
-                                           (grid/move-cell-coords c :right)
-                                           (grid/calc-rotate-target
-                                             (update anchor-cell :x inc) c)))}
-                    {:additional-cells [anchor-cell]
-                     :fallback-move-f  (fn [c]
-                                         (as-> c c
-                                           (grid/move-cell-coords c :left)
-                                           (grid/calc-rotate-target
-                                             (update anchor-cell :x dec) c)))}]
-                   :can-move? #(cell-open? db %)
-                   :cells     (remove :anchor? falling-cells)}))))))
+      (update
+        db :game-grid
+        (fn [grid]
+          (grid/move-cells
+            grid
+            {:move-f    #(grid/calc-rotate-target anchor-cell %)
+             :fallback-moves
+             [{:additional-cells [anchor-cell]
+               :fallback-move-f
+               (fn [c]
+                 (as-> c c
+                   (grid/move-cell-coords c :right)
+                   (grid/calc-rotate-target
+                     (update anchor-cell :x inc) c)))}
+              {:additional-cells [anchor-cell]
+               :fallback-move-f
+               (fn [c]
+                 (as-> c c
+                   (grid/move-cell-coords c :left)
+                   (grid/calc-rotate-target
+                     (update anchor-cell :x dec) c)))}]
+             :can-move? #(cell-open? db %)
+             :cells     (remove :anchor? falling-cells)}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adding Pieces

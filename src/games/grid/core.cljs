@@ -64,11 +64,12 @@
   Can also be used to rebuild/reset the grid.
   "
   [{:keys [height phantom-rows] :as opts}]
-  (-> opts
-      (assoc :grid
-             (reset-cell-labels opts
-                                (take (+ height phantom-rows)
-                                      (repeat (build-row opts)))))))
+  (assoc
+    opts :grid
+    (reset-cell-labels
+      opts
+      (take (+ height phantom-rows)
+            (repeat (build-row opts))))))
 
 (defn relative
   "Helper for creating cells relative to another, usually an entry-cell.
@@ -340,6 +341,32 @@
   (pred (get-cell db entry-cell)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cell relative movement/distance and rotation helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn rotate-diff
+  "x1 = y0
+  y1 = -x0"
+  [{:keys [x y]}]
+  {:x y
+   :y (* -1 x)})
+
+(defn calc-diff [cell-a cell-b]
+  {:x (- (:x cell-a) (:x cell-b))
+   :y (- (:y cell-a) (:y cell-b))})
+
+(defn apply-diff [cell-a cell-b]
+  {:x (+ (:x cell-a) (:x cell-b))
+   :y (+ (:y cell-a) (:y cell-b))})
+
+(defn calc-rotate-target
+  "Rotates the passed `cell` about the `anchor-cell` clockwise.
+  Returns a target cell as a map with :x and :y keys for `cell`'s new
+  coordinates."
+  [anchor-cell cell]
+  (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell Movement
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -433,8 +460,9 @@
   clearing props on cells that have been abandoned, and being smart about not
   clearing cells that are being moved into.
   "
-  [db {:keys [fallback-moves move-f direction cells can-move?] :as move-opts}]
-  (let [move-opts
+  [db {:keys [fallback-moves move-f direction cells can-move? rotation] :as move-opts}]
+  (let [
+        move-opts
         (if (and (not move-f) direction)
           (assoc move-opts :move-f #(move-cell-coords % direction))
           move-opts)
@@ -442,6 +470,18 @@
         move-opts
         (if (not (coll? cells))
           (assoc move-opts :cells (get-cells db cells))
+          move-opts)
+
+        move-opts
+        (if (and (not (:move-f move-opts)) rotation)
+          ;; TODO support rotation direction (clock/counter)
+          (assoc
+            move-opts :move-f
+            (fn [c]
+              (let [anchor-cell
+                    ;; single-anchor assumption slips through
+                    (first (filter :anchor? (:cells move-opts)))]
+                (calc-rotate-target anchor-cell c))))
           move-opts)
 
         move-opts
@@ -469,33 +509,6 @@
                 (assoc :fallback-moves fallback-moves)))))
 
       :else db)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cell relative movement/distance and rotation helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn rotate-diff
-  "x1 = y0
-  y1 = -x0"
-  [{:keys [x y]}]
-  {:x y
-   :y (* -1 x)})
-
-(defn calc-diff [cell-a cell-b]
-  {:x (- (:x cell-a) (:x cell-b))
-   :y (- (:y cell-a) (:y cell-b))})
-
-(defn apply-diff [cell-a cell-b]
-  {:x (+ (:x cell-a) (:x cell-b))
-   :y (+ (:y cell-a) (:y cell-b))})
-
-(defn calc-rotate-target
-  "Rotates the passed `cell` about the `anchor-cell` clockwise.
-  Returns a target cell as a map with :x and :y keys for `cell`'s new
-  coordinates."
-  [anchor-cell cell]
-  (apply-diff anchor-cell (rotate-diff (calc-diff anchor-cell cell))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cell Instant Down
