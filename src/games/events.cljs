@@ -204,16 +204,15 @@
 
 (defn reg-game-move-events
   [{:keys [n
-           can-player-move?
            move-piece
            instant-fall
            after-piece-played
            rotate-piece
            ]}]
-  (let [move-evt           (keyword n :move-piece)
+  (let [can-player-move? (fn [db] (:paused? db))
+        move-evt           (keyword n :move-piece)
         instant-fall-evt   (keyword n :instant-fall)
         rotate-evt         (keyword n :rotate-piece)
-        can-player-move?   (or can-player-move? (fn [_] true))
         after-piece-played (or after-piece-played identity)]
 
     (rf/reg-event-db

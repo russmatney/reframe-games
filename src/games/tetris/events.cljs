@@ -10,12 +10,12 @@
 
 (events/reg-game-move-events
   {:n                  (namespace ::x)
-   :can-player-move?   tetris/can-player-move?
    :move-piece         tetris/move-piece
    :instant-fall       tetris/instant-fall
    :after-piece-played tetris/after-piece-played
    :rotate-piece       tetris/rotate-piece})
 
+;; TODO gravity-grid namespace?
 (events/reg-hold-event
   {:n                   (namespace ::x)
    :can-player-move?    tetris/can-player-move?

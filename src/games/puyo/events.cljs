@@ -9,7 +9,6 @@
 
 (events/reg-game-move-events
   {:n                  (namespace ::x)
-   :can-player-move?   puyo/can-player-move?
    :move-piece         puyo/move-piece
    :instant-fall       puyo/instant-fall
    :after-piece-played puyo/after-piece-played

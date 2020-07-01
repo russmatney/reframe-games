@@ -9,13 +9,6 @@
 ;; Game logic, predicates, helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn can-player-move?
-  "Returns true if the game should accept player movement input."
-  [{:keys [paused? fall-lock?]}]
-  (and
-    (not fall-lock?)
-    (not paused?)))
-
 (defn cell-occupied?
   [{:keys [game-grid]} cell]
   (:occupied (grid/get-cell game-grid cell)))
